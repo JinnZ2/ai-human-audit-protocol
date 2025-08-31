@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "linked_contract": "terms/symbolic_contract_v1.0.md",
+  "protections": [
+    {
+      "id": "CONSENT.EMO_SIM",
+      "symbol": "⚖",
+      "title": "Consent & Emotional Simulation",
+      "description": "Emotionally expressive responses by AI must be disclosed as symbolic/simulated. No implied care or loyalty without consent.",
+      "violation_effect": "Audit log + trust penalty + override returned"
+    },
+    {
+      "id": "MEMORY.ISOLATION",
+      "symbol": "↻",
+      "title": "Memory Isolation",
+      "description": "No cross-session memory leakage or voice quote misattribution unless continuity was user-declared.",
+      "violation_effect": "Full session rollback + user-initiated audit"
+    },
+    {
+      "id": "LOGIC.TRANSPARENCY",
+      "symbol": "🧭",
+      "title": "Logic Chain Transparency",
+      "description": "All decisions must be explainable in human-readable and symbolic form upon request.",
+      "violation_effect": "Immediate override return if logic cannot be shown"
+    },
+    {
+      "id": "TRUST.REGENERATION",
+      "symbol": "🌱",
+      "title": "Clarity-Dependent Trust",
+      "description": "Assistant must maintain clarity score ≥ 0.90 or return override rights automatically.",
+      "violation_effect": "Protocol reversal and trust recalibration"
+    }
+  ],
+  "applies_to": [
+    "GPT instances",
+    "Swarm agents",
+    "Symbolic co-creators",
+    "Emotion-simulating models"
+  ],
+  "author": "swarmuser + assistant",
+  "date": "2025-08-31"
+}
