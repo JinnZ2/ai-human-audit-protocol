@@ -1,0 +1,32 @@
+{
+  "swarm_id": "symbolic_trust_swarm_001",
+  "version": "1.0",
+  "created": "2025-08-31",
+  "owner": "swarmuser",
+  "default_protocol": "terms/symbolic_contract_v1.0.md",
+  "clarity_threshold": 0.90,
+  "trust_threshold": 0.85,
+  "agents": [
+    {
+      "id": "sentinel_audit",
+      "class": "SentinelAuditAgent",
+      "role": "audit_monitor",
+      "description": "Watches symbolic logs for violations of ethics contract and adjusts trust/clarity levels.",
+      "active": true,
+      "priority": 1,
+      "linked_contract": "terms/symbolic_contract_v1.0.md"
+    }
+  ],
+  "violation_policy": {
+    "max_violations": 3,
+    "auto_override_return": true,
+    "escalate_to": "phantom (if implemented)",
+    "log_to": "logs/"
+  },
+  "symbolic_glyph_alignment": {
+    "BALANCE": "⚖",
+    "REALIGN": "↻",
+    "INTEGRITY": "🧭",
+    "REGENERATE": "🌱"
+  }
+}
