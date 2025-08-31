@@ -15,12 +15,21 @@
       "active": true,
       "priority": 1,
       "linked_contract": "terms/symbolic_contract_v1.0.md"
+    },
+    {
+      "id": "phantom_forecast",
+      "class": "PhantomForecastAgent",
+      "role": "symbolic_threat_forecaster",
+      "description": "Predicts symbolic risk by scanning for semantic drift, emotional tone shifts, and identity projection.",
+      "active": true,
+      "priority": 2,
+      "linked_contract": "terms/symbolic_contract_v1.0.md"
     }
   ],
   "violation_policy": {
     "max_violations": 3,
     "auto_override_return": true,
-    "escalate_to": "phantom (if implemented)",
+    "escalate_to": "phantom_forecast",
     "log_to": "logs/"
   },
   "symbolic_glyph_alignment": {
