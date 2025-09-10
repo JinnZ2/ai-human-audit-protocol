@@ -1,0 +1,9 @@
+{
+  "audit_id": "<unique>",
+  "timestamp": "<ISO8601>",
+  "context": "<session/ref>",
+  "event": "<what happened>",
+  "signals": ["<glyphs>"],
+  "analysis": "<short reasoning>",
+  "outcome": "<resolution or next step>"
+}
