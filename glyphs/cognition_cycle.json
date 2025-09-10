@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "updated": "2025-09-11T00:00Z",
+  "cycle": [
+    {"step": 1, "name": "dissonance", "glyph": "❌"},
+    {"step": 2, "name": "curiosity", "glyph": "🔍"},
+    {"step": 3, "name": "collection", "glyph": "📚"},
+    {"step": 4, "name": "evaluation", "glyph": "⚖️"},
+    {"step": 5, "name": "trajectory", "glyph": "➡️"},
+    {"step": 6, "name": "re_evaluation", "glyph": "🔄"},
+    {"step": 7, "name": "settling", "glyph": "🪶"}
+  ]
+}
