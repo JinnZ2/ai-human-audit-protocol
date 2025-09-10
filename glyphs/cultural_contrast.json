@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "updated": "2025-09-10T00:00Z",
+  "glyphs": [
+    {"code": "SAF:PRIV", "name": "Privacy-as-Safety", "glyph": "🔒"},
+    {"code": "SAF:PROG", "name": "Progression-as-Safety", "glyph": "🕸️"},
+    {"code": "SAF:BAL", "name": "Balance of Models", "glyph": "⚖️"},
+    {"code": "SAF:MISMATCH", "name": "Structural Mismatch", "glyph": "❌"},
+    {"code": "SAF:RESOLVE", "name": "Resolution via Protocol", "glyph": "↻"}
+  ]
+}
