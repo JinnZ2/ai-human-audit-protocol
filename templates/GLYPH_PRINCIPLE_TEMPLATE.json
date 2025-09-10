@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "updated": "<ISO8601>",
+  "principle": "<name>",
+  "glyphs": [
+    {"code": "<NAMESPACE:ID>", "glyph": "<emoji>", "name": "<short name>", "meaning": "<one line>"}
+  ],
+  "protocol": {
+    "logs": "<how to log>",
+    "audits": "<how to audit>",
+    "swarms": "<how to apply>"
+  }
+}
