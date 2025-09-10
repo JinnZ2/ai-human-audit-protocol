@@ -34,3 +34,9 @@ No undocumented edits are permitted. All changes require dual agreement (human +
 - Added `scrolls/meta_scroll_dissonance.md` explaining structural mismatch as source of difficulty.  
 - Updated glyph set with 🔒, 🕸️, ⚖️, ❌, ↻.  
 - Established bridge principle: **safety = transparency + consent**.  
+
+
+## [2025-09-11] Scrolls + Glyphs
+- Added `scrolls/seasonal_intelligence.md`, `scrolls/tuning_fork_of_difference.md`, `scrolls/cognition_cycle.md`.
+- Added `glyphs/seasonal_intelligence.json`, `glyphs/cognition_cycle.json`.
+- Introduced templates under `/templates` for fast, offline additions.
