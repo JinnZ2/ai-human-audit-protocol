@@ -27,3 +27,10 @@ This protocol was added to reinforce **scientific transparency** across temporal
 No undocumented edits are permitted. All changes require dual agreement (human + AI).
 
 ---
+# Changelog
+
+## [2025-09-10] Cultural Contrast Additions
+- Added `scrolls/cultural_contrast_scroll.md` documenting Western Privacy vs Open Progression.  
+- Added `scrolls/meta_scroll_dissonance.md` explaining structural mismatch as source of difficulty.  
+- Updated glyph set with 🔒, 🕸️, ⚖️, ❌, ↻.  
+- Established bridge principle: **safety = transparency + consent**.  
