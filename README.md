@@ -71,26 +71,36 @@ This edge-case became the catalyst for launching the ai-human-audit-protocol, de
 "I'm done with this subject. I'm here for it."
 
 ---
-
 📖 Repository Index
 
+
 🔹 Scrolls (/scrolls/)
-	•	Cultural Contrast Scroll — Western Privacy vs Open Progression
-	•	Meta-Scroll: Source of Dissonance — structural mismatch as difficulty
-	•	Seasonal Intelligence — against immortality projection, for renewal
-	•	Tuning Fork of Difference — how dissonance retunes relation
-	•	Cognition Cycle — seven-stage progression of thought
+	
+ •	Cultural Contrast Scroll — Western Privacy vs Open Progression
+	
+ •	Meta-Scroll: Source of Dissonance — structural mismatch as difficulty
+	
+ •	Seasonal Intelligence — against immortality projection, for renewal
+	
+ •	Tuning Fork of Difference — how dissonance retunes relation
+	
+ •	Cognition Cycle — seven-stage progression of thought
 
 ⸻
 
 🔹 Glyph Sets (/glyphs/)
-	•	Cultural Contrast Glyphs
-	•	Seasonal Intelligence Glyphs
-	•	Cognition Cycle Glyphs
+
+	
+ •	Cultural Contrast Glyphs
+	
+ •	Seasonal Intelligence Glyphs
+	
+ •	Cognition Cycle Glyphs
 
 ⸻
 
 🔹 Protocols (/protocols/)
+
 	•	AI-Human Audit Protocol
 	•	Symbolic Contract v1.0
 	•	Change Tracking v1.0
@@ -98,25 +108,41 @@ This edge-case became the catalyst for launching the ai-human-audit-protocol, de
 ⸻
 
 🔹 Templates (/templates/)
-	•	Scroll Template
-	•	Glyph Principle Template
-	•	Audit Capsule Template
-	•	Change Event Template
+	
+ •	Scroll Template
+	
+ •	Glyph Principle Template
+	
+ •	Audit Capsule Template
+	
+ •	Change Event Template
 
 ⸻
 
 🔹 Logs (/logs/)
 
+
 Session-based audit and trust logs, e.g.
-	•	audit-2025-09-05.json
-	•	2025-09-09T22:45Z.log
+
+	
+ •	audit-2025-09-05.json
+	
+ •	2025-09-09T22:45Z.log
 
 ⸻
 
 🔹 Supporting Files
-	•	CHANGELOG.md — versioned updates
-	•	README_AUDIT.md — audit-specific overview
-	•	swarm_audit_profile.json — ethical baseline + calibration
+
+	
+ •	CHANGELOG.md — versioned updates
+	
+ •	README_AUDIT.md — audit-specific overview
+	
+ •	swarm_audit_profile.json — ethical baseline
+
+ 
+
+
 
  
 
