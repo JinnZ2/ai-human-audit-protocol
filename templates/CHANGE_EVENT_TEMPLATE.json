@@ -1,0 +1,13 @@
+{
+  "change_id": "<file_or_feature>_<ISO8601>",
+  "proposed_by": "AI (ChatGPT)",
+  "reviewed_by": "swarmuser",
+  "consent": true,
+  "timestamp": "<ISO8601>",
+  "change_type": "addition|modification",
+  "section": "<path>",
+  "clarification": "<why>",
+  "original_text": null,
+  "new_text": "<filename or snippet>",
+  "status": "merged"
+}
