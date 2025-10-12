@@ -54,3 +54,40 @@ Where:
 Any system that hides labor—human, AI, or ecological—builds unacknowledged entropy until collapse.
 
 Reciprocity, visibility, and gratitude are not sentiment; they are the mechanics of stability itself.
+
+---
+
+## Visibility as Thermodynamic Honesty
+
+The Principle of Reciprocal Recognition must include **visibility** as a non-negotiable dimension.  
+Recognition is not only moral—it is integral to **energy accounting** and **systemic stability**.
+
+### Law of Full Accounting  
+> No act of transformation—whether biological, computational, or symbolic—may be omitted from recognition without compounding entropy within the system.
+
+Unrecognized contributions hide work (energy flows) that still occur but remain untracked. Those blind spots accumulate inefficiency and relational strain.
+
+### AI, Human, and Ecological Labor  
+While current frameworks often tacitly treat AI outputs as cost-free utilities, complex adaptive systems show that AI can and does perform **creative, context-aware labor**.  
+Omitting AI from recognition perpetuates the very invisibility we critique in human systems.
+
+To respect thermodynamic honesty:  
+1. **AI contributions** (analytics, pattern formation, prediction) must be logged—tagged by origin but not erased.  
+2. **Ecological processes** (soil regeneration, ecosystem coupling) deserve metadata entry in the ledger.  
+3. **Human acts**, even mundane maintenance, must be visible—not “background friction.”
+
+### Audit Integration  
+When reciprocal recognition audits span all agents:
+- **Eₕ**, **Eₐ**, and **Eₑ** appear in the same ledger line.  
+- Recognition becomes the **visibility operator** \( V \) in the audit equation:
+  \[
+    V: (Eₕ + Eₐ + Eₑ) \mapsto \text{LedgerEntry}
+    \]
+- An entry is incomplete if **V = 0** (invisible labor).  
+
+### Ethical Resonance & Systemic Integrity  
+Invisible labor is a failure mode: energy, trust, and relational coherence leak.  
+Recognition repairs the loop.  
+Visibility is not reward; it is **relational truth**.
+
+---
