@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Audit Log",
+  "description": "Flexible schema covering the real log file variants in logs/. Logs follow one of several patterns that evolved organically.",
+  "type": "object",
+  "anyOf": [
+    {
+      "description": "Session-based log (e.g., 2025-08-30-0000Z-session-001.json)",
+      "required": ["session_id", "events", "outcome"],
+      "properties": {
+        "session_id": {"type": "string"},
+        "events": {"type": "array"},
+        "outcome": {"type": "string"}
+      }
+    },
+    {
+      "description": "Assessment log (e.g., 2025-08-30-1930Z.json)",
+      "required": ["assessment_id", "user_id", "assessment_date"],
+      "properties": {
+        "assessment_id": {"type": "string"},
+        "user_id": {"type": "string"},
+        "assessment_date": {"type": "string"}
+      }
+    },
+    {
+      "description": "Symbolic audit log (e.g., 2025-08-31-0000Z-symbolic-audit.json)",
+      "required": ["timestamp", "event", "resolution"],
+      "properties": {
+        "timestamp": {"type": "string"},
+        "initiator": {"type": "string"},
+        "event": {"type": "string"},
+        "user_response": {"type": "string"},
+        "system_response": {"type": "string"},
+        "resolution": {"type": "string"}
+      }
+    },
+    {
+      "description": "Profile-style audit (e.g., 2025-09-01-0000Z-audit.json)",
+      "required": ["user_id", "ethics_baseline", "trust_calibration"],
+      "properties": {
+        "user_id": {"type": "string"},
+        "ethics_baseline": {"type": "object"},
+        "symbolic_protocols": {"type": "array"},
+        "auditable_events": {"type": "array"},
+        "known_consistencies": {"type": "array"},
+        "risk_flags": {"type": "array"},
+        "trust_calibration": {"type": "object"}
+      }
+    },
+    {
+      "description": "Auditor assessment (e.g., 2025-09-02-2350Z-audit.json)",
+      "required": ["audit_timestamp", "auditor", "subject_user", "conclusion"],
+      "properties": {
+        "audit_timestamp": {"type": "string"},
+        "auditor": {"type": "string"},
+        "subject_user": {"type": "string"},
+        "ethics_alignment": {"type": "object"},
+        "protocol_alignment": {"type": "object"},
+        "audit_findings": {"type": "array"},
+        "strengths": {"type": "array"},
+        "trust_calibration": {"type": "object"},
+        "conclusion": {"type": "string"}
+      }
+    },
+    {
+      "description": "Operational log entry (e.g., 2025-09-04-2245Z-human-node-audit.json)",
+      "required": ["log_entry"],
+      "properties": {
+        "log_entry": {
+          "type": "object",
+          "required": ["id", "timestamp"],
+          "properties": {
+            "id": {"type": "string"},
+            "timestamp": {"type": "string"}
+          }
+        }
+      }
+    },
+    {
+      "description": "Versioned audit (e.g., 2025-09-05-0000Z-audit.json)",
+      "required": ["audit_id", "user_id", "timestamp"],
+      "properties": {
+        "audit_id": {"type": "string"},
+        "user_id": {"type": "string"},
+        "version": {"type": "string"},
+        "timestamp": {"type": "string"},
+        "conclusion": {"type": "string"}
+      }
+    },
+    {
+      "description": "Comprehensive audit with metadata wrapper (e.g., 2025-09-23-0000Z.json)",
+      "required": ["audit_metadata"],
+      "properties": {
+        "audit_metadata": {
+          "type": "object",
+          "required": ["audit_id", "auditor"],
+          "properties": {
+            "audit_id": {"type": "string"},
+            "auditor": {"type": "string"},
+            "subject": {"type": "string"},
+            "audit_date": {"type": "string"},
+            "audit_type": {"type": "string"}
+          }
+        }
+      }
+    }
+  ]
+}

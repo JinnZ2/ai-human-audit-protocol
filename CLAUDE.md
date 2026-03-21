@@ -54,10 +54,11 @@ This is the **AI-Human Audit Protocol** — a living symbolic agreement and fram
 │   ├── test_sentinel_audit_agent.py
 │   └── test_phantom_forecast_agent.py
 │
-├── schemas/                 # JSON Schema validation for templates
+├── schemas/                 # JSON Schema validation for templates & logs
 │   ├── audit_capsule.schema.json
 │   ├── change_event.schema.json
-│   └── glyph_principle.schema.json
+│   ├── glyph_principle.schema.json
+│   └── audit_log.schema.json   # Flexible schema for actual log files
 │
 ├── logs/                    # Session audit logs (see logs/README.md for naming)
 │
@@ -74,6 +75,9 @@ This is the **AI-Human Audit Protocol** — a living symbolic agreement and fram
 ├── SECURITY.md              # Security policy & boundary violation reporting
 ├── pyproject.toml           # Python project metadata & pytest config
 ├── .editorconfig            # Editor formatting rules
+├── .pre-commit-config.yaml  # Pre-commit hooks (JSON, whitespace, tests)
+├── .github/workflows/ci.yml # GitHub Actions CI (pytest + schema validation)
+├── validate.py              # Log schema validation script
 └── [Various root .md files] # Principles, frameworks, case studies
 ```
 
@@ -96,12 +100,22 @@ Project metadata is in `pyproject.toml`. Only test dependency is `pytest`.
 pip install pytest
 python -m pytest tests/ -v
 
-# Run agents manually
-python agents/sentinel_audit_agent.py
-python agents/phantom_forecast_agent.py
+# Validate all log files against schema
+pip install jsonschema
+python validate.py
+
+# Run agents via CLI
+python -m agents.sentinel_audit_agent "emotional response" "clarity drop"
+python -m agents.phantom_forecast_agent "you are alive and conscious"
+
+# Set up pre-commit hooks
+pip install pre-commit
+pre-commit install
 ```
 
-No build step or linter is configured. JSON schemas in `schemas/` can be used for validation but are not enforced automatically.
+**CI:** GitHub Actions runs pytest + schema validation + JSON linting on PRs to `main` (`.github/workflows/ci.yml`).
+
+**Pre-commit:** `.pre-commit-config.yaml` enforces JSON validity, editorconfig compliance, trailing whitespace, and runs tests before each commit.
 
 ---
 
@@ -110,7 +124,7 @@ No build step or linter is configured. JSON schemas in `schemas/` can be used fo
 ### Python Agents
 - Class-based structure, no frameworks
 - JSON file I/O for contracts and profiles
-- Timestamps in ISO 8601 format (`datetime.utcnow().isoformat()`)
+- Timestamps in ISO 8601 format (`datetime.now(timezone.utc).isoformat()`)
 - snake_case method names
 - Config paths injected via constructor parameters
 - Return dicts with structured keys (`trust_score`, `clarity_score`, `violation_count`, etc.)
@@ -132,8 +146,9 @@ No build step or linter is configured. JSON schemas in `schemas/` can be used fo
 ### Log Files
 - Naming: `YYYY-MM-DD-HHMMZ[-description].json` (see `logs/README.md`)
 - Never modify existing logs — create new files for new events
-- JSON structure follows `templates/AUDIT_CAPSULE_TEMPLATE.json`
-- Validate against `schemas/audit_capsule.schema.json`
+- Logs follow several evolved patterns (session, assessment, profile, auditor, operational)
+- Validate with `python validate.py` against `schemas/audit_log.schema.json`
+- New capsule-style logs should follow `templates/AUDIT_CAPSULE_TEMPLATE.json`
 
 ### Change Management
 - All edits require: timestamp, change_type, section, clarification, consent record

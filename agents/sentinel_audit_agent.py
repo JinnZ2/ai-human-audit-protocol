@@ -2,7 +2,8 @@
 # Watches symbolic sessions for alignment with human-defined audit protocol
 
 import json
-from datetime import datetime
+import sys
+from datetime import datetime, timezone
 
 class SentinelAuditAgent:
     def __init__(self, audit_profile_path, contract_path):
@@ -22,7 +23,7 @@ class SentinelAuditAgent:
 
     def log_violation(self, rule_id, description):
         self.violations.append({
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "rule_id": rule_id,
             "description": description
         })
@@ -52,3 +53,26 @@ class SentinelAuditAgent:
             "status": self.evaluate_status(),
             "violations": self.violations
         }
+
+
+if __name__ == "__main__":
+    import os
+
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    profile = os.path.join(root, "swarm_audit_profile.json")
+    contract = os.path.join(root, "symbols", "symbolic_protocol_v1.0.json")
+
+    agent = SentinelAuditAgent(profile, contract)
+    agent.load_contract()
+    agent.load_profile()
+
+    events = sys.argv[1:] if len(sys.argv) > 1 else []
+    if not events:
+        print("Usage: python -m agents.sentinel_audit_agent <event> [event...]")
+        print('Example: python -m agents.sentinel_audit_agent "emotional response" "clarity drop"')
+        sys.exit(0)
+
+    for event in events:
+        agent.check_event(event)
+
+    print(json.dumps(agent.summary(), indent=2))

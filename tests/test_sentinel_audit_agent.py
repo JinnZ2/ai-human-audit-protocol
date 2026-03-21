@@ -1,10 +1,5 @@
-import json
 import os
 import pytest
-
-# Add project root to path so we can import agents
-import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from agents.sentinel_audit_agent import SentinelAuditAgent
 
