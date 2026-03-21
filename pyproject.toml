@@ -1,0 +1,13 @@
+[project]
+name = "ai-human-audit-protocol"
+version = "1.0.0"
+description = "A living symbolic agreement and framework for ethical AI-human interaction"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [{name = "JinnZ2"}]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

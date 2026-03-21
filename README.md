@@ -141,12 +141,16 @@ Session-based audit and trust logs, e.g.
 
 🔹 Supporting Files
 
-	
+
  •	CHANGELOG.md — versioned updates
-	
+
  •	README_AUDIT.md — audit-specific overview
-	
+
  •	swarm_audit_profile.json — ethical baseline
+
+ •	[CLAUDE.md](CLAUDE.md) — codebase guide for AI assistants
+
+ •	[SECURITY.md](SECURITY.md) — security policy and boundary violation reporting
 
  
 

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Change Event",
+  "description": "Schema for change tracking events",
+  "type": "object",
+  "required": ["change_id", "proposed_by", "reviewed_by", "consent", "timestamp", "change_type", "section", "clarification", "new_text", "status"],
+  "properties": {
+    "change_id": {
+      "type": "string",
+      "description": "Identifier in format <file_or_feature>_<ISO8601>"
+    },
+    "proposed_by": {
+      "type": "string",
+      "description": "Who proposed the change"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Who reviewed the change"
+    },
+    "consent": {
+      "type": "boolean",
+      "description": "Whether consent was given"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp"
+    },
+    "change_type": {
+      "type": "string",
+      "enum": ["addition", "modification"],
+      "description": "Type of change"
+    },
+    "section": {
+      "type": "string",
+      "description": "Path or section affected"
+    },
+    "clarification": {
+      "type": "string",
+      "description": "Why this change was made"
+    },
+    "original_text": {
+      "type": ["string", "null"],
+      "description": "Original text before change, null for additions"
+    },
+    "new_text": {
+      "type": "string",
+      "description": "New filename or content snippet"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["merged", "declined", "pending"],
+      "description": "Current status of the change"
+    }
+  },
+  "additionalProperties": false
+}

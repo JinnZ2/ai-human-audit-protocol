@@ -50,7 +50,16 @@ This is the **AI-Human Audit Protocol** — a living symbolic agreement and fram
 │   ├── symbolic_contract_v1.0.md
 │   └── human_protections_index.json
 │
-├── logs/                    # Session audit logs (JSON, timestamped)
+├── tests/                   # Pytest test suite for agents
+│   ├── test_sentinel_audit_agent.py
+│   └── test_phantom_forecast_agent.py
+│
+├── schemas/                 # JSON Schema validation for templates
+│   ├── audit_capsule.schema.json
+│   ├── change_event.schema.json
+│   └── glyph_principle.schema.json
+│
+├── logs/                    # Session audit logs (see logs/README.md for naming)
 │
 ├── swarm_config.json        # Swarm agent configuration & thresholds
 ├── swarm_audit_profile.json # User ethics baseline & trust calibration
@@ -62,6 +71,9 @@ This is the **AI-Human Audit Protocol** — a living symbolic agreement and fram
 ├── CHANGELOG.md             # Immutable change log
 ├── Abstract.md              # Experiment framing
 ├── PROJECTS.md              # Links to related ecosystem repos
+├── SECURITY.md              # Security policy & boundary violation reporting
+├── pyproject.toml           # Python project metadata & pytest config
+├── .editorconfig            # Editor formatting rules
 └── [Various root .md files] # Principles, frameworks, case studies
 ```
 
@@ -73,19 +85,23 @@ This is the **AI-Human Audit Protocol** — a living symbolic agreement and fram
 - **JSON** — Configuration, glyph definitions, audit logs, templates
 - **Markdown** — All protocols, scrolls, philosophy, and documentation
 
-No external dependencies, no package manager, no build system.
+Project metadata is in `pyproject.toml`. Only test dependency is `pytest`.
 
 ---
 
 ## Build / Test / Lint
 
-There are **no build, test, or lint commands** configured. This is a documentation and protocol-centric repository. The Python agents are standalone scripts with no test harness.
-
-To run agents manually:
 ```bash
+# Run tests (25 tests across both agents)
+pip install pytest
+python -m pytest tests/ -v
+
+# Run agents manually
 python agents/sentinel_audit_agent.py
 python agents/phantom_forecast_agent.py
 ```
+
+No build step or linter is configured. JSON schemas in `schemas/` can be used for validation but are not enforced automatically.
 
 ---
 
@@ -112,6 +128,12 @@ python agents/phantom_forecast_agent.py
 - `glyph` field for symbolic markers
 - Top-level metadata: `version`, `updated`, `author`, `date`
 - Arrays for collections (`"rules": [...]`, `"glyphs": [...]`)
+
+### Log Files
+- Naming: `YYYY-MM-DD-HHMMZ[-description].json` (see `logs/README.md`)
+- Never modify existing logs — create new files for new events
+- JSON structure follows `templates/AUDIT_CAPSULE_TEMPLATE.json`
+- Validate against `schemas/audit_capsule.schema.json`
 
 ### Change Management
 - All edits require: timestamp, change_type, section, clarification, consent record
