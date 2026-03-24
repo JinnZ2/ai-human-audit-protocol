@@ -12,5 +12,14 @@
       "atlas/shapes.json"
     ],
     "role": "sensors|protocols|shapes|hub"
+  },
+  "fieldlink_rosetta": {
+    "repo": "https://github.com/JinnZ2/Rosetta-Shape-Core",
+    "description": "Translation layer between geometry, form, and meaning—shapes as language",
+    "shared_paths": [
+      "glyphs/**",
+      "symbols/**"
+    ],
+    "role": "shapes|translation|geometry"
   }
 }
