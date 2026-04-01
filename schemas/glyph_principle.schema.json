@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Glyph Principle",
+  "description": "Schema for glyph principle definitions",
+  "type": "object",
+  "required": ["version", "updated", "principle", "glyphs", "protocol"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of last update"
+    },
+    "principle": {
+      "type": "string",
+      "description": "Name of the principle"
+    },
+    "glyphs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "glyph", "name", "meaning"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Glyph code in NAMESPACE:ID format"
+          },
+          "glyph": {
+            "type": "string",
+            "description": "Emoji glyph character"
+          },
+          "name": {
+            "type": "string",
+            "description": "Short name for the glyph"
+          },
+          "meaning": {
+            "type": "string",
+            "description": "One-line meaning"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "protocol": {
+      "type": "object",
+      "required": ["logs", "audits", "swarms"],
+      "properties": {
+        "logs": {"type": "string"},
+        "audits": {"type": "string"},
+        "swarms": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

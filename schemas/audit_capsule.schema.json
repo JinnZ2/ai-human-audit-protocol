@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Audit Capsule",
+  "description": "Schema for audit capsule events logged in logs/",
+  "type": "object",
+  "required": ["audit_id", "timestamp", "context", "event", "signals", "analysis", "outcome"],
+  "properties": {
+    "audit_id": {
+      "type": "string",
+      "description": "Unique identifier for this audit event"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp"
+    },
+    "context": {
+      "type": "string",
+      "description": "Session reference or context identifier"
+    },
+    "event": {
+      "type": "string",
+      "description": "What happened"
+    },
+    "signals": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Glyph signals associated with this event"
+    },
+    "analysis": {
+      "type": "string",
+      "description": "Short reasoning about the event"
+    },
+    "outcome": {
+      "type": "string",
+      "description": "Resolution or next step"
+    }
+  },
+  "additionalProperties": false
+}
