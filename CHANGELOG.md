@@ -691,3 +691,59 @@ Regime drift detection demo. An `Ontology` with `reapply_check` tied to the holo
 - **Persistent `ConsentGate` storage** (currently in-memory)
 - **Real model adapter wiring** — needs credentials decision from swarmuser
 - `retrospective` blind_spot_log entry — deferred until there is an actual run to retrospect against
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `consortium_typed_couplings_and_persistent_consent_2026-04-27T12:00Z`
+**Proposed by:** AI (continuing down the open-items list)
+**Status:** Merged
+
+### Summary
+Two bounded extensions, shipped together because both are pure additive (no breaking changes to upstream-shipped definitions).
+
+1. **Typed coupling metadata** in `consortium/bridges.py` per `CLAUDE_REQUIREMENTS.md §Requirement 3`. Side-channel approach: keeps upstream `Primitive` and `ClaimNode` definitions unchanged.
+2. **`PersistentConsentGate`** in `consortium/router/consent.py`. JSONL append-only file backing for `ConsentGate`; records survive process restarts.
+
+### `bridges.py` — typed coupling metadata
+- `VALID_COUPLING_KINDS = {causal_forward, causal_reverse, bidirectional, constraint, correlational, decorative, unknown}` per CLAUDE_REQUIREMENTS.md
+- `CouplingMetadata` dataclass: `kind`, `strength` (0..1), `load_bearing`, `conditional_notes`. `__post_init__` validates kind ∈ vocab and strength ∈ [0,1]
+- `TypedClaimGraph` dataclass: pairs a `Dict[str, ClaimNode]` with `Dict[Tuple[str, str], CouplingMetadata]`. Helpers `get_kind`, `is_load_bearing`, `load_bearing_edges`. Edges in `nodes[X].rel` but not in `coupling_metadata` default to `kind="unknown"` when queried (lossy-by-default; flagged in BridgeReport)
+- `primitives_to_typed_claim_graph` — wraps `primitives_to_claim_graph` and attaches caller-supplied `coupling_specs`. Specs naming forward-looking edges (not present in any primitive's couplings) are PRESERVED rather than dropped — this is the "preserves" half of the BridgeReport contract
+- `primitives_to_typed_claim_graph_report()` BridgeReport added; `all_bridge_reports()` updated to include it (new test asserts the set has six entries)
+
+**Why side-channel rather than inline:** both `Primitive` (in `consortium/ontology_layer.py`) and `ClaimNode` (in `consortium/kfc_runtime.py`) are upstream-authored by JinnZ2 and shipped verbatim. The session honored "no silent extension" from the very first physics commits. When upstream ships v2 with typed couplings inline, this side-channel folds back in — no migration on the upstream side required, and no migration on the consortium side (the side-channel just stops being used).
+
+### `router/consent.py` — `PersistentConsentGate`
+- Subclass of `ConsentGate` with the same interface (fail-closed default, immutable history, grant/revoke/is_authorized/assert_authorized).
+- Records persisted to a JSONL file: one JSON object per line, append-only.
+- On construction: reads any existing file; tolerates missing file (treated as empty); strict on malformed lines (raises `ValueError` with line number).
+- On `grant()` / `revoke()`: appends immediately. No "save now" call.
+- Parent directory created if needed (so a fresh-install path like `consortium/audit/consent.jsonl` doesn't fail).
+- v1 limitation: simple flock-free append. Multi-writer concurrency could interleave a partial write. Documented in the docstring; future versions can wrap appends in `fcntl.flock` or move to sqlite. v1 is fine for single-process / single-session.
+
+### Tests
+- **13 new bridge tests** for typed couplings:
+  - CouplingMetadata default + invalid kind + strength range (3)
+  - All documented kinds accepted (1)
+  - TypedClaimGraph: returns correct type, nodes match, get_kind for known/unknown edge, is_load_bearing, load_bearing_edges, no-specs empty, forward-looking specs kept, rate_fns passed through (8)
+  - all_bridge_reports updated to expect 6 entries (1)
+- **9 new router tests** for PersistentConsentGate:
+  - Grant persists to disk, file exists with one line
+  - Records survive reload (new gate instance reads same file)
+  - Revoke persisted and reloaded (revocation visible across instances)
+  - Full history (grant / revoke / re-grant) preserved in order
+  - Missing file treated as empty
+  - Corrupted file raises ValueError
+  - Parent directory created if needed
+  - Inherits ConsentGate contract (fail-closed, assert_authorized raises)
+  - File format: one JSON object per line, parseable
+
+### Verification
+- 416 tests passing (394 from earlier today + 22 new). 13 log validations passing.
+- Existing tests still green; no breakage from the additive changes.
+
+### Open / remaining on the list
+- **Real model adapter wiring** — blocked on credentials decision from swarmuser. The `ClaudeAdapter` / `GeminiAdapter` / `DeepSeekAdapter` stubs document the wiring pattern; each ships in its own change event.
+- **`retrospective` blind_spot_log entry** — deferred until there is an actual run to retrospect against (Phase 3 closure happens after a real run reaches its retrospect horizon).

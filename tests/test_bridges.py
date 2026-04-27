@@ -356,6 +356,7 @@ class TestBridgeReports:
             "reading_to_primitives",
             "frame_reading_to_primitives",
             "primitives_to_claim_graph",
+            "primitives_to_typed_claim_graph",
             "trajectory_summary",
             "trajectory_to_frame_reading",
         }
@@ -659,6 +660,142 @@ class TestTrajectoryToFrameReading:
         collab.add_reading(fr2)
         result = collab.synthesize()
         assert result["problem_id"] == "rt"
+
+
+# ------------------------------------------------------------
+# Typed coupling metadata
+# ------------------------------------------------------------
+
+class TestCouplingMetadata:
+    def test_default_kind_is_unknown(self):
+        from consortium.bridges import CouplingMetadata
+        m = CouplingMetadata()
+        assert m.kind == "unknown"
+        assert m.strength == 1.0
+        assert m.load_bearing is False
+
+    def test_invalid_kind_rejected(self):
+        from consortium.bridges import CouplingMetadata
+        with pytest.raises(ValueError, match="coupling kind"):
+            CouplingMetadata(kind="bogus")
+
+    def test_strength_out_of_range_rejected(self):
+        from consortium.bridges import CouplingMetadata
+        with pytest.raises(ValueError, match="strength"):
+            CouplingMetadata(strength=1.5)
+        with pytest.raises(ValueError, match="strength"):
+            CouplingMetadata(strength=-0.1)
+
+    def test_all_documented_kinds_accepted(self):
+        from consortium.bridges import CouplingMetadata, VALID_COUPLING_KINDS
+        # every kind from CLAUDE_REQUIREMENTS.md §3 must be accepted
+        required = {
+            "causal_forward", "causal_reverse", "bidirectional",
+            "constraint", "correlational", "decorative", "unknown",
+        }
+        assert required <= VALID_COUPLING_KINDS
+        for k in required:
+            CouplingMetadata(kind=k)
+
+
+class TestTypedClaimGraph:
+    def _build(self):
+        from consortium.bridges import (
+            CouplingMetadata,
+            TypedClaimGraph,
+            primitives_to_typed_claim_graph,
+        )
+        prims = [
+            Primitive(
+                concept_id="a", domain="d", form="f", role="r",
+                couplings=["b"], bounds=("s", "t", "z"),
+                epi="measured", epi_confidence=0.9,
+            ),
+            Primitive(
+                concept_id="b", domain="d", form="f", role="r",
+                couplings=["a"], bounds=("s", "t", "z"),
+                epi="measured", epi_confidence=0.9,
+            ),
+        ]
+        specs = {
+            ("a", "b"): CouplingMetadata(
+                kind="causal_forward",
+                strength=0.8,
+                load_bearing=True,
+            ),
+        }
+        return primitives_to_typed_claim_graph(prims, coupling_specs=specs)
+
+    def test_returns_typed_claim_graph(self):
+        from consortium.bridges import TypedClaimGraph
+        g = self._build()
+        assert isinstance(g, TypedClaimGraph)
+
+    def test_nodes_match_untyped_bridge(self):
+        g = self._build()
+        assert set(g.nodes.keys()) == {"a", "b"}
+
+    def test_get_kind_returns_specified_for_known_edge(self):
+        g = self._build()
+        assert g.get_kind("a", "b") == "causal_forward"
+
+    def test_get_kind_returns_unknown_for_unspecified_edge(self):
+        # b → a is in the rel list but no spec was provided
+        g = self._build()
+        assert g.get_kind("b", "a") == "unknown"
+
+    def test_is_load_bearing(self):
+        g = self._build()
+        assert g.is_load_bearing("a", "b") is True
+        assert g.is_load_bearing("b", "a") is False
+
+    def test_load_bearing_edges_lists_correct_pairs(self):
+        g = self._build()
+        edges = g.load_bearing_edges()
+        assert ("a", "b") in edges
+        assert ("b", "a") not in edges
+
+    def test_no_specs_returns_empty_metadata(self):
+        from consortium.bridges import primitives_to_typed_claim_graph
+        prims = [Primitive(
+            concept_id="x", domain="d", form="f", role="r",
+            couplings=[], bounds=("s", "t", "z"),
+            epi="measured", epi_confidence=0.9,
+        )]
+        g = primitives_to_typed_claim_graph(prims)
+        assert g.coupling_metadata == {}
+
+    def test_caller_supplied_specs_kept_even_for_absent_edges(self):
+        # caller may supply forward-looking specs; bridge does not
+        # silently drop them. This is the "preserves" half of the
+        # BridgeReport contract.
+        from consortium.bridges import (
+            CouplingMetadata,
+            primitives_to_typed_claim_graph,
+        )
+        prims = [Primitive(
+            concept_id="x", domain="d", form="f", role="r",
+            couplings=[], bounds=("s", "t", "z"),
+            epi="measured", epi_confidence=0.9,
+        )]
+        specs = {
+            ("x", "future_node"): CouplingMetadata(kind="causal_forward"),
+        }
+        g = primitives_to_typed_claim_graph(prims, coupling_specs=specs)
+        assert ("x", "future_node") in g.coupling_metadata
+
+    def test_rate_fns_passed_through(self):
+        from consortium.bridges import primitives_to_typed_claim_graph
+        prims = [Primitive(
+            concept_id="x", domain="d", form="f", role="r",
+            couplings=[], bounds=("s", "t", "z"),
+            epi="measured", epi_confidence=0.9,
+        )]
+        custom = lambda s, rel, ctx: s + 1
+        g = primitives_to_typed_claim_graph(
+            prims, rate_fns={"x": custom},
+        )
+        assert g.nodes["x"].rate_fn(5.0, {}, {}) == 6.0
 
 
 # ------------------------------------------------------------

@@ -20,6 +20,7 @@ from consortium.router.consent import (
     ConsentGate,
     ConsentRecord,
     ConsentDenied,
+    PersistentConsentGate,
 )
 from consortium.router.query_dispatcher import (
     QueryDispatcher,
@@ -245,6 +246,98 @@ class TestConsentGate:
         gate.grant("p2", ["x"], {}, "u")
         assert len(gate.records("p1")) == 1
         assert len(gate.records()) == 2
+
+
+# ============================================================
+# PersistentConsentGate
+# ============================================================
+
+class TestPersistentConsentGate:
+    def test_grant_persisted_to_disk(self, tmp_path):
+        log = tmp_path / "consent.jsonl"
+        gate = PersistentConsentGate(log_path=log)
+        gate.grant("p1", ["a"], {}, "u")
+        # the file should now exist and contain one line
+        assert log.exists()
+        assert log.read_text().count("\n") == 1
+
+    def test_records_survive_reload(self, tmp_path):
+        log = tmp_path / "consent.jsonl"
+        gate1 = PersistentConsentGate(log_path=log)
+        gate1.grant("p1", ["a"], {"USD": 0.10}, "user1",
+                    notes="first session")
+        # new gate instance reading the same file
+        gate2 = PersistentConsentGate(log_path=log)
+        ok, _ = gate2.is_authorized("p1", "a")
+        assert ok is True
+
+    def test_revoke_persisted_and_reloaded(self, tmp_path):
+        log = tmp_path / "consent.jsonl"
+        gate1 = PersistentConsentGate(log_path=log)
+        gate1.grant("p1", ["a"], {}, "u")
+        gate1.revoke("p1", ["a"], "u", notes="changed_my_mind")
+        # reload
+        gate2 = PersistentConsentGate(log_path=log)
+        ok, reason = gate2.is_authorized("p1", "a")
+        assert ok is False
+        assert "revoked" in reason.lower()
+
+    def test_history_complete_after_reload(self, tmp_path):
+        log = tmp_path / "consent.jsonl"
+        gate1 = PersistentConsentGate(log_path=log)
+        gate1.grant("p1", ["a"], {}, "u", notes="first")
+        gate1.revoke("p1", ["a"], "u", notes="second")
+        gate1.grant("p1", ["a"], {}, "u", notes="third")
+        # reload and check all three are present
+        gate2 = PersistentConsentGate(log_path=log)
+        records = gate2.records("p1")
+        assert len(records) == 3
+        notes = [r.notes for r in records]
+        assert notes == ["first", "second", "third"]
+
+    def test_missing_file_treated_as_empty(self, tmp_path):
+        log = tmp_path / "nonexistent.jsonl"
+        gate = PersistentConsentGate(log_path=log)
+        # no records, no errors
+        assert gate.records() == []
+
+    def test_corrupted_file_raises(self, tmp_path):
+        log = tmp_path / "bad.jsonl"
+        log.write_text("not valid json\n")
+        with pytest.raises(ValueError, match="corrupted"):
+            PersistentConsentGate(log_path=log)
+
+    def test_parent_directory_created(self, tmp_path):
+        # log_path inside a non-existent subdirectory should still work
+        log = tmp_path / "deep" / "nested" / "consent.jsonl"
+        gate = PersistentConsentGate(log_path=log)
+        gate.grant("p1", ["a"], {}, "u")
+        assert log.exists()
+
+    def test_inherits_consent_gate_contract(self, tmp_path):
+        # all the fail-closed / immutable-history guarantees should
+        # still hold for the persistent variant
+        log = tmp_path / "consent.jsonl"
+        gate = PersistentConsentGate(log_path=log)
+        # fail-closed default
+        ok, _ = gate.is_authorized("p1", "a")
+        assert ok is False
+        # assert_authorized raises on missing
+        with pytest.raises(ConsentDenied):
+            gate.assert_authorized("p1", "a")
+
+    def test_file_format_is_one_json_per_line(self, tmp_path):
+        import json
+        log = tmp_path / "consent.jsonl"
+        gate = PersistentConsentGate(log_path=log)
+        gate.grant("p1", ["a"], {"USD": 0.10}, "u", notes="test")
+        # each non-empty line should parse as a JSON object
+        for line in log.read_text().splitlines():
+            if line.strip():
+                obj = json.loads(line)
+                assert "problem_id" in obj
+                assert "adapters_authorized" in obj
+                assert "consenter" in obj
 
 
 # ============================================================
