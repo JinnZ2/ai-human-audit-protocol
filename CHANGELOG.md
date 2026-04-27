@@ -962,3 +962,167 @@ Without this update, a Claude session opening the project would read `CLAUDE.md`
 - `python -m pytest tests/ -q` still 480 passing.
 - `python validate.py` still 13 passing.
 - No code changed in this commit; only documentation.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `python_310_required_2026-04-27T17:30Z`
+**Proposed by:** AI (responding to CI failure on PR #6 — Python 3.8 job failed; 3.11 + 3.12 + json-lint all passed)
+**Status:** Merged
+
+### Summary
+Bumped `requires-python` from `>=3.8` to `>=3.10` in `pyproject.toml` and dropped 3.8 from the CI matrix.
+
+### Why
+`consortium/kfc_runtime.py:82` uses Python 3.10+ union syntax (`-> str | None`). That code was authored verbatim by JinnZ2 and ships unmodified per the "no silent extension of upstream definitions" rule. The pyproject `>=3.8` requirement was inconsistent with the actual code.
+
+Resolution: bring the version requirement into line with the code (rather than modifying the code to fit an older requirement). This honors the verbatim commitment.
+
+### CI matrix
+- Was: `["3.8", "3.11", "3.12"]`
+- Now: `["3.10", "3.11", "3.12"]`
+
+### Verification
+- 519 tests still passing (was 480; +39 new for knowledge_archaeology, see next change event).
+- 13 log validations still passing.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `knowledge_archaeology_2026-04-27T18:00Z`
+**Proposed by:** swarmuser (forwarded `knowledge_archaeology.py` + `example_deploy_check.py` modules; suggested new folder)
+**Status:** Merged
+
+### Summary
+Added `knowledge_archaeology/` — a fifth top-level architecture layer. Constraint provenance for knowledge: every piece of knowledge carries the regime it was forged in (geographic substrate, forcing functions, transmission mode, validation depth, attribution + consent state). Mismatch between source regime and target deployment regime is detected explicitly rather than being silent.
+
+The user's framing in code form: *"When that knowledge moves -- into a person, a model, a tool, a repo -- the provenance usually doesn't move with it. The capability persists; the conditions of its validity become invisible."*
+
+### Files added (8)
+
+```
+knowledge_archaeology/
+├── README.md                           (orchestrating doc)
+├── knowledge_archaeology.py            (the module — verbatim from swarmuser)
+├── examples/
+│   └── example_deploy_check.py         (3 worked demos — verbatim from swarmuser)
+└── nodes/
+    ├── anishinaabe_gravity_filtration_v1.json
+    ├── punjab_baoli_filtration_v1.json
+    └── commercial_filter_cartridge_v3.json
+tests/test_knowledge_archaeology.py     (39 tests)
+```
+
+Plus `.github/workflows/ci.yml` updated to add `knowledge_archaeology.examples.example_deploy_check` to the demo smoke tests.
+
+### `knowledge_archaeology.py` — three core types
+- **`Regime`** dataclass — geographic, climate, social, institutional, temporal context. All fields optional; `fingerprint()` returns only declared fields.
+- **`KnowledgeNode`** dataclass — id + name + description + provenance (regime, transmission, validation, generational depth) + lineage (parent_ids / sibling_ids / derived_ids) + attribution (origin_communities, individual_carriers, **carrier_consent**) + validity scope (valid_under, fails_under, assumptions, extraction_risks).
+- **`KnowledgeTree`** — graph of nodes. `add()` reconciles bidirectional links; `ancestors()` / `parallel_lineages()` / `attribution_trail()` / `deploy_check()` walk the graph; `export_json()` serializes the whole tree.
+
+Two enums (`TransmissionMode`, `ValidationDepth`) provide controlled vocabularies for the categorical provenance fields.
+
+### Three failure modes the layer catches
+
+1. **Regime mismatch.** `regime_distance(source, target)` quantifies displacement; `applicability()` returns `applicable | review_required | regime_mismatch`. Hard checks against `fails_under` strings can override the score-based verdict.
+2. **Extraction audit.** `attribution_trail(node_id)` walks the ancestor graph and surfaces every community + carrier whose knowledge contributed, with `carrier_consent` recorded per ancestor. The `commercial_filter_cartridge_v3` example demonstrates: ancestors include Anishinaabe + Punjabi traditional lineages, with `carrier_consent: "contested"`.
+3. **Validation-depth gate.** A node with `validation = SINGLE_CYCLE` carries a `WARN: shallow validation history` flag regardless of regime distance. Even a perfect regime match doesn't grant credibility to knowledge that hasn't been tested across cycles.
+
+### Demo (`python -m knowledge_archaeology.examples.example_deploy_check`)
+1. **Boreal filter → Punjab regime**: distance flagged; `parallel_lineages` surfaces `punjab_baoli_filtration_v1` as the local-already-fits alternative.
+2. **Commercial cartridge → attribution trail**: walks back through Anishinaabe and Punjabi ancestors; `consent: contested` surfaces at the commercial node.
+3. **Commercial cartridge → post-grid sparse**: `regime_mismatch` with 4 explicit failure-condition flags (post-grid, sparse, tribal, preindustrial) + ETHICS flag for contested consent + WARN for shallow validation.
+
+### Cultural sourcing
+The example node files reference real traditional knowledge systems (Anishinaabe gravity-layered filtration, Punjab baoli step-well filtration). They are intentionally **structural and respectful**:
+- Communities named at identification level, not deep-description level
+- `individual_carriers` anonymized by default
+- `carrier_consent: "implicit"` — general existence is widely acknowledged; specific implementation detail belongs to authorized cultural holders
+- The example demonstrates the *machinery*, not the depth of the practices
+
+The `commercial_filter_cartridge_v3` example deliberately carries `carrier_consent: "contested"` to show what the audit catches when traditional lineages are absorbed into commercial products without acknowledgment. **This is the load-bearing demonstration**: the framework treats extraction as a detectable, auditable, named event rather than as background noise.
+
+### Tests (39 across 8 sections)
+- `Regime`: defaults + fingerprint stripping (2)
+- `regime_distance`: identical = 0, geographic differs raises, numeric scaling, Jaccard, empty (5)
+- `applicability`: applicable / review / mismatch verdicts; `fails_under` override; shallow-validation WARN; contested/none/implicit consent flags; assumptions + extraction_risks returned (10)
+- `KnowledgeTree`: add, sibling reconciliation, parent→derived back-link, ancestors (with diamond + depth limit + self exclusion), parallel_lineages, attribution_trail, deploy_check (3 blocks + unknown-node error), export_json (11)
+- JSON loaders: regime_from_dict, node_from_dict (int + string validation), load_tree_from_directory + bidirectional link verification + derived back-links (6)
+- Example demo end-to-end (4): runs without error, commercial trail includes traditional sources, post-grid deployment flagged as regime_mismatch, boreal → Punjab finds parallel lineage
+- 1 cross-load assertion
+
+### Connection to other layers
+- `physics/MORALITY_ARCHAEOLOGY.md` is the prose form of the same insight; this folder is the operational form.
+- `consortium/ontology_layer.py`'s `Ontology.regime` + `reapply_check` is a smaller version of the same mechanism.
+- `consortium/embodied_sensor.py`'s `epi` sub-tag system parallels `TransmissionMode`.
+- `physics/seven_generation_tracer.py` uses generational time; `KnowledgeNode.generational_depth` and `validation: DEEP_GENERATIONAL` operate on the same scale.
+
+### Verification
+- `python -m knowledge_archaeology.examples.example_deploy_check` runs cleanly; output shows all three demos.
+- `python -m pytest tests/test_knowledge_archaeology.py -v` passes 39 tests.
+- 519 tests passing total (480 + 39 new). 13 log validations passing. CI demo step extended to include the new demo.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `phase3_retrospective_template_and_calibration_aggregator_2026-04-27T19:00Z`
+**Proposed by:** AI (continuing the Phase 3 substrate; both items pre-approved by swarmuser via "yes, yes, yes" pattern)
+**Status:** Merged
+
+### Summary
+Two related additions that close the consortium learning loop:
+1. `consortium/audit/RETROSPECTIVE_TEMPLATE.json` — populated template demonstrating what a `retrospective` blind_spot_log entry looks like, with `<placeholder>` markers and explanatory `_comment_*` fields.
+2. `consortium/audit/calibration_aggregator.py` — reads `blind_spot_log.jsonl`, aggregates per-frame statistics across runs and retrospectives, proposes a `calibration_update` entry. Returns data, not judgment; the consenter decides whether to append the proposal to the log.
+
+### `RETROSPECTIVE_TEMPLATE.json`
+Documents the format with three top-level `_comment_*` explanatory fields (when to write, who writes, what to put in each field). Every value is a `<placeholder>` so future writers cannot mistake the template for a real retrospective. `entry_kind: "retrospective"` and the `references.original_entry_id` link are required (per schema). Includes guidance that retrospective writers may differ from original consenters.
+
+### `calibration_aggregator.py`
+- `FrameStats` dataclass — per-frame statistics. Properties: `blind_spot_rate`, `probe_fail_rate`, `evaluable_probes` (excludes inconclusive/not_run from denominators).
+- `aggregate_log(entries)` — walks run + retrospective entries (calibration_update entries deliberately ignored — they're aggregator output, not input), produces `Dict[frame_id, FrameStats]`.
+- `propose_calibration_drift(stats, current_calibrations, ...)` — applies thresholds (default: blind_spot_rate ≥ 0.7, probe_fail_rate ≥ 0.5, min_consultations ≥ 3, min evaluable_probes ≥ 2 for probe-rate path). Each triggered signal contributes one `delta` (default 0.05) of downward adjustment. Floors at 0.30. Returns proposals dict matching the `frames_calibration_drift` schema field.
+- `build_calibration_update_entry(proposals, n_runs_aggregated, ...)` — assembles a fully-shaped `calibration_update` entry that **validates against `consortium/audit/blind_spot_log.schema.json`**.
+- `aggregate_log_file(log_path)` — end-to-end convenience: reads the .jsonl file, aggregates, proposes, returns a calibration_update entry.
+
+The aggregator does NOT modify the log. It returns a proposed entry. The consenter chooses whether to append it.
+
+### Phase 3 substrate is now in place
+The full feedback loop:
+1. Consortium runs produce `run` entries (existing)
+2. After horizon, retrospect-writers produce `retrospective` entries (template now exists)
+3. Aggregator reads both kinds, proposes `calibration_update` entries
+4. Consenter appends update entries to the log
+5. Future calibration_aggregator runs use the most recent update's calibrations as the prior
+
+The consortium can now learn about itself over time, mechanically, with audit-symmetric guarantees:
+- Statistics are computed over data the log actually contains, not asserted
+- Thresholds are conservative by default (small samples produce no proposals)
+- Per-frame proposals carry `reason` strings naming the specific signal
+- The output is itself an audit entry that goes back into the same log
+
+### `tests/test_calibration_aggregator.py` — 29 tests
+- `FrameStats` properties (4 tests including evaluable-probes-excludes-inconclusive)
+- `aggregate_log`: empty, single run, blind spots, probe results, retrospectives counted, calibration_update entries ignored, multi-run aggregation (7 tests)
+- `propose_calibration_drift`: min-consultations gate, blind-spot-rate trigger, probe-fail-rate trigger, both signals compound, current-calibrations as prior, calibration floor, default prior, min-evaluable-probes gate (8 tests)
+- `build_calibration_update_entry`: required fields, frames_calibration_drift passed through, **validates against blind_spot_log.schema.json**, n_runs in notes (4 tests)
+- `aggregate_log_file`: missing file returns empty proposals + helpful note, real example log processes, threshold-meeting case writes proposal, n_runs counted correctly (4 tests, 1 of which validates the schema)
+- 2 additional sanity tests
+
+### Demo
+`python -m consortium.audit.calibration_aggregator` runs against `example_blind_spot_log.jsonl`. Output: `frames_calibration_drift: {}` because the 3-entry example log doesn't meet the conservative default thresholds. Notes record "v1 calibration update; aggregated over 3 run/retrospective entries". This is correct behavior — small samples should not produce proposals.
+
+### CI
+`.github/workflows/ci.yml` updated: aggregator demo added to the smoke-test list (now 15 demos run on every PR).
+
+### Verification
+- 548 tests passing (519 + 29 new).
+- 13 log validations still passing.
+- CI demo set: 15 scripts (was 14).
+
+### Open / what's left genuinely blocked
+- Real model adapter wiring (still credentials-blocked)
+- Real ledger backend wiring (still infrastructure-blocked)
+- Actual `retrospective` entries (still calendar-blocked — the template is the substrate; populated entries require real runs that have reached their retrospect horizon)
