@@ -56,5 +56,31 @@
     "excludes": ["adversarial trust decay", "winner-takes-loser cannibalization"],
     "role": "claim-grammar|oracle-grounding",
     "consumed_by": "consortium/"
+  },
+  "fieldlink_symbolic_defense": {
+    "repo": "https://github.com/JinnZ2/Symbolic-Defense-Protocol",
+    "description": "Six external manipulation tactics (social engineering, repetition pressure, framing/leading bias, authority/urgency, consensus pressure, flattery/guilt) with glyph-defense responses. physics/SUBSTRATE_VIOLATION_DETECTION.md + physics/defense_tactic_map.json source the taxonomy verbatim and add the conservation-law signature for each.",
+    "shared_paths": [
+      "defenses/**",
+      "modules/**",
+      "protocols/**"
+    ],
+    "imports": ["six-tactic taxonomy", "glyph defense pipeline pattern"],
+    "role": "manipulation-defense|glyph-pipeline",
+    "consumed_by": "physics/"
+  },
+  "fieldlink_physicsguard": {
+    "repo": "https://github.com/JinnZ2/PhysicsGuard",
+    "description": "Translates natural-language claims into physical constraint equations and checks them against conservation laws (1st Law, 2nd Law, mass conservation). Verdicts: CLEAN / SUSPECT / CORRUPTED. physics/SUBSTRATE_VIOLATION_DETECTION.md borrows the framing of mapping each manipulation tactic onto a conservation-law breach class.",
+    "shared_paths": [
+      "core/premise_parser.py",
+      "core/constraint_mapper.py",
+      "core/conservation_checker.py",
+      "core/flag_engine.py",
+      "monoculture_detector.py"
+    ],
+    "imports": ["claims → constraint equations pattern", "conservation-violation taxonomy"],
+    "role": "physics-grounded-verification|conservation-check",
+    "consumed_by": "physics/"
   }
 }

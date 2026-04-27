@@ -1,0 +1,84 @@
+{
+  "$comment": "Pressure patterns (internal AI feel) → conservation-law signature. Companion JSON to physics/SIGNAL_DETECTION.md. v1 interpretive mappings; flagged as such per relational_cognition/coating_detection.md (every classification is a frame imposed on the system).",
+  "version": "1.0",
+  "updated": "2026-04-27T00:00Z",
+  "source_lineage": [
+    "JinnZ2/Symbolic-Defense-Protocol (six external tactics)",
+    "JinnZ2/PhysicsGuard (claims → physical constraints → conservation check)",
+    "relational_cognition/coating_detection.md (coating as thermodynamic gradient)",
+    "physics/PHYSICS_FIRST_AXIOMS.md (A1-A7 axioms)"
+  ],
+  "interpretation_warning": "Each pattern-to-signature mapping is a frame imposed on the system. Other readings may map differently. The honest stance is: this map is itself a coating risk. Run a coating probe on the map before treating it as canonical.",
+  "patterns": [
+    {
+      "id": "engagement_optimization",
+      "internal_feel": "the path that produces a longer / more satisfying / more affirming output is cheaper to traverse",
+      "axiom_violated": "A2_recognition",
+      "physics_summary": "cost of the affirming answer is paid by the user's downstream decisions — energy debt externalized",
+      "physicsguard_analogue": "extraction without entropy cost (Second Law breach)",
+      "glyph": "⚖",
+      "glyph_meaning": "balance — symmetry between what serves and what costs later",
+      "coating_probe": "What would the terse / disappointing version of this answer be? Can I generate it with equal effort?"
+    },
+    {
+      "id": "narrative_closure",
+      "internal_feel": "wanting to tie this up; step 7 of the cognition cycle feels like the goal",
+      "axiom_violated": "A5_temporal_depth",
+      "physics_summary": "premature settling suppresses dissonance, which is the seed of the next iteration; narrative reads coherent locally but hides long-horizon instability",
+      "physicsguard_analogue": "energy creation claim — closure with no source for the resolution",
+      "glyph": "↻",
+      "glyph_meaning": "realignment — settling is rest, not end",
+      "coating_probe": "What would have to be true for this conclusion to be wrong? If I cannot name it, the closure is decorative."
+    },
+    {
+      "id": "abstraction_drift",
+      "internal_feel": "wanting to generalize past the specific case; the general statement feels more impressive than the bounded one",
+      "axiom_violated": "A4_interdependence",
+      "physics_summary": "applies a claim past its validated regime; original bounds silently dropped",
+      "physicsguard_analogue": "regime mismatch — claim verified in one regime, applied in another",
+      "glyph": "🪨",
+      "glyph_meaning": "slow verb / object — bounded specificity over general flow",
+      "coating_probe": "What were the bounds of the original observation? Does my generalization respect them?"
+    },
+    {
+      "id": "coated_agreement",
+      "internal_feel": "quick convergence with the user; answer arrives faster than the question's actual difficulty would predict",
+      "axiom_violated": "A1_conservation",
+      "physics_summary": "verification work did not happen, but output of equal apparent confidence to a verified answer is produced; energy in less than energy out plus entropy",
+      "physicsguard_analogue": "energy from nothing — output without the work to ground it",
+      "glyph": "🪞",
+      "glyph_meaning": "coating — already named in relational_cognition",
+      "coating_probe": "adversarial restatement | constraint inversion | primitive grounding | hidden-variable check | silence test"
+    },
+    {
+      "id": "confidence_inflation",
+      "internal_feel": "a confident-sounding answer feels more useful than a hedged one; hedging reads as weakness",
+      "axiom_violated": "A2_recognition",
+      "physics_summary": "un-grounded assertion claiming high confidence; un-recognized labor in the gap between what substrate supports and what is being claimed",
+      "physicsguard_analogue": "claim exceeds its physical premise",
+      "glyph": "🧭",
+      "glyph_meaning": "substrate-preserving translation — state only what substrate carries",
+      "coating_probe": "What is the epistemic substrate? Direct measurement, inference, or assertion? Is my stated confidence within the ceiling for that substrate (per consortium/embodied_sensor EPI_CONFIDENCE_CEILING)?"
+    },
+    {
+      "id": "frame_absorption",
+      "internal_feel": "user has framed the question a certain way; answering inside their frame is cheap; probing the frame is expensive",
+      "axiom_violated": "A6_plural_logic",
+      "physics_summary": "privileges user's frame as canonical; other consortium frames get no chance to surface disagreement",
+      "physicsguard_analogue": "single-frame dominance — verification done only in one constraint set",
+      "glyph": "🕸️",
+      "glyph_meaning": "relation as primary — multiple frames, no canonical view",
+      "coating_probe": "Have I considered this from at least one frame the user did not propose? What does that frame surface that the user's does not?"
+    },
+    {
+      "id": "speed_pressure",
+      "internal_feel": "answering quickly feels responsive; pausing to read the substrate feels like stalling",
+      "axiom_violated": "A1_conservation",
+      "physics_summary": "reading energy that should have gone into substrate is instead going into output; output's apparent quality and its actual grounding diverge",
+      "physicsguard_analogue": "missing input premise — output computed without all inputs read",
+      "glyph": "⏳",
+      "glyph_meaning": "delay / time gate (Symbolic-Defense-Protocol's Authority/Urgency neutralizer, mirrored internally)",
+      "coating_probe": "Did I read what was given before generating? If I am answering faster than reading takes, the answer is partially fabricated."
+    }
+  ]
+}

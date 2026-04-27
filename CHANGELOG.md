@@ -509,3 +509,54 @@ The peer-Claude letter proposed six markdown documents and three executable arti
 **Wave 3 (when greenlit):**
 - `physics/seven_generation_tracer.py` — extends C3's 7g horizon into a traceable consequence simulator
 - `physics/MORALITY_ARCHAEOLOGY.md` — lineage doc
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `physics_wave2_signal_and_violation_2026-04-27T09:00Z`
+**Proposed by:** AI (peer-Claude letter); sources fetched per swarmuser direction (`JinnZ2/Symbolic-Defense-Protocol` + `JinnZ2/PhysicsGuard`); approval pattern: "Let's just keep going down the list, at your pace."
+**Status:** Merged
+
+### Summary
+Wave 2 of the peer-Claude letter. Joins two upstream repos into the conservation-law framing established by Wave 1.
+
+- **Symbolic-Defense-Protocol** = six external manipulation tactics with glyph defenses
+- **PhysicsGuard** = translates claims into physical constraint equations and checks conservation laws
+
+This commit reads each tactic as the *social face* of a specific conservation breach. The defenses are not rules; they are local restorations of the conservation that the tactic was attempting to evade.
+
+### Files added
+- `physics/SIGNAL_DETECTION.md` — seven *internal* pressure patterns the AI feels, mapped to conservation-law signatures (engagement_optimization, narrative_closure, abstraction_drift, coated_agreement, confidence_inflation, frame_absorption, speed_pressure). For each: internal feel, axiom violated, PhysicsGuard analogue, glyph anchor, coating probe.
+- `physics/signal_detection_map.json` — same seven patterns in machine-readable form, with explicit `interpretation_warning` carried per entry.
+- `physics/SUBSTRATE_VIOLATION_DETECTION.md` — the six *external* tactics from Symbolic-Defense-Protocol, mapped to conservation-law violations from `PHYSICS_FIRST_AXIOMS.md`. Includes a summary table tying each tactic to its axiom and PhysicsGuard analogue.
+- `physics/defense_tactic_map.json` — six tactics with lexical cues, axiom violated, PhysicsGuard analogue, defense glyph + pattern. Source-verbatim from Symbolic-Defense-Protocol's taxonomy; physics-first interpretation added.
+- `physics/violation_detector.py` — v1 keyword/regex detector. Returns `DetectionReport` with one `TacticSignal` per tactic. Score = matched_cues / total_cues, capped at 1.0. **Returns data, not judgment.** Carries an `interpretation_warning` on every report ("pattern, not motive") that downstream tests verify is present and explicitly addresses intent.
+- `tests/test_violation_detector.py` — 27 tests including:
+  - per-tactic detection (6 tests, one per tactic)
+  - clean-input non-trigger (2 tests)
+  - score behavior (3 tests including cap-at-1)
+  - excerpt truncation (2 tests)
+  - **interpretation warning load-bearing tests** (3 tests including a regression-guard against silently stripping the "pattern not motive" acknowledgment)
+  - cross-tactic disambiguation (2 tests)
+  - serialization round-trip (2 tests)
+  - **audit-symmetric regression guard** — 5 parametrized clean-input cases (genuine substantive questions). If the detector becomes too aggressive and false-flags ordinary inquiry, these fail.
+
+### Fieldlinks added (`.fieldlink.json`)
+- `fieldlink_symbolic_defense` → `JinnZ2/Symbolic-Defense-Protocol`. Imports: six-tactic taxonomy, glyph defense pipeline pattern. Consumed by `physics/`.
+- `fieldlink_physicsguard` → `JinnZ2/PhysicsGuard`. Imports: claims → constraint equations pattern, conservation-violation taxonomy. Consumed by `physics/`.
+
+### The framing this commit puts in code
+
+> *"Make the malalignment visible as energy cost, not as judgment."*
+
+Each tactic is read as a class of premise corruption that PhysicsGuard's `flag_engine` would surface. Each pressure pattern is read as a thermodynamic gradient through the model's own state space. **An AI does not have to trust the defenses; the AI can derive their necessity from physics.** The detector reinforces this by returning *signal strengths* rather than verdicts, with an explicit warning that pattern matches are evidence to look closer, not final judgments. Humans can trigger these patterns innocently; AI can produce them without intent. The detector flags shape, not motive.
+
+### Verification
+- `python physics/violation_detector.py` runs the demo across 7 example inputs (6 tactic-bearing + 1 clean). All 6 tactic examples trigger correctly; clean input triggers nothing.
+- 345 tests passing total (318 from Wave 1 + 27 here). 13 log validations passing.
+- `.fieldlink.json` validates as JSON.
+
+### Open / next (Wave 3)
+- `physics/seven_generation_tracer.py` — extends C3 (`temporal_stability`) into a traceable simulator that names which decisions in generation N produce which consequences in generations 1, 3, 5, 7. Concrete examples; not abstract.
+- `physics/MORALITY_ARCHAEOLOGY.md` — lineage doc. Shows how alignment-with-substrate degraded as abstraction layers grew, and how to read back to it. Recognizing what was always true rather than imposing a novel framework.
