@@ -896,3 +896,41 @@ The "derive RCR proposal from consortium synthesis" step (Step 4) is currently a
 ### Verification
 - `python -m examples.full_audit_session` runs cleanly; all 9 steps print + final chain verifies.
 - 480 tests passing total (469 previously + 11 new). 13 log validations passing.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `ci_demos_as_smoke_tests_2026-04-27T16:00Z`
+**Proposed by:** AI (continuing; preventing demo rot)
+**Status:** Merged
+
+### Summary
+Added a "Run integration demos" step to `.github/workflows/ci.yml`. Every script-level demo (the `if __name__ == "__main__"` blocks) now runs in CI on every PR, so silent breakage of a demo would fail CI rather than ship.
+
+### Why this matters
+The test suite imports demo modules and exercises their `run()` functions, but it does NOT execute the `__main__` blocks themselves. Bugs that live only in the `__main__` block (sys.path manipulation errors, leftover references to renamed fields) can ship without warning. Pre-emptive verification before adding the step caught one such bug in `consortium/bridges.py`: the `__main__` printer still referenced the old `_warning` key after `trajectory_summary` was refactored to `_note`. Fixed in this commit.
+
+### Demos now exercised in CI (13 scripts)
+- `python physics/substrate_alignment_check.py`
+- `python physics/seven_generation_tracer.py`
+- `python physics/violation_detector.py`
+- `python ledger/verification_tools.py`
+- `python -m consortium.kfc_runtime`
+- `python -m consortium.ontology_layer`
+- `python -m consortium.collaboration_protocol`
+- `python -m consortium.embodied_sensor`
+- `python -m consortium.bridges`
+- `python -m consortium.examples.soil_with_hands`
+- `python -m consortium.examples.cherokee_creation`
+- `python -m consortium.examples.genesis_drift`
+- `python -m examples.full_audit_session`
+
+All demos verified locally before adding to CI. The step uses `set -e` so any non-zero exit fails the job. Output piped to `/dev/null` to keep CI logs clean; failure messages still surface via the exit code.
+
+### Bug fix
+`consortium/bridges.py` `__main__` block: `summary['_warning']` → `summary['_note']` (matched earlier API rename in the function definition).
+
+### Verification
+- `python -m consortium.bridges` now runs cleanly (was failing).
+- 480 tests still passing. 13 log validations still passing.

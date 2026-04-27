@@ -956,7 +956,7 @@ if __name__ == "__main__":
     for cid, info in summary["claims"].items():
         print(f"  {cid:25s} {info}")
     print(f"  felt_events: {summary['felt_events']}")
-    print(f"  warning: {summary['_warning'][:80]}...")
+    print(f"  note: {summary['_note'][:80]}...")
 
     # 5. show what each bridge preserves / drops
     print("\n" + "=" * 70)
