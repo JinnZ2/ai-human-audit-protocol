@@ -371,3 +371,76 @@ A test asserts the report carries the coating-risk language. A future regression
 ### Open / next P0
 - **Router** (`consortium/router/`) — biggest remaining engineering lift. `query_dispatcher`, `coherence_aggregator`, `model_adapters/{base,claude,gemini,deepseek}`. API auth, rate limits, structured response parsing, consent gate before fan-out.
 - **Coupling-kind metadata** in `primitives_to_claim_graph` — preserve `coupling.kind` per `CLAUDE_REQUIREMENTS.md`.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `consortium_router_v1_offline_2026-04-27T07:00Z`
+**Proposed by:** AI (Claude) — v1-offline scope explicitly approved by swarmuser ("Yes")
+**Status:** Merged
+
+### Summary
+Added `consortium/router/` — fan-out infrastructure for multi-adapter consortium queries. **Zero external API calls in this commit by design.** Real model wiring (Claude/Gemini/DeepSeek) lives behind `NotImplementedError` stubs that document the wiring pattern; each real adapter will ship in its own change event with its own consent.
+
+Files added:
+- `consortium/router/base.py` — `BaseModelAdapter` ABC + `CostEstimate`
+- `consortium/router/mock_adapter.py` — `MockAdapter` (deterministic, offline)
+- `consortium/router/consent.py` — `ConsentGate` (fail-closed) + `ConsentRecord` + `ConsentDenied`
+- `consortium/router/query_dispatcher.py` — `QueryDispatcher` + `DispatchResult`
+- `consortium/router/coherence_aggregator.py` — `aggregate()` wrapping `MultiGeometryCollaboration.synthesize()` with cross-adapter metadata
+- `consortium/router/model_adapters/{claude,gemini,deepseek}_adapter.py` — stubs
+- `tests/test_router.py` — 45 unit tests
+
+### `BaseModelAdapter` — operator-agnostic contract
+Every adapter declares `frame_id` + `operator_type` and implements `query()` + `available()`. `__init_subclass__` enforces the declarations at class-definition time so a subclass that forgets either fails fast. The adapter contract is identical for AI models, instruments, ecosystem aggregators, and human-as-scribe interfaces — the audit-symmetry stance is enforced at the interface, not by the operator's substrate.
+
+### `ConsentGate` — fail-closed
+Default: no adapter is authorized for any problem. Authorization granted via `grant(problem_id, adapters_authorized, cost_disclosed, consenter, notes)`. Per-(problem, adapter) granularity. Revocation recorded as a new immutable entry; later records win. `assert_authorized` raises `ConsentDenied`. The audit history is immutable: grants, refusals, and revocations are all preserved in order. No persistent storage in v1 (in-memory, per-session).
+
+### `QueryDispatcher.fan_out` — fail-soft per adapter
+For each adapter:
+1. `available()` — if False, record under `unavailable`
+2. `consent_gate.is_authorized()` — if False, record under `refused`
+3. `adapter.query()` — on exception, record under `failures`; on success, record reading
+
+Every adapter that was attempted lands in exactly one of the four lists (readings / unavailable / refused / failures). No adapter's silence prevents the others from running.
+
+### `aggregate()` — geometry of absence
+Wraps `MultiGeometryCollaboration.synthesize()` with `adapters_fired`, `adapter_failures`, `consent_refusals`, `adapters_unavailable`, and `cost_estimates_at_dispatch`. When zero readings are returned, surfaces a dedicated `no_readings_returned: True` synthesis with an `epistemic_warning` that the geometry of absence is itself the data — not an error. Tested via `test_aggregates_with_zero_readings`.
+
+### Stub adapters
+- `ClaudeAdapter` → `narrative_structured`
+- `GeminiAdapter` → `pattern_spatial`
+- `DeepSeekAdapter` → `statistical_relational`
+
+All three have `available() = (False, "stub")` and `query()` raises `NotImplementedError` with class-docstring instructions for wiring. A test (`test_stubs_dispatched_appear_as_unavailable`) confirms the dispatcher records them as unavailable rather than as failures — the system handles "we don't have credentials yet" as a design state, not an error condition.
+
+### Tests
+**45 tests across:**
+- `BaseModelAdapter` contract enforcement (4 tests)
+- `MockAdapter` construction, defaults, response_factory override (9 tests)
+- `ConsentGate` fail-closed default, grant, revoke, re-grant, immutable history (10 tests)
+- `QueryDispatcher` fan-out, partial consent, unavailable/failure/refused recording, cost surveys (8 tests)
+- `CoherenceAggregator` with readings, with zero readings, with mixed outcomes (3 tests)
+- API stubs (parametrized × 3 = 11 tests)
+- Full-stack smoke: 3 mock adapters → cost survey → consent grant → fan-out → aggregate (1 test)
+
+### Total test count
+**280 tests passing** (235 from earlier today + 45 here). 13 log validations passing.
+
+### Audit-symmetry mechanisms enforced in code
+- Subclass-time enforcement of `frame_id` + `operator_type`
+- Confidence ceilings (in `embodied_sensor`, applies to readings any operator submits)
+- Coating probe required on all readings
+- Bridge `BridgeReport.preserves` / `lossy_on` declared on every translation
+- Trajectory shape classification flagged as heuristic in resulting FrameReadings
+- Consent gate fail-closed before any external call
+- Geometry-of-absence path: zero readings is a synthesis, not an error
+
+### Open / next
+- **Real model adapter wiring** — separate change event per adapter (Claude / Gemini / DeepSeek / others). Each requires a credentials decision, real `query()` implementation, real `cost_estimate()`, and audit log integration on every API call.
+- **Coupling-kind metadata** in `primitives_to_claim_graph` per `CLAUDE_REQUIREMENTS.md`.
+- **Audit/blind_spot_log.md** — append-only consortium learning log (Phase 3 starts here).
+- **Examples** (`cherokee_creation.py`, `genesis_drift.py`, `soil_with_hands.py`).
+- **Persistent ConsentGate storage** (currently in-memory, per-session).
