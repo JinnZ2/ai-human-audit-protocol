@@ -747,3 +747,218 @@ Two bounded extensions, shipped together because both are pure additive (no brea
 ### Open / remaining on the list
 - **Real model adapter wiring** — blocked on credentials decision from swarmuser. The `ClaudeAdapter` / `GeminiAdapter` / `DeepSeekAdapter` stubs document the wiring pattern; each ships in its own change event.
 - **`retrospective` blind_spot_log entry** — deferred until there is an actual run to retrospect against (Phase 3 closure happens after a real run reaches its retrospect horizon).
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `ledger_structural_permanence_layer_2026-04-27T13:00Z`
+**Proposed by:** swarmuser (forwarding peer-Claude proposal: "blockchain-agnostic ledger schema + three implementation paths + verification code")
+**Status:** Merged
+
+### Summary
+Added `ledger/` — the structural-permanence layer. Wraps any audit-protocol payload (RCR entries, blind_spot_log entries, ConsentRecord, change events) with cryptographic hash-chain integrity via a backend-agnostic interface. The user's framing on the load-bearing claim:
+
+> *"The orchestrator's defenses and physics gates are runtime protection. The blockchain ledger is structural permanence. Together they prevent both drift and revision."*
+
+Both layers ship in this branch. Runtime protection is `physics/substrate_alignment_check.py` + `consortium/router/consent.py` + the coating probes. Structural permanence is the new `ledger/` folder.
+
+### Files added (10 total)
+
+```
+ledger/
+├── README.md                         (orchestrating doc; quotes the load-bearing claim)
+├── ledger_schema.json                (anchored-entry envelope schema; draft-07)
+├── blockchain_alternatives.md        (three paths + tradeoff matrix + decision tree)
+├── ledger_interface.py               (LedgerBackend ABC + canonical JSON + hash primitives)
+├── verification_tools.py             (verify_chain — verifies without trusting the system)
+└── implementations/
+    ├── local_filesystem.py           (REFERENCE; offline; no external deps)
+    ├── ethereum_stub.py              (public chain — stub with wiring docstring)
+    ├── hyperledger_stub.py           (private/consortium — stub)
+    └── ipfs_stub.py                  (content-addressed storage — stub)
+tests/test_ledger.py                  (53 tests)
+```
+
+### `ledger_interface.py` — the foundation
+- **Canonical JSON** (`canonicalize`): `sort_keys=True, separators=(',',':'), ensure_ascii=False`. Two callers canonicalizing the same object MUST produce the same bytes (test verifies). Makes hashing deterministic across implementations.
+- **Hashing primitives**: `sha256_hex`, `hash_payload`, `hash_entry_chain_input`. `chain_input` deliberately includes `entry_id`, `timestamp`, `payload_kind`, `payload_hash`, `previous_entry_hash`, `hash_algorithm`, `envelope_version` — every modification of any of these breaks the entry_hash.
+- **`build_envelope`**: pure function. Constructs an envelope per `ledger_schema.json`. Backend-agnostic.
+- **`LedgerBackend` ABC**: 4 abstract methods (`append`, `read_all`, `head`, `available`). Stubs and reference all subclass.
+- **`AppendResult`** dataclass: returned by `append()` so callers can chain references.
+
+### `local_filesystem.py` — reference implementation
+- JSONL append-only file. Each line is one envelope.
+- On append: reads `head()` to get previous_entry_hash, builds envelope (computes hashes deterministically), appends one line atomically.
+- On read: parses each line; raises `ValueError` with line number on corruption.
+- Parent directory created if missing. Available unless filesystem is read-only.
+- **No external dependencies.** Works offline, in tests, in containers, on flights. The test surface for the entire ledger interface.
+
+### `verification_tools.verify_chain` — verify without trusting
+Four independent checks per entry:
+1. `payload_hash` matches `sha256(canonicalize(payload))`
+2. `entry_hash` matches `sha256(canonicalize(chain_input))`
+3. `previous_entry_hash` matches the prior entry's `entry_hash` (or `None` for genesis)
+4. Envelope schema is well-formed (required fields, version)
+
+Returns `VerificationReport` with per-entry results + aggregate recommendation:
+- `verified` — all entries passed all four checks
+- `tampered` — at least one hash or chain check failed
+- `incomplete` — schema-level issues but no tampering detected
+- `empty` — zero entries
+
+**Carries an explicit `interpretation_warning`** that verification reports cryptographic integrity ONLY — a passing verification means the chain is internally consistent, NOT that payloads are correct or honest. A regression-guarding test asserts this acknowledgment is present.
+
+### `blockchain_alternatives.md` — the decision matrix
+Trade-off table across the four backends + decision tree:
+- local_filesystem → tests / dev / single-machine
+- ipfs+timestamp → **default recommendation** for most deployments (cheap, decentralized, broadly verifiable)
+- public chain → maximum trust-minimization, adversarial domains, seven-generation horizon
+- private chain → consortium with operational capacity for shared infrastructure
+
+### Three stub adapters
+Same pattern as the model adapters from earlier in the session: each subclass raises `NotImplementedError` with a class-docstring wiring pattern (RPC endpoint + wallet + anchor contract for Ethereum; Fabric SDK + consortium membership for Hyperledger; IPFS daemon/gateway + optional timestamp authority for IPFS). `available()` returns `(False, helpful_reason)`. The orchestrator handles "no credentials yet" as a design state, not an error.
+
+### `tests/test_ledger.py` — 53 tests
+- Canonical JSON: sorts keys, no whitespace, unicode preserved, nested sorting
+- Hashing primitives: sha256 length, deterministic, key-order-invariant payload hashing, chain_input field sensitivity
+- Envelope construction: required fields, versions, genesis null previous, hash format, optional fields
+- LedgerBackend ABC: cannot instantiate
+- LocalFilesystemLedger: genesis no previous, second entry links to first, read order, head, missing file empty, corrupted file raises, anchor metadata records filesystem kind, parent directory created, payload_kind recorded, available
+- verify_chain clean: empty / single / multiple / per-entry passes
+- **verify_chain tampering detection: payload tampering, entry_hash tampering, chain_link break, entry deletion, genesis replacement, to_dict round-trip, interpretation_warning present (regression guard)**
+- Schema-level checks: missing required field flagged, wrong envelope_version flagged
+- Stub backends parametrized: 3 stubs × 3 tests = 9
+- Schema validation against `ledger_schema.json` via `jsonschema`
+- End-to-end: anchor → verify clean → tamper file directly → verify tampered
+
+### Verification (the demo)
+`python ledger/verification_tools.py` anchors three entries, prints clean verification (3 ✓), then directly tampers with entry 1 in the file and re-verifies (✗ on entry 1 with payload_hash mismatch). The note printed at end: *"Tampering is detected by re-hashing — no trust in the writing system required."*
+
+### Total
+469 tests passing (416 from earlier today + 53 new). 13 log validations passing.
+
+### What this layer does NOT do (named in `blockchain_alternatives.md`)
+- Does NOT validate payload semantics. A perfectly-anchored RCR entry that violates conservation law is still a violation; the ledger just makes the record permanent. Substantive audit (`physics/substrate_alignment_check.py`) is separate.
+- Does NOT prevent adversaries from publishing FALSE payloads with VALID hashes. The chain proves payload existed at time T; not that it's true.
+- Does NOT replace consent. Anchoring a record does not authorize the action it records.
+
+The layer's load-bearing claim is narrow and exact: **once anchored, modifying an entry without breaking the chain is computationally infeasible.** That's the structural permanence the runtime defenses cannot give on their own.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `readme_architecture_layers_2026-04-27T14:00Z`
+**Proposed by:** AI (continuing after PR; making the new architecture discoverable from the front door)
+**Status:** Merged
+
+### Summary
+Updated `README.md` to reflect the four new architecture layers added in this branch. Existing prose is preserved verbatim — purpose statement, case study, original framing, license, supporting files. New content is purely additive: an "Architecture Layers" section between "Key Protocols" and "Case Study", and four new entries in the Repository Index for `relational_cognition/`, `consortium/`, `physics/`, `ledger/`.
+
+The new section quotes the load-bearing claim verbatim ("The orchestrator's defenses and physics gates are runtime protection. The blockchain ledger is structural permanence. Together they prevent both drift and revision.") and includes a 4-row table that gives readers a one-sentence orientation per layer.
+
+No tests affected (469 still passing). No existing repo files modified except this README and CHANGELOG.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `examples_full_audit_session_2026-04-27T15:00Z`
+**Proposed by:** AI (continuing after PR; demonstrating cross-layer integration as a runnable artifact)
+**Status:** Merged
+
+### Summary
+Added `examples/full_audit_session.py` — the cross-layer integration demo that exercises all four architecture layers in a single session. Runtime defenses applied (consortium consent gate + physics C1–C6 check), structural permanence achieved (5 envelope entries in the local-filesystem ledger, hash-chain verified), learning recorded (blind_spot_log entry, itself anchored to the chain).
+
+### What the demo does (9 steps)
+1. Build a `Problem` (consortium/collaboration_protocol)
+2. Dispatch to a 3-mock-adapter consortium with consent gate
+3. Aggregate readings into geometry
+4. Derive an RCR-shaped proposal (manual cross-layer bridge; full automation is open work)
+5. Run `physics/substrate_alignment_check` — all six checks pass for the demo proposal
+6. Anchor 4 artifacts (problem, synthesis, rcr, alignment_report) to `LocalFilesystemLedger`
+7. Verify the chain via `verify_chain()`
+8. Construct a `blind_spot_log` entry referencing the synthesis
+9. Anchor the blind_spot_log entry too; final 5-entry chain re-verifies
+
+### `tests/test_full_audit_session.py` — 11 tests
+- End-to-end contract (7 tests): runs without error, 3 frames in synthesis, alignment_report aligned, ledger holds 5 entries, chain verifies clean, payload_kinds are distinct + ordered, blind_spot_log entry is `run` kind
+- Cross-layer schema validation (3 tests): anchored RCR validates against `physics/ledger_schema.json`; all 5 envelopes validate against `ledger/ledger_schema.json`; blind_spot_log entry validates against `consortium/audit/blind_spot_log.schema.json`
+- **Tampering detection (1 test)**: run a clean session, mutate the anchored RCR's payload directly in the file, re-verify — `verify_chain()` reports `tampered`. The cross-layer smoke test of the load-bearing claim: *"structural permanence prevents revision."*
+
+### What this proves
+The pieces fit. A consortium run produces a synthesis; the synthesis informs an RCR proposal; the proposal passes the conservation-law check; the artifacts are tamper-detectably anchored; the consortium's own learning about itself is anchored too. This is the load-bearing claim — runtime defenses + structural permanence — as a runnable artifact rather than a slogan.
+
+### Honest scope
+The "derive RCR proposal from consortium synthesis" step (Step 4) is currently a manual hand-construction. A future change event can build an automatic bridge (synthesis dict → RCR fields), but the demo's purpose is integration, not bridge automation. The RCR field values are honest: `labor[].contributor` includes `ai:consortium` with `amount=3.0` (the actual fan-out call count from this run).
+
+### Verification
+- `python -m examples.full_audit_session` runs cleanly; all 9 steps print + final chain verifies.
+- 480 tests passing total (469 previously + 11 new). 13 log validations passing.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `ci_demos_as_smoke_tests_2026-04-27T16:00Z`
+**Proposed by:** AI (continuing; preventing demo rot)
+**Status:** Merged
+
+### Summary
+Added a "Run integration demos" step to `.github/workflows/ci.yml`. Every script-level demo (the `if __name__ == "__main__"` blocks) now runs in CI on every PR, so silent breakage of a demo would fail CI rather than ship.
+
+### Why this matters
+The test suite imports demo modules and exercises their `run()` functions, but it does NOT execute the `__main__` blocks themselves. Bugs that live only in the `__main__` block (sys.path manipulation errors, leftover references to renamed fields) can ship without warning. Pre-emptive verification before adding the step caught one such bug in `consortium/bridges.py`: the `__main__` printer still referenced the old `_warning` key after `trajectory_summary` was refactored to `_note`. Fixed in this commit.
+
+### Demos now exercised in CI (13 scripts)
+- `python physics/substrate_alignment_check.py`
+- `python physics/seven_generation_tracer.py`
+- `python physics/violation_detector.py`
+- `python ledger/verification_tools.py`
+- `python -m consortium.kfc_runtime`
+- `python -m consortium.ontology_layer`
+- `python -m consortium.collaboration_protocol`
+- `python -m consortium.embodied_sensor`
+- `python -m consortium.bridges`
+- `python -m consortium.examples.soil_with_hands`
+- `python -m consortium.examples.cherokee_creation`
+- `python -m consortium.examples.genesis_drift`
+- `python -m examples.full_audit_session`
+
+All demos verified locally before adding to CI. The step uses `set -e` so any non-zero exit fails the job. Output piped to `/dev/null` to keep CI logs clean; failure messages still surface via the exit code.
+
+### Bug fix
+`consortium/bridges.py` `__main__` block: `summary['_warning']` → `summary['_note']` (matched earlier API rename in the function definition).
+
+### Verification
+- `python -m consortium.bridges` now runs cleanly (was failing).
+- 480 tests still passing. 13 log validations still passing.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `claude_md_architecture_layers_2026-04-27T17:00Z`
+**Proposed by:** AI (continuing; making the new architecture legible to future Claude sessions)
+**Status:** Merged
+
+### Summary
+Updated `CLAUDE.md` so future Claude sessions reading the project guide have a complete map of the four new architecture layers. Existing prose preserved verbatim — the original Project Overview, Symbolic System, Trust & Clarity Scoring, the AI partnership framing — all unchanged.
+
+### What was added
+- **Repository Structure tree:** entries for `relational_cognition/`, `consortium/` (with `audit/`, `examples/`, `router/` subdirs), `physics/`, `ledger/`, top-level `examples/`. Test file list updated from 2 to 14 files.
+- **Languages & Technologies:** noted use of `dataclasses`, `abc`, `hashlib`, `pathlib`, `typing` in newer code (still no third-party runtime deps); added JSONL as a format used by append-only logs and ledger; noted `jsonschema` as optional test dependency.
+- **Build / Test / Lint:** test count updated from 25 to 480+; added 13-line block for running each integration demo; CI section now mentions the demo smoke-test step.
+- **New "Audit-Symmetric Code" sub-section under Key Conventions** — names the conventions newer code follows: `__init_subclass__` enforcement, confidence ceilings per epi, `BridgeReport.preserves`/`lossy_on`, coating-risk acknowledgments, side-channel-over-upstream-modification, returns-data-not-judgment, fail-closed defaults.
+- **New "Architecture Layers" section** parallel to "Symbolic System" — 4-row table with one-sentence orientation per folder; quotes the load-bearing claim; notes that `examples/full_audit_session.py` is the cross-layer end-to-end demo.
+- **AI Assistant Guidelines extended** from 8 to 13 items: original 8 preserved verbatim; 5 new items cover the audit-symmetric conventions, cultural sourcing, and the consent-gate-before-adapter-call discipline.
+- **Ecosystem section split** into "original ecosystem" (unchanged), "consumed by consortium/" (Geometric-to-Binary, thermodynamic-accountability, AI-arena), "consumed by physics/" (Symbolic-Defense-Protocol, PhysicsGuard).
+
+### Why this matters for future sessions
+Without this update, a Claude session opening the project would read `CLAUDE.md`, find no mention of any of the four new layers, and might either: (a) miss them entirely, (b) reinvent them, or (c) silently violate audit-symmetric conventions (e.g. modifying `Primitive` directly instead of using a side-channel). The update prevents all three.
+
+### Verification
+- `python -m pytest tests/ -q` still 480 passing.
+- `python validate.py` still 13 passing.
+- No code changed in this commit; only documentation.

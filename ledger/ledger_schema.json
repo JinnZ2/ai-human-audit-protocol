@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/JinnZ2/ai-human-audit-protocol/ledger/ledger_schema.json",
+  "title": "Anchored Ledger Entry",
+  "description": "The envelope schema for the structural-permanence layer. Wraps any JSON payload (RCR entry, blind_spot_log entry, ConsentRecord, change event, etc.) with hash-chain metadata that allows offline verification of integrity. The payload schema is whatever the payload is; this schema validates the envelope around it. See ledger/README.md for layering.",
+  "type": "object",
+  "required": [
+    "envelope_version",
+    "entry_id",
+    "timestamp",
+    "payload_kind",
+    "payload",
+    "payload_hash",
+    "previous_entry_hash",
+    "entry_hash",
+    "hash_algorithm"
+  ],
+  "properties": {
+    "envelope_version": {
+      "type": "string",
+      "description": "Version of the anchored-entry envelope format. v1 = SHA-256 hash, JSON canonicalization via sorted keys + minimal separators.",
+      "enum": ["1.0"]
+    },
+    "entry_id": {
+      "type": "string",
+      "description": "Stable unique identifier for this anchored entry. Suggested: anchor-YYYY-MM-DD-NNN."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of envelope construction."
+    },
+    "payload_kind": {
+      "type": "string",
+      "description": "What kind of payload is anchored. Conventional values: 'rcr', 'blind_spot_log', 'consent_record', 'change_event', 'arbitrary'. Used by readers to dispatch to the correct payload-schema validator.",
+      "examples": ["rcr", "blind_spot_log", "consent_record", "change_event", "arbitrary"]
+    },
+    "payload": {
+      "description": "The anchored payload. Any JSON-serializable structure. The envelope is agnostic to payload structure; it only commits to its hash."
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 hex digest of the canonicalized payload. Canonicalization = json.dumps(payload, sort_keys=True, separators=(',', ':'), ensure_ascii=False)."
+    },
+    "previous_entry_hash": {
+      "type": ["string", "null"],
+      "description": "entry_hash of the prior chain entry, or null for the genesis entry. Forms the hash chain that detects insertion / reordering / deletion.",
+      "oneOf": [
+        {"type": "null"},
+        {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      ]
+    },
+    "entry_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 hex digest of the canonicalized chain-input. Chain-input = {entry_id, timestamp, payload_kind, payload_hash, previous_entry_hash, hash_algorithm, envelope_version} canonicalized as JSON."
+    },
+    "hash_algorithm": {
+      "type": "string",
+      "enum": ["sha256"],
+      "description": "Hash algorithm used. v1 supports sha256 only; future envelope versions may support others."
+    },
+    "anchor_metadata": {
+      "type": "object",
+      "description": "Optional backend-specific anchoring proof. Examples: {'kind': 'ethereum', 'tx_hash': '0x...', 'block_number': 12345}; {'kind': 'ipfs', 'cid': 'Qm...'}; {'kind': 'local_filesystem', 'path': './audit.jsonl', 'line_number': 42}.",
+      "properties": {
+        "kind": {"type": "string"}
+      }
+    },
+    "signatures": {
+      "type": "array",
+      "description": "Optional list of signatures over entry_hash. Backends that support signing (chain-of-custody) populate this; others leave it empty or omit.",
+      "items": {
+        "type": "object",
+        "required": ["signer", "algorithm", "signature"],
+        "properties": {
+          "signer": {"type": "string"},
+          "algorithm": {"type": "string"},
+          "signature": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

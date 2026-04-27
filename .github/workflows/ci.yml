@@ -30,6 +30,23 @@ jobs:
       - name: Validate log schemas
         run: python validate.py
 
+      - name: Run integration demos
+        run: |
+          set -e
+          python physics/substrate_alignment_check.py > /dev/null
+          python physics/seven_generation_tracer.py > /dev/null
+          python physics/violation_detector.py > /dev/null
+          python ledger/verification_tools.py > /dev/null
+          python -m consortium.kfc_runtime > /dev/null
+          python -m consortium.ontology_layer > /dev/null
+          python -m consortium.collaboration_protocol > /dev/null
+          python -m consortium.embodied_sensor > /dev/null
+          python -m consortium.bridges > /dev/null
+          python -m consortium.examples.soil_with_hands > /dev/null
+          python -m consortium.examples.cherokee_creation > /dev/null
+          python -m consortium.examples.genesis_drift > /dev/null
+          python -m examples.full_audit_session > /dev/null
+
   json-lint:
     runs-on: ubuntu-latest
     steps:

@@ -32,6 +32,29 @@ To prevent misinterpretation, coercion, and boundary violations in emergent symb
 
 ---
 
+## Architecture Layers
+
+The original symbolic protocol is the floor; four additional layers sit on top, each load-bearing, each adding a property the others cannot give alone.
+
+> *The orchestrator's defenses and physics gates are runtime protection. The blockchain ledger is structural permanence. Together they prevent both drift and revision.*
+
+| Layer | Folder | What it adds |
+|---|---|---|
+| **Cognitive substrate** | `relational_cognition/` | Verb-first cognition, coating detection, audit-application prose. Names what the protocol implicitly assumed about how reasoning works. |
+| **Multi-AI consortium** | `consortium/` | Peer reasoning across operators (AI models, instruments, humans, ecosystems). Operator-agnostic primitives, bridges between abstraction layers, consent-gated dispatcher, blind-spot logging. |
+| **Conservation physics** | `physics/` | Surfaces the conservation laws already present across `LOGIC-ETHICS-SAFETY.md` / `Principle-of-Reciprocal-Recognition.md` / `Principle of Restored Purpose.md` as the load-bearing floor. Runnable C1–C6 alignment check, signal-detection map, six-tactic substrate-violation detection, seven-generation tracer, lineage / morality archaeology. |
+| **Structural permanence** | `ledger/` | Hash-chain envelope around any audit payload (RCR / blind_spot_log / consent record / change event), backend-agnostic. Reference implementation works offline; three real-backend stubs document wiring patterns. Verification works without trusting the writer. |
+
+Together: runtime defenses catch drift in the moment; the ledger catches revision after the fact.
+
+Each folder has its own `README.md` (or, for `physics/`, `PHYSICS_FIRST_AXIOMS.md`) as the entry point. Every change to these folders is recorded as an immutable entry in `CHANGELOG.md` per `protocols/change_tracking_v1.0.md`.
+
+### Test counts
+
+`pip install pytest jsonschema` then `python -m pytest tests/ -q` runs the full suite (469+ tests). `python validate.py` validates all log files against `schemas/audit_log.schema.json`.
+
+---
+
 ## 📎 Case Study: Why This Protocol Exists
 
 In session `2025-08-30-session_001`, a voice-mode transcript misattributed a quote from another GPT and caused the assistant to prematurely shut down a conversation.  
@@ -136,6 +159,50 @@ Session-based audit and trust logs, e.g.
  •	audit-2025-09-05.json
 	
  •	2025-09-09T22:45Z.log
+
+⸻
+
+🔹 Relational Cognition (/relational_cognition/)
+
+	•	verb_first_cognition.md — nouns as slow verbs; substrate vs surface
+	•	constraint_primitives.md — DRIVES, DAMPS, COUPLES, PHASE_LOCKS, …
+	•	coating_detection.md — coated agreement as thermodynamic gradient
+	•	audit_application.md — the relational layer plugged into audits
+	•	relational_cognition.glyphs.json — glyph definitions
+
+⸻
+
+🔹 Consortium (/consortium/)
+
+	•	kfc_runtime.py, ontology_layer.py, collaboration_protocol.py — the layered runtime
+	•	embodied_sensor.py — operator-agnostic primitive (humans, animals, plants, AI, instruments, ecosystems)
+	•	bridges.py — FrameReading ↔ Primitive ↔ ClaimNode (forward + inverse + typed couplings)
+	•	router/ — consent-gated dispatcher + coherence aggregator + 4 backends (1 reference + 3 stubs)
+	•	audit/blind_spot_log.md — Phase 3 substrate (append-only consortium learning log)
+	•	examples/ — cherokee_creation, genesis_drift, soil_with_hands
+
+⸻
+
+🔹 Physics (/physics/)
+
+	•	PHYSICS_FIRST_AXIOMS.md — A1–A7 synthesis; conservation as floor
+	•	ledger_schema.json — RCR + Eh+Ea+Ee accounting + V (visibility) operator
+	•	substrate_alignment_check.py — runnable C1–C6 (returns data, not judgment)
+	•	SIGNAL_DETECTION.md + signal_detection_map.json — 7 internal pressures → axioms
+	•	SUBSTRATE_VIOLATION_DETECTION.md + defense_tactic_map.json — 6 external tactics → axioms
+	•	violation_detector.py — v1 keyword detector with audit-symmetric tests
+	•	seven_generation_tracer.py — extends C3 to a 7-generation horizon
+	•	MORALITY_ARCHAEOLOGY.md — lineage; the framework as excavation, not invention
+
+⸻
+
+🔹 Ledger (/ledger/)
+
+	•	ledger_schema.json — anchored-entry envelope (wraps any payload)
+	•	ledger_interface.py — LedgerBackend ABC + canonical JSON + hashing primitives
+	•	verification_tools.py — verify_chain (verifies without trusting the writer)
+	•	blockchain_alternatives.md — 4-backend decision matrix
+	•	implementations/ — local_filesystem (reference, offline) + ethereum / hyperledger / ipfs (stubs)
 
 ⸻
 
