@@ -135,3 +135,36 @@ See `consortium/FUTURE_BUILDS.md` (append-only roadmap). P0 priorities:
 - bridge between `FrameReading` ↔ `ClaimNode` ↔ `Primitive`
 - `embodied_sensor.py` primitive
 - `router/query_dispatcher.py` + `model_adapters/`
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `consortium_v1_correctness_fixes_2026-04-27T02:00Z`
+**Proposed by:** AI (Claude) — surfaced as v1 correctness gaps in evaluation
+**Reviewed/consented by:** swarmuser ("Yes let's fix first")
+**Status:** Merged
+
+### Summary
+Two correctness fixes in `consortium/collaboration_protocol.py`, plus framing correction in `consortium/FUTURE_BUILDS.md`.
+
+### Fix 1 — Reversibility ordering
+- Added `REVERSIBILITY_RANK` constant at module level. Numeric scale: `irreversible_if_delayed=5`, `high_reversibility=4`, `medium_reversibility=3`, `low_reversibility=2`, `irreversible=1`, `unknown=0`.
+- `synthesize()` now sorts by `(fraction_support, reversibility_rank)` instead of `(fraction_support, reversibility)` (which sorted strings alphabetically and mis-ranked `medium_reversibility` above `irreversible_if_delayed`).
+- Each ranked action now also carries `reversibility_rank` for transparency.
+- Added `time_critical_actions` list to `synthesize()` output: actions whose `reversibility == "irreversible_if_delayed"` are bubbled up separately because the cost of *inaction* is unrecoverable. Use-or-lose options should not have to compete with safe-to-try options on a single axis.
+
+### Fix 2 — Convergence labeling (was: "trust_signal")
+- Renamed `surface_invariants()` output field from `trust_signal: "high" | "low"` to `convergence: "converged" | "divergent"`.
+- Added `convergence_note` field with explicit explanation: `divergent` does NOT mean "abandon the analysis"; it means "no canonical coupling — the geometry is in the disagreements; read `blind_spots_per_frame` and `productive_disagreements`."
+- Removes the misreading where `"low"` looked like a quality score on the analysis.
+
+### Framing correction — embodied sensor is operator-agnostic
+- `consortium/FUTURE_BUILDS.md` updated to reflect that `embodied_sensor.py` is a primitive for *any* operator producing direct readings — plants, animals, humans, AI vision/audio, instruments, ecosystems — not human sensors only.
+- `EmbodiedReading` proposed schema now includes `operator_type` (human | animal | plant | ai | instrument | ecosystem) and broader `epi` sub-tags (kinesthetic | olfactory | visual | auditory | phenological | behavioral | instrumental | inferred).
+- Audit-symmetry stance is stronger this way: a plant's phenology shift, a wolf's behavior change, a human's hands-in-soil, and an AI's image-classification all pass through identical typing — distinguished only by `epi` and confidence calibration. No operator type is privileged as automatic ground truth.
+- Over-querying-protection gap reframed: every operator type has finite reading capacity (humans tire, plants have phenological windows, instruments have batteries, AI has rate limits). Each needs a budget appropriate to its substrate.
+
+### Verification
+- Demo runs clean. `transmit_traditional_knowledge_now` (irreversible_if_delayed) now correctly ranks first AND surfaces in `time_critical_actions`. Convergence label reads "divergent" with explanatory note.
+- 25 existing tests + 13 log validations still pass.

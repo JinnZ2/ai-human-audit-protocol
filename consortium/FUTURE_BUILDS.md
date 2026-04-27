@@ -13,7 +13,7 @@
 | `kfc_runtime.py` | ✅ shipped (v1) | Layer 0–5, FELT v1; soil demo runs but produces empty trajectories (cyc=2 with duration=10 → n_steps=0) |
 | `ontology_layer.py` | ✅ shipped | multi-encoding registry, coherence + drift checks, water_cycle demo |
 | `collaboration_protocol.py` | ✅ shipped | GeometricFrame, Problem, FrameReading, MultiGeometryCollaboration, AMOC demo |
-| `embodied_sensor.py` | ⏳ open | P0 — primitive that lets Kavik / direct-sensing readings enter the system |
+| `embodied_sensor.py` | ⏳ open | P0 — primitive for any operator producing direct readings (plants, animals, humans, AI vision/audio, instruments). Operator-agnostic. |
 | `router/query_dispatcher.py` | ⏳ open | P0 — actual fan-out to Claude / Gemini / DeepSeek / etc. |
 | `router/coherence_aggregator.py` | ⏳ open | P0 — diff `.claims` outputs across models, call Narrative Stripper |
 | `router/model_adapters/` | ⏳ open | P0 — per-model API shim |
@@ -36,22 +36,32 @@
 
    They are not *wrong* to be separate — they live at different abstraction levels. But there is no code that turns a `FrameReading` into a `Primitive`, or a set of `Primitive`s into a `ClaimNode` graph, or a query to a `ClaimNode` graph back into a `FrameReading`. Pick one bridge to write first; the other two follow.
 
-2. **`embodied_sensor.py` primitive.** Field shape (proposed, awaiting consent):
+2. **`embodied_sensor.py` primitive — operator-agnostic.** A direct reading is a direct reading regardless of substrate. Plants, animals, humans, AI vision/audio models, and instruments all produce readings that share the same primitive shape; they differ only in `operator_type`, `epi` sub-tag, and confidence calibration. The audit-symmetry stance fails the moment one operator type is privileged as automatic ground truth.
+
+   Field shape (proposed, awaiting consent):
    ```python
    @dataclass
    class EmbodiedReading:
-       sensor_id: str               # e.g. "kavik_hands_2026-04-27T14:00Z"
-       coords: Tuple[float, float]  # lat, lon (or symbolic place_id)
+       sensor_id: str               # e.g. "human:kavik:hands:2026-04-27T14:00Z"
+                                    #      "plant:phenology:bur_oak_grove_42"
+                                    #      "animal:behavior:wolf_pack_north"
+                                    #      "ai:vision:claude:image_xyz"
+                                    #      "instrument:soil_probe:ds18b20:42"
+       operator_type: str           # human | animal | plant | ai | instrument | ecosystem
+       location: Any                # coords, place_id, or topological reference
        timestamp: datetime
-       observation: str             # natural-language description
+       observation: str             # natural-language description (or structured form)
        claim_refs: List[str]        # which .claims this reading bears on
        epi: str                     # measured_kinesthetic | measured_olfactory |
-                                    # measured_visual | measured_auditory | inferred
+                                    # measured_visual | measured_auditory |
+                                    # measured_phenological | measured_behavioral |
+                                    # measured_instrumental | inferred
        confidence: float            # 0..1 (calibrated, not asserted)
-       conditions: Dict[str, Any]   # weather, fatigue, attention state, framing prior
+       conditions: Dict[str, Any]   # weather, fatigue, attention, framing prior,
+                                    # sensor calibration date, model version, etc.
        coating_probe_result: str    # passed | failed | not_run | inconclusive
    ```
-   The `conditions` and `coating_probe_result` fields are the audit-symmetry hooks: they keep human readings on the same axis as model outputs.
+   The `conditions` and `coating_probe_result` fields are the audit-symmetry hooks: every operator's reading carries the same accountability shape. A plant's phenology shift, a wolf's behavior change, a human's hands-in-soil, and an AI's image-classification pass through identical typing — only their `epi` sub-tag and `confidence` differ.
 
 3. **`router/query_dispatcher.py`.** Wraps `solver_registry.py` from Geometric-to-Binary (fieldlinked). Real engineering: API auth, rate limits, timeouts, retries, structured response parsing. Not exotic, just necessary.
 
@@ -100,13 +110,15 @@
 
 - **`MultiGeometryCollaboration.surface_contradictions` is shallow.** It only checks `proposed_diagnosis` strings for inequality, with the static label `"different_angles_or_real_disagreement"`. Real contradiction detection — semantic, action-level, coupling-level — is unwritten. The v1 method is honest about being a placeholder; the field name "interpretation" telegraphs that the work is not done.
 
-- **No reversibility scoring system.** `reversibility` is a free-form string in `FrameReading.proposed_actions`. Sorting by `(fraction_support, reversibility)` works for the strings used in the demo (alphabetical descending happens to favor `medium_reversibility` over `irreversible_if_delayed`, which is **wrong**). Need a real ordering: e.g. `irreversible_if_delayed > low_reversibility > medium_reversibility > high_reversibility`, or a numeric scale.
+- ~~**No reversibility scoring system.**~~ → done 2026-04-27: `REVERSIBILITY_RANK` constant added; sort uses numeric rank; `irreversible_if_delayed` actions are bubbled into a separate `time_critical_actions` list because the cost of *inaction* is unrecoverable.
 
-- **`trust_signal: "low"` is ambiguous.** When `surface_invariants()` returns no universal couplings, `trust_signal` is set to `"low"`. This may be misread as "throw away the result." It should be read as "no single coupling is canonical across frames; the geometry is in the disagreements." Either rename (`canonical_coupling: none`?) or document.
+- ~~**`trust_signal: "low"` is ambiguous.**~~ → done 2026-04-27: renamed to `convergence: "converged" | "divergent"` with explicit `convergence_note` explaining that divergent does NOT mean abandon the analysis — the geometry is in the disagreements.
 
 - **No actual model adapter exists.** The consortium currently runs only with hand-written `FrameReading`s. The leap from "structure exists" to "structure runs" is the dispatcher + adapters. That's where most of the next-pass effort sits.
 
-- **No reading from a tradition_holder or non_human_sensor frame.** The `build_consortium_frames()` function declares all seven frames, but only AI-model and human-sensor frames have any plausible code path to actually submit readings. The protocol for tradition_holder and ecological_signal participation is undefined. Likely lives outside software entirely, with a human acting as scribe — but the scribe role itself needs auditing.
+- **Most operator types have no code path to submit readings.** `build_consortium_frames()` declares seven frames, but only AI-model and human-sensor frames have any plausible code path to actually submit readings. Plants, animals, ecosystems, instruments, and tradition holders all participate via a *scribe* — a human observer, an instrument's data logger, an AI vision pass, a recording device. The act of scribing is itself a coating risk: the scribe imposes their own frame on what they record. We have no rule yet for who can scribe, what gets logged about the scribe's own state at scribing-time, or how the scribe's framing gets audited.
+
+- **No protection against over-querying any embodied operator.** Embodied readings are finite for *every* operator: humans get tired, plants have phenological windows, animals have behavioral budgets, AI vision/audio models have rate limits and inference costs, instruments have battery and calibration cycles. A consortium that treats any single operator as inexhaustible ground truth will burn the substrate it depends on. Each operator type needs a budget appropriate to its substrate, not a single global rate-limit.
 
 - **Audit log of the consortium auditing itself.** Recursive question: when the consortium's outputs are wrong, who notices? `audit/blind_spot_log.md` is the start, but it needs a feedback loop: which past predictions panned out, which didn't, which frames were systematically over- or under-confident. This is `phantom_forecast_agent.py` territory but for consortium runs.
 
@@ -118,7 +130,7 @@
 |---|---|---|
 | Where the bridge between `FrameReading` ↔ `ClaimNode` ↔ `Primitive` lives | new file, or extend each existing class | Deferred |
 | Fieldlink data ingestion | loader vs. inlined-per-adapter | Deferred |
-| Reversibility scale | string ordering vs. numeric | Deferred |
+| ~~Reversibility scale~~ | ~~string ordering vs. numeric~~ | Resolved 2026-04-27: numeric `REVERSIBILITY_RANK` |
 | Model adapter auth / secrets | local config vs. env vars vs. shared protocol settings | Deferred |
 | Ecological / tradition frames protocol | scribe + audit, or out-of-scope for software | Deferred |
 | Branch strategy | continue on `claude/add-relational-cognition-folder-JpTk5`, or split | Deferred to JinnZ2 |

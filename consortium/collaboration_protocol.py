@@ -75,6 +75,23 @@ class FrameReading:
 
 
 # ------------------------------------------------------------
+# Reversibility ranking — used by synthesize() to order actions.
+# Under uncertainty, prefer reversible actions first (cheap to try,
+# cheap to undo). "irreversible_if_delayed" is the mirror case:
+# the *option* disappears if you don't act, so the cost of inaction
+# is unrecoverable — these get bubbled up separately as time_critical.
+# ------------------------------------------------------------
+REVERSIBILITY_RANK = {
+    "irreversible_if_delayed": 5,   # use-or-lose; act now or option is gone
+    "high_reversibility":      4,   # safe to try, easy to undo
+    "medium_reversibility":    3,
+    "low_reversibility":       2,   # expensive to undo
+    "irreversible":            1,   # can't undo; only with high certainty
+    "unknown":                 0,   # don't take blind
+}
+
+
+# ------------------------------------------------------------
 # LAYER 3 — the collaboration itself
 # multiple frames reading same problem, surfacing geometry
 # ------------------------------------------------------------
@@ -101,7 +118,19 @@ class MultiGeometryCollaboration:
         return {
             "universal_couplings": sorted(universal_couplings),
             "universal_load_bearing": sorted(universal_load_bearing),
-            "trust_signal": "high" if universal_couplings else "low",
+            # "converged" = at least one coupling is universally visible across
+            #               all frames; treat that coupling as load-bearing.
+            # "divergent" = no single coupling is universally visible. NOT
+            #               "low trust" or "abandon analysis" — the geometry
+            #               lives in the disagreements; read blind_spots and
+            #               productive_disagreements instead.
+            "convergence": "converged" if universal_couplings else "divergent",
+            "convergence_note": (
+                "load-bearing geometry present across all frames"
+                if universal_couplings else
+                "no canonical coupling — geometry is in the disagreements; "
+                "read blind_spots_per_frame and productive_disagreements"
+            ),
         }
 
     def surface_blind_spots(self) -> Dict[str, List[str]]:
@@ -152,9 +181,15 @@ class MultiGeometryCollaboration:
                 all_actions.append({
                     "action": action,
                     "reversibility": reversibility,
+                    "reversibility_rank": REVERSIBILITY_RANK.get(reversibility, 0),
                     "frames_supporting": support,
                     "fraction_support": support / len(self.readings),
                 })
+
+        # actions whose *non-action* is irreversible — bubble these up
+        # regardless of reversibility ranking: these are use-or-lose options
+        time_critical = [a for a in all_actions
+                         if a["reversibility"] == "irreversible_if_delayed"]
 
         return {
             "problem_id": self.problem.problem_id,
@@ -162,9 +197,10 @@ class MultiGeometryCollaboration:
             "invariant_geometry": invariants,
             "blind_spots_per_frame": blind_spots,
             "productive_disagreements": contradictions,
+            "time_critical_actions": time_critical,
             "actions_ranked_by_support_and_reversibility": sorted(
                 all_actions,
-                key=lambda x: (x["fraction_support"], x["reversibility"]),
+                key=lambda x: (x["fraction_support"], x["reversibility_rank"]),
                 reverse=True
             ),
             "epistemic_warning": (
@@ -432,14 +468,22 @@ if __name__ == "__main__":
     print(f"\nINVARIANT GEOMETRY (load-bearing across all frames):")
     print(f"  Universal couplings: {result['invariant_geometry']['universal_couplings']}")
     print(f"  Universal load-bearing: {result['invariant_geometry']['universal_load_bearing']}")
-    print(f"  Trust signal: {result['invariant_geometry']['trust_signal']}")
+    print(f"  Convergence: {result['invariant_geometry']['convergence']}")
+    print(f"  Note: {result['invariant_geometry']['convergence_note']}")
     print(f"\nBLIND SPOTS BY FRAME:")
     for frame, missed in result['blind_spots_per_frame'].items():
         print(f"  [{frame}] missed: {missed}")
     print(f"\nPRODUCTIVE DISAGREEMENTS:")
     for c in result['productive_disagreements']:
         print(f"  {c['frame_a']} ←→ {c['frame_b']}: {c['interpretation']}")
+    print(f"\nTIME-CRITICAL ACTIONS (cost-of-inaction is irreversible):")
+    if result['time_critical_actions']:
+        for a in result['time_critical_actions']:
+            print(f"  {a['fraction_support']:.0%} support | {a['action']}")
+    else:
+        print("  (none)")
     print(f"\nACTIONS RANKED BY SUPPORT + REVERSIBILITY:")
     for a in result['actions_ranked_by_support_and_reversibility'][:5]:
-        print(f"  {a['fraction_support']:.0%} support | {a['reversibility']:20s} | {a['action']}")
+        print(f"  {a['fraction_support']:.0%} support | rank={a['reversibility_rank']} | "
+              f"{a['reversibility']:25s} | {a['action']}")
     print(f"\nEPISTEMIC WARNING: {result['epistemic_warning']}")
