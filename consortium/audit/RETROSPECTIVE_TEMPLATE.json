@@ -1,0 +1,47 @@
+{
+  "_comment_template": "TEMPLATE FILE — not a real retrospective entry. Demonstrates the format a 'retrospective' entry takes when written N generations / months / years after the original 'run' entry, comparing the original recommendation to what actually happened. Replace every `<placeholder>` value with real content. The entry must validate against consortium/audit/blind_spot_log.schema.json before being appended to consortium/audit/blind_spot_log.jsonl.",
+  "_comment_when_to_write": "Write a retrospective entry when: (a) enough time has passed that the recommendation in the referenced run entry has been tested by reality; (b) the outcome is observable; (c) the consortium can honestly compare what was recommended to what happened. There is no fixed retrospect horizon — for some decisions it's 6 months, for others 7 generations. The original run entry's `time_critical_actions` list is one signal of when retrospect is feasible.",
+  "_comment_who_writes": "Whoever has access to both the original run entry and the actual outcome. This may be a different consenter, a different consortium membership, or a future-self of the original consenter. The `consenter` field in this entry should name the retrospect-writer; the original run entry's consenter remains attached to the run entry.",
+
+  "entry_id": "<bs-retrospective-{problem_id}-{iso_timestamp}>",
+  "timestamp": "<ISO 8601 UTC of retrospect-write time>",
+  "problem_id": "<same problem_id as the run entry being retrospected>",
+  "entry_kind": "retrospective",
+
+  "references": {
+    "original_entry_id": "<entry_id of the run entry this retrospects>"
+  },
+
+  "frames_consulted": [
+    "<re-list the frames from the original run, OR the frames the retrospect-writer consulted to evaluate the outcome — be explicit about which>"
+  ],
+  "blind_spots_per_frame": {
+    "<frame_id>": [
+      "<coupling that, in retrospect, this frame missed and that turned out to matter>"
+    ]
+  },
+  "productive_disagreements": [
+    {
+      "frame_a": "<frame_id>",
+      "frame_b": "<frame_id>",
+      "type": "diagnostic",
+      "claim_a": "<the original disagreement, restated>",
+      "claim_b": "<the other side, restated>",
+      "interpretation": "<which frame turned out to be closer to what happened, OR 'both partial' if the disagreement turned out to be a real geometry of the problem>"
+    }
+  ],
+  "convergence": "converged",
+  "coating_probes_run": [
+    {
+      "reading_id": "<frame_id whose reading is being retrospected>",
+      "probe": "<the probe name from the original run, OR 'retrospective_outcome_check' as a synthetic probe-equivalent>",
+      "result": "<passed | failed | inconclusive — based on whether the original reading matches what actually happened>",
+      "notes": "<what the actual outcome showed vs what the original reading predicted>"
+    }
+  ],
+
+  "recommended_action": "<copy the recommended_action from the original run entry verbatim, so this retrospect's reader can compare to actual_outcome>",
+  "actual_outcome": "<honest description of what happened. Must include: which actions were taken; which were not; what the system did in response; how much of the original recommendation panned out; what the original recommendation missed.>",
+
+  "notes": "<retrospect-writer's reflection. Useful content includes: which factors were `hidden_at_decision_time` in the original `seven_generation_tracer` run that turned out to materialize; which frames were systematically over- or under-confident; whether any frame consistently named the issue that turned out to matter and was overruled. This text is the input for the next `calibration_update` entry.>"
+}

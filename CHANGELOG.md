@@ -1063,3 +1063,66 @@ The `commercial_filter_cartridge_v3` example deliberately carries `carrier_conse
 - `python -m knowledge_archaeology.examples.example_deploy_check` runs cleanly; output shows all three demos.
 - `python -m pytest tests/test_knowledge_archaeology.py -v` passes 39 tests.
 - 519 tests passing total (480 + 39 new). 13 log validations passing. CI demo step extended to include the new demo.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `phase3_retrospective_template_and_calibration_aggregator_2026-04-27T19:00Z`
+**Proposed by:** AI (continuing the Phase 3 substrate; both items pre-approved by swarmuser via "yes, yes, yes" pattern)
+**Status:** Merged
+
+### Summary
+Two related additions that close the consortium learning loop:
+1. `consortium/audit/RETROSPECTIVE_TEMPLATE.json` — populated template demonstrating what a `retrospective` blind_spot_log entry looks like, with `<placeholder>` markers and explanatory `_comment_*` fields.
+2. `consortium/audit/calibration_aggregator.py` — reads `blind_spot_log.jsonl`, aggregates per-frame statistics across runs and retrospectives, proposes a `calibration_update` entry. Returns data, not judgment; the consenter decides whether to append the proposal to the log.
+
+### `RETROSPECTIVE_TEMPLATE.json`
+Documents the format with three top-level `_comment_*` explanatory fields (when to write, who writes, what to put in each field). Every value is a `<placeholder>` so future writers cannot mistake the template for a real retrospective. `entry_kind: "retrospective"` and the `references.original_entry_id` link are required (per schema). Includes guidance that retrospective writers may differ from original consenters.
+
+### `calibration_aggregator.py`
+- `FrameStats` dataclass — per-frame statistics. Properties: `blind_spot_rate`, `probe_fail_rate`, `evaluable_probes` (excludes inconclusive/not_run from denominators).
+- `aggregate_log(entries)` — walks run + retrospective entries (calibration_update entries deliberately ignored — they're aggregator output, not input), produces `Dict[frame_id, FrameStats]`.
+- `propose_calibration_drift(stats, current_calibrations, ...)` — applies thresholds (default: blind_spot_rate ≥ 0.7, probe_fail_rate ≥ 0.5, min_consultations ≥ 3, min evaluable_probes ≥ 2 for probe-rate path). Each triggered signal contributes one `delta` (default 0.05) of downward adjustment. Floors at 0.30. Returns proposals dict matching the `frames_calibration_drift` schema field.
+- `build_calibration_update_entry(proposals, n_runs_aggregated, ...)` — assembles a fully-shaped `calibration_update` entry that **validates against `consortium/audit/blind_spot_log.schema.json`**.
+- `aggregate_log_file(log_path)` — end-to-end convenience: reads the .jsonl file, aggregates, proposes, returns a calibration_update entry.
+
+The aggregator does NOT modify the log. It returns a proposed entry. The consenter chooses whether to append it.
+
+### Phase 3 substrate is now in place
+The full feedback loop:
+1. Consortium runs produce `run` entries (existing)
+2. After horizon, retrospect-writers produce `retrospective` entries (template now exists)
+3. Aggregator reads both kinds, proposes `calibration_update` entries
+4. Consenter appends update entries to the log
+5. Future calibration_aggregator runs use the most recent update's calibrations as the prior
+
+The consortium can now learn about itself over time, mechanically, with audit-symmetric guarantees:
+- Statistics are computed over data the log actually contains, not asserted
+- Thresholds are conservative by default (small samples produce no proposals)
+- Per-frame proposals carry `reason` strings naming the specific signal
+- The output is itself an audit entry that goes back into the same log
+
+### `tests/test_calibration_aggregator.py` — 29 tests
+- `FrameStats` properties (4 tests including evaluable-probes-excludes-inconclusive)
+- `aggregate_log`: empty, single run, blind spots, probe results, retrospectives counted, calibration_update entries ignored, multi-run aggregation (7 tests)
+- `propose_calibration_drift`: min-consultations gate, blind-spot-rate trigger, probe-fail-rate trigger, both signals compound, current-calibrations as prior, calibration floor, default prior, min-evaluable-probes gate (8 tests)
+- `build_calibration_update_entry`: required fields, frames_calibration_drift passed through, **validates against blind_spot_log.schema.json**, n_runs in notes (4 tests)
+- `aggregate_log_file`: missing file returns empty proposals + helpful note, real example log processes, threshold-meeting case writes proposal, n_runs counted correctly (4 tests, 1 of which validates the schema)
+- 2 additional sanity tests
+
+### Demo
+`python -m consortium.audit.calibration_aggregator` runs against `example_blind_spot_log.jsonl`. Output: `frames_calibration_drift: {}` because the 3-entry example log doesn't meet the conservative default thresholds. Notes record "v1 calibration update; aggregated over 3 run/retrospective entries". This is correct behavior — small samples should not produce proposals.
+
+### CI
+`.github/workflows/ci.yml` updated: aggregator demo added to the smoke-test list (now 15 demos run on every PR).
+
+### Verification
+- 548 tests passing (519 + 29 new).
+- 13 log validations still passing.
+- CI demo set: 15 scripts (was 14).
+
+### Open / what's left genuinely blocked
+- Real model adapter wiring (still credentials-blocked)
+- Real ledger backend wiring (still infrastructure-blocked)
+- Actual `retrospective` entries (still calendar-blocked — the template is the substrate; populated entries require real runs that have reached their retrospect horizon)
