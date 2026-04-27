@@ -208,3 +208,45 @@ Two correctness fixes in `consortium/collaboration_protocol.py`, plus framing co
 - Tests for `kfc_runtime`, `ontology_layer`, `collaboration_protocol`.
 - Router (`query_dispatcher`, `coherence_aggregator`, `model_adapters`).
 - `OperatorBudget` is a stub. Real per-operator scheduling lives in the router layer.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `consortium_bridges_2026-04-27T04:00Z`
+**Proposed by:** AI (Claude) — continuing the consortium foundation per swarmuser's "Proceed"
+**Status:** Merged
+
+### Summary
+- Added `consortium/bridges.py` — the layer that connects `FrameReading ↔ Primitive ↔ ClaimNode`.
+- Added `tests/test_bridges.py` — 43 unit tests, all passing.
+- Total test count: **100** (25 original + 32 embodied_sensor + 43 bridges).
+
+### Forward direction (complete)
+- `select_frame(epi, frames, override=None)` — route to a consortium frame by epi sub-tag. Override available for callers that know better.
+- `select_frame_for_reading(reading, frames, override=None)` — convenience wrapper.
+- `reading_to_primitives(reading, domain=None)` — `EmbodiedReading` → `List[Primitive]`, one per `claim_ref`. First Primitive carries full observation; subsequent ones back-reference. Domain defaults from `EPI_TO_DOMAIN`.
+- `frame_reading_to_primitives(fr, domain=None)` — `FrameReading` → `List[Primitive]`, one per `visible_coupling`. Domain defaults to the frame's `frame_id`. Form records origin frame for round-trip identification.
+- `primitives_to_claim_graph(primitives, rate_fns=None, cyc=1, ...)` — `List[Primitive]` → `Dict[str, ClaimNode]`. Caller supplies `rate_fns` per concept_id; missing entries get `_zero_rate` (an honest placeholder — the node holds state but doesn't move).
+
+### Inverse direction (v1 stub, honest about being incomplete)
+- `trajectory_summary(trajectory)` — KFC trajectory → coarse summary dict. Per-claim direction, FELT events, **explicit warning that this is NOT a real FrameReading lift**. The honest inverse requires interpreting trajectory shape (saturation, oscillation, regime drift, FELT semantics) and is open work.
+
+### Audit-symmetry mechanism: BridgeReport
+Every bridge function has a corresponding `*_report()` that returns a `BridgeReport(bridge_name, preserves, lossy_on, notes)`. Following the `TransformRule.preserves`/`lossy_on` convention from `ontology_layer.py`. The honest move when crossing abstraction layers is to declare what survives and what doesn't, in code.
+
+`all_bridge_reports()` returns the full list for inspection. A test asserts every bridge declares non-empty `preserves` and `lossy_on`.
+
+### Default mappings (`EPI_TO_FRAME`, `EPI_TO_DOMAIN`)
+- Operator-agnostic: `visual` reads route to `embodied_sensor` regardless of operator (human, AI, instrument). The reading's `operator_type` is captured in `FrameReading.assumptions_required`, not by frame routing.
+- Tests assert every `epi` sub-tag has a default mapping.
+
+### Verification
+- Demo `python consortium/bridges.py` runs the full forward pipeline end-to-end: human kinesthetic + instrument readings → 4 primitives → dedupe to 2 → 2 ClaimNodes → trajectory summary. Bridge reports printed.
+- 100 tests passing, 13 log validations passing.
+
+### Open / next
+- **Inverse bridge: `trajectory → FrameReading`** — interpret trajectory shape, FELT events, regime drift; lift back into a FrameReading suitable for re-injection into `MultiGeometryCollaboration`.
+- **Tests for `kfc_runtime.py`, `ontology_layer.py`, `collaboration_protocol.py`** — the consortium's own modules still need direct unit tests (currently exercised via `bridges.py` and demos only).
+- **Router** (`consortium/router/`): `query_dispatcher.py`, `coherence_aggregator.py`, `model_adapters/`.
+- **Coupling-kind metadata.** Bridge currently treats all couplings as untyped. Per `CLAUDE_REQUIREMENTS.md` the next-generation bridge should preserve coupling kind (causal_forward, bidirectional, etc.) when lifting from `Primitive` to `ClaimNode`.

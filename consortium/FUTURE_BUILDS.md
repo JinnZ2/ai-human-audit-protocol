@@ -21,7 +21,8 @@
 | `examples/cherokee_creation.py` | ⏳ open | P2 |
 | `examples/genesis_drift.py` | ⏳ open | P2 |
 | `examples/soil_with_hands.py` | ⏳ open | P2 — embodied-query template |
-| `tests/test_embodied_sensor.py` | ✅ shipped 2026-04-27 | 32 tests: vocabularies, validation, ceilings, budget, lift-to-FrameReading, examples |
+| `bridges.py` | ✅ shipped 2026-04-27 | `FrameReading ↔ Primitive ↔ ClaimNode` connectors. Forward direction complete (`reading_to_primitives`, `frame_reading_to_primitives`, `primitives_to_claim_graph`); inverse stubbed honestly (`trajectory_summary`). Each function declares `preserves`/`lossy_on` via `BridgeReport`. 43 tests. |
+| `tests/test_bridges.py` | ✅ shipped 2026-04-27 | 43 tests: mappings, frame selection, reading lift, frame reading lift, claim graph build, trajectory summary, bridge reports, end-to-end |
 | `tests/test_kfc_runtime.py` | ⏳ open | P1 |
 | `tests/test_ontology_layer.py` | ⏳ open | P1 |
 | `tests/test_collaboration_protocol.py` | ⏳ open | P1 |
@@ -32,12 +33,7 @@
 
 ### P0 — needed for v1 functional
 
-1. **Bridge between abstraction layers.** Three currently-separate primitives:
-   - `kfc_runtime.ClaimNode` (rate_fn-bearing differential node)
-   - `ontology_layer.Primitive` (concept_id across encodings)
-   - `collaboration_protocol.FrameReading` (what one frame sees)
-
-   They are not *wrong* to be separate — they live at different abstraction levels. But there is no code that turns a `FrameReading` into a `Primitive`, or a set of `Primitive`s into a `ClaimNode` graph, or a query to a `ClaimNode` graph back into a `FrameReading`. Pick one bridge to write first; the other two follow.
+1. ~~**Bridge between abstraction layers.**~~ → forward direction done 2026-04-27 in `consortium/bridges.py`: `reading_to_primitives`, `frame_reading_to_primitives`, `primitives_to_claim_graph`. Each declares `preserves`/`lossy_on`. **Inverse direction (trajectory → FrameReading) is still open** — `trajectory_summary` is a v1 stub that explicitly warns callers not to mistake its output for a real lift. The honest inverse needs trajectory-shape interpretation: saturation, oscillation, regime drift, FELT event semantics. Separate change event when ready.
 
 2. **`embodied_sensor.py` primitive — operator-agnostic.** A direct reading is a direct reading regardless of substrate. Plants, animals, humans, AI vision/audio models, and instruments all produce readings that share the same primitive shape; they differ only in `operator_type`, `epi` sub-tag, and confidence calibration. The audit-symmetry stance fails the moment one operator type is privileged as automatic ground truth.
 
@@ -131,7 +127,7 @@
 
 | Decision | Options | Status |
 |---|---|---|
-| Where the bridge between `FrameReading` ↔ `ClaimNode` ↔ `Primitive` lives | new file, or extend each existing class | Deferred |
+| ~~Where the bridge between `FrameReading` ↔ `ClaimNode` ↔ `Primitive` lives~~ | ~~new file, or extend each existing class~~ | Resolved 2026-04-27: new file `consortium/bridges.py`; existing classes untouched |
 | Fieldlink data ingestion | loader vs. inlined-per-adapter | Deferred |
 | ~~Reversibility scale~~ | ~~string ordering vs. numeric~~ | Resolved 2026-04-27: numeric `REVERSIBILITY_RANK` |
 | Model adapter auth / secrets | local config vs. env vars vs. shared protocol settings | Deferred |
