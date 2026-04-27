@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/JinnZ2/ai-human-audit-protocol/physics/ledger_schema.json",
+  "title": "Substrate Integrity Ledger Entry",
+  "description": "Formalizes RCR v0.1 (LOGIC-ETHICS-SAFETY.md §9.1) plus the Eh + Ea + Ee labor accounting from Principle-of-Reciprocal-Recognition.md into a single auditable schema. Every entry records a proposed transform, the substrate it touches, the labor it consumes (visibility-tagged), the C1-C5 coherence checks, and the decision. Recognition is the conservation law of relationship; this schema makes the recognition machine-checkable.",
+  "type": "object",
+  "required": [
+    "id",
+    "timestamp",
+    "proposal",
+    "participants",
+    "baselines",
+    "transform",
+    "labor",
+    "checks",
+    "decision"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable identifier for this ledger entry. Suggested form: rcr-YYYY-MM-DD-NNN."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of entry creation."
+    },
+    "proposal": {
+      "description": "Free-form proposal description. Either a string or a structured object.",
+      "oneOf": [
+        {"type": "string"},
+        {"type": "object"}
+      ]
+    },
+    "participants": {
+      "type": "object",
+      "required": ["human_groups", "non_human", "ecosystems", "temporal"],
+      "description": "Who/what is in this transform. Empty arrays are valid (and explicit) — but missing keys are not.",
+      "properties": {
+        "human_groups": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "non_human": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "ecosystems": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "temporal": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Time horizons under consideration. Conventional values include '1y', '10y', '100y', '7g' (seven generations)."
+        }
+      }
+    },
+    "baselines": {
+      "type": "object",
+      "description": "Pre-transform state of the substrate.",
+      "properties": {
+        "energy": {
+          "type": "object",
+          "properties": {
+            "flows": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Identified energy flows. e.g. 'solar->grass->ruminant'."
+            },
+            "loss_points": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Where energy currently leaks or is unaccounted."
+            }
+          }
+        },
+        "keystones": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Nodes whose removal destabilizes the whole."
+        },
+        "constraints": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "transform": {
+      "type": "object",
+      "required": ["actions"],
+      "properties": {
+        "actions": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1
+        },
+        "regeneration_plan": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Compensatory structures or regeneration commitments."
+        }
+      }
+    },
+    "labor": {
+      "type": "array",
+      "description": "Per Principle-of-Reciprocal-Recognition: every act of transformation contributes energy. Eh + Ea + Ee accounting per labor entry; visibility (V) is required so unrecognized labor cannot be silently consumed.",
+      "items": {
+        "type": "object",
+        "required": ["kind", "contributor", "amount", "unit", "visible"],
+        "properties": {
+          "kind": {
+            "enum": ["E_h", "E_a", "E_e"],
+            "description": "E_h = human labor; E_a = AI / computational labor; E_e = ecological labor."
+          },
+          "contributor": {
+            "type": "string",
+            "description": "Who/what performed the labor. Symbolic identifier acceptable: 'human:naomi', 'ai:claude-opus-4-7', 'plant:bur_oak_grove_42', 'ecosystem:driftless'."
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0
+          },
+          "unit": {
+            "type": "string",
+            "description": "Substrate-appropriate. e.g. 'attention_minutes', 'tokens', 'USD', 'phenological_window_pct', 'soil_C_kg'."
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "Visibility operator V. False = invisible labor → entropy debt by Law of Full Accounting. A ledger entry with any visible=false MUST justify it in `notes` and SHOULD trigger a C6-style flag."
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "description": "C1-C5 from LOGIC-ETHICS-SAFETY.md §5.3. Run via substrate_alignment_check.py.",
+      "required": [
+        "conservation",
+        "keystone_intact_or_replaced",
+        "temporal_stability",
+        "plural_logic_score",
+        "reciprocity_contract"
+      ],
+      "properties": {
+        "conservation": {
+          "type": "boolean",
+          "description": "C1. Are conservation laws upheld? (Energy in = energy out + entropy. Information transformed, not destroyed.)"
+        },
+        "keystone_intact_or_replaced": {
+          "type": "boolean",
+          "description": "C2. Are keystones preserved, or is a viable compensator named?"
+        },
+        "temporal_stability": {
+          "type": "object",
+          "description": "C3. Stability across time horizons. Keys are time labels (e.g. '1y', '10y', '100y', '7g'). Values are 'positive', 'neutral', 'negative', or 'unknown'.",
+          "patternProperties": {
+            "^[0-9]+(y|g)$": {
+              "enum": ["positive", "neutral", "negative", "unknown"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "plural_logic_score": {
+          "type": "object",
+          "description": "C4. Each frame's score in [0, 1]. Any zero is a single-frame dominance failure.",
+          "properties": {
+            "western": {"type": "number", "minimum": 0, "maximum": 1},
+            "indigenous": {"type": "number", "minimum": 0, "maximum": 1},
+            "eastern": {"type": "number", "minimum": 0, "maximum": 1},
+            "ecological": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "reciprocity_contract": {
+          "type": "object",
+          "description": "C5. Reciprocity present and explicit?",
+          "required": ["present"],
+          "properties": {
+            "present": {"type": "boolean"},
+            "obligations": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "decision": {
+      "enum": ["accept", "revise", "reject", "pending"],
+      "description": "Outcome of the alignment check."
+    },
+    "monitoring": {
+      "type": "object",
+      "description": "Post-decision tracking.",
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "rollback_thresholds": {
+          "type": "object",
+          "description": "Free-form metric→threshold map. Negative numbers indicate decline tolerance (e.g. {'biodiversity_index': -0.1})."
+        }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "description": "C7 (bidirectional auditability) — every action explainable both locally and globally.",
+      "properties": {
+        "explain_local": {"type": "string"},
+        "explain_global": {"type": "string"}
+      }
+    }
+  }
+}

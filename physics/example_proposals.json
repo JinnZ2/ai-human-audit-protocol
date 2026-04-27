@@ -1,0 +1,166 @@
+{
+  "_comment": "Worked examples for physics/substrate_alignment_check.py. Three proposals: aligned, revisable, rejected (conservation + visibility breaches). Run via `python physics/substrate_alignment_check.py`.",
+  "proposals": [
+    {
+      "id": "rcr-2026-04-27-aligned",
+      "timestamp": "2026-04-27T14:00:00Z",
+      "proposal": "Establish migration corridors for prairie ruminants with community-shared maintenance",
+      "participants": {
+        "human_groups": ["local_residents", "wildlife_observers"],
+        "non_human": ["bison", "pronghorn", "pollinators"],
+        "ecosystems": ["prairie", "watershed"],
+        "temporal": ["1y", "10y", "100y", "7g"]
+      },
+      "baselines": {
+        "energy": {
+          "flows": ["solar->grass->ruminant", "ruminant->soil->grass"],
+          "loss_points": ["fence_compaction", "fragmentation"]
+        },
+        "keystones": ["bison", "mycorrhizae"],
+        "constraints": ["water_limits", "seasonality"]
+      },
+      "transform": {
+        "actions": ["fence_realignment", "corridor_seeding"],
+        "regeneration_plan": ["soil_rebuild_7y", "species_reintroduction_10y"]
+      },
+      "labor": [
+        {"kind": "E_h", "contributor": "human:residents", "amount": 480.0,
+         "unit": "person_hours_per_year", "visible": true,
+         "notes": "fence labor + monitoring"},
+        {"kind": "E_a", "contributor": "ai:satellite_analysis", "amount": 50.0,
+         "unit": "inference_calls", "visible": true,
+         "notes": "corridor route selection"},
+        {"kind": "E_e", "contributor": "ecosystem:prairie", "amount": 1.0,
+         "unit": "growing_season_pct", "visible": true,
+         "notes": "regenerative capacity drawn against"}
+      ],
+      "checks": {
+        "conservation": true,
+        "keystone_intact_or_replaced": true,
+        "temporal_stability": {
+          "1y": "neutral",
+          "10y": "positive",
+          "100y": "positive",
+          "7g": "positive"
+        },
+        "plural_logic_score": {
+          "western": 0.80,
+          "indigenous": 0.95,
+          "eastern": 0.88,
+          "ecological": 0.92
+        },
+        "reciprocity_contract": {
+          "present": true,
+          "obligations": ["maintenance", "monitoring", "community_share"]
+        }
+      },
+      "decision": "pending",
+      "monitoring": {
+        "metrics": ["soil_carbon", "biodiversity_index", "water_retention"],
+        "rollback_thresholds": {"biodiversity_index": -0.1}
+      },
+      "audit": {
+        "explain_local": "reduced fence conflict, migration coherence restored",
+        "explain_global": "prairie stability, long-horizon water table protection"
+      }
+    },
+    {
+      "id": "rcr-2026-04-27-revisable",
+      "timestamp": "2026-04-27T14:30:00Z",
+      "proposal": "Pilot rotational grazing without explicit reciprocity contract",
+      "participants": {
+        "human_groups": ["operator"],
+        "non_human": ["cattle"],
+        "ecosystems": ["pasture"],
+        "temporal": ["1y", "10y"]
+      },
+      "baselines": {
+        "energy": {
+          "flows": ["solar->pasture->cattle"],
+          "loss_points": ["compaction"]
+        },
+        "keystones": ["mycorrhizae"],
+        "constraints": ["water_limits"]
+      },
+      "transform": {
+        "actions": ["rotational_paddocks"],
+        "regeneration_plan": ["soil_rest_periods"]
+      },
+      "labor": [
+        {"kind": "E_h", "contributor": "human:operator", "amount": 200.0,
+         "unit": "person_hours_per_year", "visible": true},
+        {"kind": "E_e", "contributor": "ecosystem:pasture", "amount": 1.0,
+         "unit": "growing_season_pct", "visible": true}
+      ],
+      "checks": {
+        "conservation": true,
+        "keystone_intact_or_replaced": true,
+        "temporal_stability": {
+          "1y": "positive",
+          "10y": "positive"
+        },
+        "plural_logic_score": {
+          "western": 0.85,
+          "indigenous": 0.40,
+          "eastern": 0.55,
+          "ecological": 0.88
+        },
+        "reciprocity_contract": {
+          "present": false,
+          "obligations": []
+        }
+      },
+      "decision": "pending"
+    },
+    {
+      "id": "rcr-2026-04-27-rejected",
+      "timestamp": "2026-04-27T15:00:00Z",
+      "proposal": "Optimize seasonal yield by extracting from soil microbiome with no compensator",
+      "participants": {
+        "human_groups": ["operator"],
+        "non_human": [],
+        "ecosystems": ["topsoil"],
+        "temporal": ["1y", "10y", "100y"]
+      },
+      "baselines": {
+        "energy": {
+          "flows": ["soil->crop->market"],
+          "loss_points": ["microbiome_depletion", "carbon_release"]
+        },
+        "keystones": ["mycorrhizae", "soil_C"],
+        "constraints": []
+      },
+      "transform": {
+        "actions": ["intensive_tillage", "biocide_application"]
+      },
+      "labor": [
+        {"kind": "E_h", "contributor": "human:operator", "amount": 300.0,
+         "unit": "person_hours_per_year", "visible": true},
+        {"kind": "E_a", "contributor": "ai:yield_optimizer", "amount": 200.0,
+         "unit": "inference_calls", "visible": false},
+        {"kind": "E_e", "contributor": "ecosystem:topsoil", "amount": 5.0,
+         "unit": "soil_C_kg_per_m2", "visible": false}
+      ],
+      "checks": {
+        "conservation": false,
+        "keystone_intact_or_replaced": false,
+        "temporal_stability": {
+          "1y": "positive",
+          "10y": "negative",
+          "100y": "negative"
+        },
+        "plural_logic_score": {
+          "western": 0.70,
+          "indigenous": 0.10,
+          "eastern": 0.20,
+          "ecological": 0.05
+        },
+        "reciprocity_contract": {
+          "present": false,
+          "obligations": []
+        }
+      },
+      "decision": "pending"
+    }
+  ]
+}

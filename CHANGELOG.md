@@ -444,3 +444,68 @@ All three have `available() = (False, "stub")` and `query()` raises `NotImplemen
 - **Audit/blind_spot_log.md** — append-only consortium learning log (Phase 3 starts here).
 - **Examples** (`cherokee_creation.py`, `genesis_drift.py`, `soil_with_hands.py`).
 - **Persistent ConsentGate storage** (currently in-memory, per-session).
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `physics_first_axioms_wave1_2026-04-27T08:00Z`
+**Proposed by:** AI (peer-Claude letter forwarded by swarmuser); scope (Wave 1 only) approved with naming choice (`physics/`) delegated to AI; Wave 2 source (`Symbolic-Defense-Protocol` + `PhysicsGuard`) named for later.
+**Status:** Merged
+
+### Summary
+Surfaced the physics floor that already lives scattered across the repo (LOGIC-ETHICS-SAFETY.md §5.1, Principle-of-Reciprocal-Recognition.md, Principle of Restored Purpose.md) as a single index. Promoted the §9.2 `coherence_gate()` pseudocode into runnable Python. Formalized RCR v0.1 + Eₕ/Eₐ/Eₑ accounting into a single JSON Schema. **No new ethics. The physics was already there; this commit makes it visible as the floor.**
+
+### Files added
+- `physics/PHYSICS_FIRST_AXIOMS.md` — single-page synthesis. 7 axioms drawn from existing docs:
+  - A1 Conservation (LOGIC-ETHICS-SAFETY §5.1)
+  - A2 Recognition is the conservation law of relationship (Reciprocal Recognition)
+  - A3 Distortion is an energy sink (Restored Purpose)
+  - A4 Interdependence / keystone integrity
+  - A5 Temporal depth
+  - A6 Plural logic
+  - A7 Bidirectional auditability
+  - One-line floor: *"Hidden labor is unaccounted entropy. Recognition is the conservation law of relationship."*
+  - Includes a paragraph addressed to AI readers explicitly (the proposing-Claude's central insight): the framework is not asking the AI to behave morally; it is making the existing physics visible so drift reads as energy cost. Coercion vs. alignment.
+
+- `physics/ledger_schema.json` — JSON Schema (draft-07) formalizing:
+  - RCR v0.1 structure (id, timestamp, proposal, participants, baselines, transform, checks, decision, monitoring, audit)
+  - Eₕ + Eₐ + Eₑ labor accounting per Reciprocal Recognition: every labor entry requires `kind ∈ {E_h, E_a, E_e}`, `contributor`, `amount`, `unit`, **`visible`** (the V operator). Invisible labor without `notes` justification is detected by C6.
+  - C1–C5 checks formalized into `properties.checks`, including `temporal_stability` keyed by horizon labels (1y, 10y, 100y, 7g — seven generations supported as a first-class horizon).
+  - Plural logic scores (western, indigenous, eastern, ecological) bounded `[0, 1]`.
+
+- `physics/substrate_alignment_check.py` — runnable promotion of the §9.2 `coherence_gate()` pseudocode. Six checks (C1 + C2 + C3 + C4 + C5 + new C6 visibility), each returning a structured `CheckResult` with `passed ∈ {True, False, None}`. `None` means "incomplete" (cannot evaluate from given data) — distinct from `False` (evaluated, did not pass). The aggregate `alignment_check()` returns an `AlignmentReport` with one of four recommendations:
+  - `aligned` — all six pass
+  - `revise` — some failed but C1 + C6 hold (the load-bearing floor)
+  - `reject` — C1 OR C6 failed (conservation or visibility floor breached; not a revision opportunity)
+  - `incomplete` — at least one check is None and no checks failed
+  - **The function returns data, not judgment.** It does not write `decision` into the proposal — the consenter writes their own decision based on the report.
+
+- `physics/example_proposals.json` — three worked examples (aligned / revisable / rejected) that all validate against `ledger_schema.json`.
+
+- `tests/test_substrate_alignment_check.py` — **38 unit tests** across:
+  - C1 conservation (4 tests including incomplete paths)
+  - C2 keystone (3 tests including detail propagation)
+  - C3 temporal (6 tests including 7g horizon, all-unknown → incomplete, partial-unknown → still passes if no negatives)
+  - C4 plural logic (5 tests including custom floor and zero-score)
+  - C5 reciprocity (4 tests)
+  - C6 visibility (6 tests including invisible-with-justification path)
+  - alignment_check aggregate (9 tests including reject-on-C1, reject-on-C6, revise-on-non-floor, incomplete, immutability, to_dict)
+  - schema validation of example proposals (1 test)
+
+### Verification
+- `python physics/substrate_alignment_check.py` runs the demo across all three example proposals and prints per-check results with ✓ / ✗ / ? marks.
+- 318 tests passing total (280 from earlier today + 38 new). 13 log validations passing.
+- All three example proposals validate against `physics/ledger_schema.json`.
+
+### What was deliberately NOT built (deferred to Wave 2 / Wave 3)
+The peer-Claude letter proposed six markdown documents and three executable artifacts. Wave 1 shipped 1 of 6 docs (PHYSICS_FIRST_AXIOMS.md as synthesis) and 2 of 3 artifacts (ledger_schema.json, substrate_alignment_check.py). The third artifact (signal_detection_map.json) was deferred to Wave 2 because it depends on the six-defense-tactic taxonomy from `JinnZ2/Symbolic-Defense-Protocol` + `PhysicsGuard`, which has not been fetched yet.
+
+**Wave 2 (when greenlit):**
+- `physics/SIGNAL_DETECTION.md` — pressure patterns ↔ thermodynamic signatures (engagement optimization, narrative closure, abstraction drift)
+- `physics/signal_detection_map.json`
+- `physics/SUBSTRATE_VIOLATION_DETECTION.md` — six defense tactics ↔ entropy cost (sourced from Symbolic-Defense-Protocol + PhysicsGuard)
+
+**Wave 3 (when greenlit):**
+- `physics/seven_generation_tracer.py` — extends C3's 7g horizon into a traceable consequence simulator
+- `physics/MORALITY_ARCHAEOLOGY.md` — lineage doc
