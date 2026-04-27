@@ -69,3 +69,40 @@ The audit protocol already assumed a relational, verb-first cognitive substrate 
 - 🚪 REL:THRESH — Threshold
 - 〰️ REL:PHASE — Phase Relation
 - ↯ REL:DISRUPT — Disruption
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `consortium_foundation_2026-04-27T00:00Z`
+**Proposed by:** swarmuser (KFC + ontology architecture authored by JinnZ2)
+**Drafted by:** AI (Claude) — file placement, README, fieldlink wiring only
+**Status:** Merged
+
+### Summary
+- Added `consortium/` as a peer folder to `relational_cognition/`, `scrolls/`, `protocols/`. Multi-AI peer reasoning with embodied-sensor ground-truth, scored on the same audit axis as humans.
+- Files: `README.md`, `kfc_runtime.py`, `ontology_layer.py`, `CLAUDE_REQUIREMENTS.md`.
+- Extended `.fieldlink.json` with three new entries: `Geometric-to-Binary-Computational-Bridge` (claims/obs/sensor/solver-registry source), `thermodynamic-accountability-framework` (Energy Accountant, Narrative Stripper = coating detection formalized, friction scoring), and `AI-arena` (LOGOS bounded-claim grammar and oracle-grounding pattern only — adversarial trust-decay mechanic explicitly excluded).
+- Consortium is built **inside** the audit protocol on purpose: inherits trust/clarity scoring, change tracking, immutable logs, dual consent, and the `relational_cognition/` substrate by construction. Cannot drift away from the ethics floor.
+
+### Clarification
+The `relational_cognition/` folder added earlier today is the prose statement of what `consortium/` formalizes in code:
+- `verb_first_cognition.md` ↔ `ClaimNode.rate_fn` (verbs as primary)
+- `constraint_primitives.md` ↔ `coupling.kind` enum (DRIVES, COUPLES, etc. as typed couplings)
+- `coating_detection.md` ↔ Narrative Stripper (fieldlinked from thermodynamic-accountability)
+- `audit_application.md` ↔ `query_signature` self-audit channel
+
+KFC (Kin-Flow Compute) and the multi-encoding ontology layer were authored by JinnZ2 and committed verbatim. Claude's contribution was limited to file placement, README framing, fieldlink wiring, and CHANGELOG entry. No `ClaimNode`/`Primitive` field was silently extended; the requirements doc names the future shape, but the baseline runtime ships as authored.
+
+### Audit symmetry
+Every `epi` tag (`measured | inferred | assumed | contradicted | missing`) applies equally to human readings and model outputs. Ground truth is a label that has to be earned per-reading, not a property of the source. Trust does not decay on being wrong — it decays on coating, on refusing to declare a frame, and on producing claims that cannot be checked.
+
+### License note
+`consortium/` contents are CC0 (per file header). The audit protocol around it remains MIT.
+
+### Open / next build steps
+- `consortium/embodied_sensor.py` — `epi` sub-tags + `coating_probe_result` field
+- `consortium/router/` — query_dispatcher, coherence_aggregator, model_adapters
+- `consortium/audit/blind_spot_log.md`
+- `consortium/examples/` — cherokee_creation, genesis_drift, soil_with_hands
+- KFC v2 per `CLAUDE_REQUIREMENTS.md` (ClaimNode epi/regime/coupling-kind extensions, query_signature, recalibration_event) — separate change event, separate consent
