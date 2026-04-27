@@ -308,3 +308,66 @@ Every public function and dataclass in the consortium now has at least one test.
 - **Inverse bridge** (`trajectory → FrameReading`) — next P0.
 - **Router** (`query_dispatcher`, `coherence_aggregator`, `model_adapters`) — biggest remaining engineering lift.
 - **Coupling-kind metadata** in bridges — preserve `coupling.kind` per `CLAUDE_REQUIREMENTS.md`.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `consortium_inverse_bridge_2026-04-27T06:00Z`
+**Proposed by:** AI (Claude) — recommended sequence accepted by swarmuser
+**Status:** Merged
+
+### Summary
+Added the inverse bridge: `trajectory → FrameReading`. Plus tests and a refined `trajectory_summary`.
+
+- `consortium/bridges.py` extended with:
+  - `TRAJECTORY_SHAPES` controlled vocabulary
+  - `classify_trajectory(series)` — coarse shape classifier
+  - `_compute_load_bearing` / `_synthesize_diagnosis` / `_derive_confidence` helpers
+  - `trajectory_to_frame_reading(trajectory, frame, problem_id, ...)` — full inverse lift
+  - `trajectory_to_frame_reading_report()` — declares preserves/lossy_on with explicit coating-risk note
+  - `all_bridge_reports()` updated to include the inverse
+  - `trajectory_summary` refactored: now points callers at `trajectory_to_frame_reading` for full lift; renamed `_warning` field to `_note`
+- `tests/test_bridges.py` extended with **38 new tests** across:
+  - `classify_trajectory` (11 tests including all shape categories + edge cases)
+  - `_compute_load_bearing` (4 tests)
+  - `_synthesize_diagnosis` (5 tests)
+  - `_derive_confidence` (6 tests)
+  - `trajectory_to_frame_reading` (10 tests including round-trip into `MultiGeometryCollaboration`)
+  - 2 reports tests updated for the fifth bridge
+
+### Trajectory shape categories
+```
+no_steps                # empty
+single_point            # len=1
+stable                  # range below epsilon
+monotonic_increase      # all deltas positive (within epsilon)
+monotonic_decrease      # all deltas negative
+saturating_increase     # monotonic with deltas magnitude declining
+saturating_decrease
+accelerating_increase   # monotonic with deltas magnitude growing
+accelerating_decrease
+oscillating             # multiple sign changes in deltas
+mixed                   # neither monotonic nor oscillating-enough
+```
+
+### Coating-risk acknowledgment
+Classification is itself a frame imposed on raw numbers. A stable series and an oscillation faster than the sampling rate are indistinguishable; saturation vs. monotonic-with-noise depends on a heuristic threshold. The `trajectory_to_frame_reading` function flags this in two ways:
+1. The resulting `FrameReading.assumptions_required` carries `trajectory_classification=heuristic_v1` so downstream readers know it is a heuristic.
+2. The `BridgeReport` notes explicitly: *"each shape category is itself a frame imposed on raw numbers — classification is a coating risk by construction. Caller should run a coating probe on the resulting FrameReading before treating it as ground truth."*
+
+A test asserts the report carries the coating-risk language. A future regression that hides this acknowledgment will fail the test.
+
+### Round-trip property tested
+`test_round_trip_lift_into_collaboration` constructs two trajectories, lifts each into a `FrameReading`, adds both to a `MultiGeometryCollaboration`, calls `synthesize()`, and asserts no error. The inverse bridge produces FrameReadings that the collaboration layer accepts without modification.
+
+### Confidence is heuristic, not calibrated
+`_derive_confidence` is bounded `[0.30, 0.85]`. FELT events lower it (`-0.10` per event, floor 0.30); ambiguous shapes lower it further. **Not calibrated.** Callers must treat as a starting prior, not a calibrated value. Documented in the function's docstring and in the BridgeReport.
+
+### Verification
+- 235 tests passing (197 from earlier today + 38 new). 13 log validations passing.
+- Round-trip into `MultiGeometryCollaboration.synthesize()` succeeds.
+
+### Open / next P0
+- **Router** (`consortium/router/`) — biggest remaining engineering lift. `query_dispatcher`, `coherence_aggregator`, `model_adapters/{base,claude,gemini,deepseek}`. API auth, rate limits, structured response parsing, consent gate before fan-out.
+- **Coupling-kind metadata** in `primitives_to_claim_graph` — preserve `coupling.kind` per `CLAUDE_REQUIREMENTS.md`.
