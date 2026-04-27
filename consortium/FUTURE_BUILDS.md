@@ -13,7 +13,7 @@
 | `kfc_runtime.py` | ✅ shipped (v1) | Layer 0–5, FELT v1; soil demo runs but produces empty trajectories (cyc=2 with duration=10 → n_steps=0) |
 | `ontology_layer.py` | ✅ shipped | multi-encoding registry, coherence + drift checks, water_cycle demo |
 | `collaboration_protocol.py` | ✅ shipped | GeometricFrame, Problem, FrameReading, MultiGeometryCollaboration, AMOC demo |
-| `embodied_sensor.py` | ⏳ open | P0 — primitive for any operator producing direct readings (plants, animals, humans, AI vision/audio, instruments). Operator-agnostic. |
+| `embodied_sensor.py` | ✅ shipped 2026-04-27 | operator-agnostic primitive (human/animal/plant/ai/instrument/ecosystem); `EmbodiedReading` with controlled vocabularies, confidence ceilings per `epi`, `CoatingProbeResult`, `OperatorBudget` stub, lift-to-`FrameReading`. 32 unit tests passing. |
 | `router/query_dispatcher.py` | ⏳ open | P0 — actual fan-out to Claude / Gemini / DeepSeek / etc. |
 | `router/coherence_aggregator.py` | ⏳ open | P0 — diff `.claims` outputs across models, call Narrative Stripper |
 | `router/model_adapters/` | ⏳ open | P0 — per-model API shim |
@@ -21,7 +21,10 @@
 | `examples/cherokee_creation.py` | ⏳ open | P2 |
 | `examples/genesis_drift.py` | ⏳ open | P2 |
 | `examples/soil_with_hands.py` | ⏳ open | P2 — embodied-query template |
-| `tests/` (consortium) | ⏳ open | P1 — unit tests for kfc / ontology / collaboration |
+| `tests/test_embodied_sensor.py` | ✅ shipped 2026-04-27 | 32 tests: vocabularies, validation, ceilings, budget, lift-to-FrameReading, examples |
+| `tests/test_kfc_runtime.py` | ⏳ open | P1 |
+| `tests/test_ontology_layer.py` | ⏳ open | P1 |
+| `tests/test_collaboration_protocol.py` | ⏳ open | P1 |
 
 ---
 

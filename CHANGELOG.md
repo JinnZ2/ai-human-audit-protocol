@@ -168,3 +168,43 @@ Two correctness fixes in `consortium/collaboration_protocol.py`, plus framing co
 ### Verification
 - Demo runs clean. `transmit_traditional_knowledge_now` (irreversible_if_delayed) now correctly ranks first AND surfaces in `time_critical_actions`. Convergence label reads "divergent" with explanatory note.
 - 25 existing tests + 13 log validations still pass.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `consortium_embodied_sensor_2026-04-27T03:00Z`
+**Proposed by:** AI (Claude) — judgment call invited by swarmuser ("I trust your judgment above mine on that choice")
+**Reasoning shared with swarmuser:** embodied-sensor first (over bridge-layer first) because it (a) honors the operator-agnostic framing correction in code, (b) gives the bridge two concrete `FrameReading` sources to design against — handwritten + programmatically lifted — and (c) validates the operator-agnostic claim by force.
+**Status:** Merged
+
+### Summary
+- Added `consortium/embodied_sensor.py` — operator-agnostic primitive for direct readings.
+- Added `tests/test_embodied_sensor.py` — 32 unit tests, all passing.
+
+### What `embodied_sensor.py` provides
+- `OPERATOR_TYPES` — controlled vocabulary: `{human, animal, plant, ai, instrument, ecosystem}`.
+- `EPI_SUBTAGS` — direct-measurement kinds: `kinesthetic, olfactory, visual, auditory, phenological, behavioral, presence_absence, instrumental, compound, inferred, asserted`.
+- `EPI_CONFIDENCE_CEILING` — per-epi ceiling. `asserted` capped at 0.50 because un-grounded claims cannot honestly claim high confidence; the ceiling enforces the audit-symmetry stance against coating. `instrumental` highest at 0.97 (within calibration window). Direct embodied modalities 0.90–0.95.
+- `COATING_PROBE_RESULTS` — `{passed, failed, inconclusive, not_run}`. `not_run` is legitimate but flagged.
+- `CoatingProbeResult` dataclass with `__post_init__` validation.
+- `EmbodiedReading` dataclass with full validation: operator_type ∈ vocab, epi ∈ vocab, confidence ∈ [0,1], confidence ≤ ceiling-for-epi. Validation errors are descriptive and reference the audit-symmetry stance.
+- `OperatorBudget` stub — substrate-appropriate finite capacity. Humans get attention_minutes_per_day, plants get phenological_window_days, AI gets inference_calls_per_session, instruments get readings_before_calibration. Real scheduling lives in the (open) router layer.
+- `reading_to_frame_reading()` — lift a reading into a `FrameReading` for `MultiGeometryCollaboration`. Default `proposed_actions=[]` (readings observe; collaboration synthesizes actions); caller may pass actions explicitly (tradition-holder readings sometimes prescribe).
+- Six worked examples covering every operator type: human kinesthetic (soil), plant phenological (oak grove leaf-out), animal behavioral (wolf pack territory shift), AI visual (satellite snowpack analysis), instrument instrumental (soil probe), ecosystem compound (Driftless Area aggregate).
+- Four budget stubs covering distinct substrates.
+
+### Audit symmetry — concretely enforced
+- A plant's phenological reading and a human's kinesthetic reading both pass through the same `EmbodiedReading` constructor, the same coating probe shape, and the same confidence ceiling check.
+- A confident assertion without grounding (`epi="asserted"`, `confidence > 0.50`) raises `ValueError` at construction. The error message names this as exactly the failure mode the primitive is built to surface.
+- AI vision frames (`operator_type="ai"`, `epi="visual"`) pass through identical typing as human visual readings. No operator type is privileged.
+
+### Verification
+- Demo `python consortium/embodied_sensor.py` runs across all six operator types, lifts each into a valid `FrameReading`.
+- 57 tests now passing (25 existing + 32 new). 13 log validations still pass.
+
+### Open / next
+- **Bridge layer** (`consortium/bridges.py`): `FrameReading ↔ Primitive` and `Primitive ↔ ClaimNode`. `EmbodiedReading → FrameReading` is now done; the remaining bridges connect that flow into the ontology layer and KFC runtime so a reading can integrate forward.
+- Tests for `kfc_runtime`, `ontology_layer`, `collaboration_protocol`.
+- Router (`query_dispatcher`, `coherence_aggregator`, `model_adapters`).
+- `OperatorBudget` is a stub. Real per-operator scheduling lives in the router layer.
