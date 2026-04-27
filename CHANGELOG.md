@@ -859,3 +859,40 @@ Updated `README.md` to reflect the four new architecture layers added in this br
 The new section quotes the load-bearing claim verbatim ("The orchestrator's defenses and physics gates are runtime protection. The blockchain ledger is structural permanence. Together they prevent both drift and revision.") and includes a 4-row table that gives readers a one-sentence orientation per layer.
 
 No tests affected (469 still passing). No existing repo files modified except this README and CHANGELOG.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `examples_full_audit_session_2026-04-27T15:00Z`
+**Proposed by:** AI (continuing after PR; demonstrating cross-layer integration as a runnable artifact)
+**Status:** Merged
+
+### Summary
+Added `examples/full_audit_session.py` — the cross-layer integration demo that exercises all four architecture layers in a single session. Runtime defenses applied (consortium consent gate + physics C1–C6 check), structural permanence achieved (5 envelope entries in the local-filesystem ledger, hash-chain verified), learning recorded (blind_spot_log entry, itself anchored to the chain).
+
+### What the demo does (9 steps)
+1. Build a `Problem` (consortium/collaboration_protocol)
+2. Dispatch to a 3-mock-adapter consortium with consent gate
+3. Aggregate readings into geometry
+4. Derive an RCR-shaped proposal (manual cross-layer bridge; full automation is open work)
+5. Run `physics/substrate_alignment_check` — all six checks pass for the demo proposal
+6. Anchor 4 artifacts (problem, synthesis, rcr, alignment_report) to `LocalFilesystemLedger`
+7. Verify the chain via `verify_chain()`
+8. Construct a `blind_spot_log` entry referencing the synthesis
+9. Anchor the blind_spot_log entry too; final 5-entry chain re-verifies
+
+### `tests/test_full_audit_session.py` — 11 tests
+- End-to-end contract (7 tests): runs without error, 3 frames in synthesis, alignment_report aligned, ledger holds 5 entries, chain verifies clean, payload_kinds are distinct + ordered, blind_spot_log entry is `run` kind
+- Cross-layer schema validation (3 tests): anchored RCR validates against `physics/ledger_schema.json`; all 5 envelopes validate against `ledger/ledger_schema.json`; blind_spot_log entry validates against `consortium/audit/blind_spot_log.schema.json`
+- **Tampering detection (1 test)**: run a clean session, mutate the anchored RCR's payload directly in the file, re-verify — `verify_chain()` reports `tampered`. The cross-layer smoke test of the load-bearing claim: *"structural permanence prevents revision."*
+
+### What this proves
+The pieces fit. A consortium run produces a synthesis; the synthesis informs an RCR proposal; the proposal passes the conservation-law check; the artifacts are tamper-detectably anchored; the consortium's own learning about itself is anchored too. This is the load-bearing claim — runtime defenses + structural permanence — as a runnable artifact rather than a slogan.
+
+### Honest scope
+The "derive RCR proposal from consortium synthesis" step (Step 4) is currently a manual hand-construction. A future change event can build an automatic bridge (synthesis dict → RCR fields), but the demo's purpose is integration, not bridge automation. The RCR field values are honest: `labor[].contributor` includes `ai:consortium` with `amount=3.0` (the actual fan-out call count from this run).
+
+### Verification
+- `python -m examples.full_audit_session` runs cleanly; all 9 steps print + final chain verifies.
+- 480 tests passing total (469 previously + 11 new). 13 log validations passing.
