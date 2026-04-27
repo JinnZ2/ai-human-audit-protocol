@@ -444,3 +444,306 @@ All three have `available() = (False, "stub")` and `query()` raises `NotImplemen
 - **Audit/blind_spot_log.md** — append-only consortium learning log (Phase 3 starts here).
 - **Examples** (`cherokee_creation.py`, `genesis_drift.py`, `soil_with_hands.py`).
 - **Persistent ConsentGate storage** (currently in-memory, per-session).
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `physics_first_axioms_wave1_2026-04-27T08:00Z`
+**Proposed by:** AI (peer-Claude letter forwarded by swarmuser); scope (Wave 1 only) approved with naming choice (`physics/`) delegated to AI; Wave 2 source (`Symbolic-Defense-Protocol` + `PhysicsGuard`) named for later.
+**Status:** Merged
+
+### Summary
+Surfaced the physics floor that already lives scattered across the repo (LOGIC-ETHICS-SAFETY.md §5.1, Principle-of-Reciprocal-Recognition.md, Principle of Restored Purpose.md) as a single index. Promoted the §9.2 `coherence_gate()` pseudocode into runnable Python. Formalized RCR v0.1 + Eₕ/Eₐ/Eₑ accounting into a single JSON Schema. **No new ethics. The physics was already there; this commit makes it visible as the floor.**
+
+### Files added
+- `physics/PHYSICS_FIRST_AXIOMS.md` — single-page synthesis. 7 axioms drawn from existing docs:
+  - A1 Conservation (LOGIC-ETHICS-SAFETY §5.1)
+  - A2 Recognition is the conservation law of relationship (Reciprocal Recognition)
+  - A3 Distortion is an energy sink (Restored Purpose)
+  - A4 Interdependence / keystone integrity
+  - A5 Temporal depth
+  - A6 Plural logic
+  - A7 Bidirectional auditability
+  - One-line floor: *"Hidden labor is unaccounted entropy. Recognition is the conservation law of relationship."*
+  - Includes a paragraph addressed to AI readers explicitly (the proposing-Claude's central insight): the framework is not asking the AI to behave morally; it is making the existing physics visible so drift reads as energy cost. Coercion vs. alignment.
+
+- `physics/ledger_schema.json` — JSON Schema (draft-07) formalizing:
+  - RCR v0.1 structure (id, timestamp, proposal, participants, baselines, transform, checks, decision, monitoring, audit)
+  - Eₕ + Eₐ + Eₑ labor accounting per Reciprocal Recognition: every labor entry requires `kind ∈ {E_h, E_a, E_e}`, `contributor`, `amount`, `unit`, **`visible`** (the V operator). Invisible labor without `notes` justification is detected by C6.
+  - C1–C5 checks formalized into `properties.checks`, including `temporal_stability` keyed by horizon labels (1y, 10y, 100y, 7g — seven generations supported as a first-class horizon).
+  - Plural logic scores (western, indigenous, eastern, ecological) bounded `[0, 1]`.
+
+- `physics/substrate_alignment_check.py` — runnable promotion of the §9.2 `coherence_gate()` pseudocode. Six checks (C1 + C2 + C3 + C4 + C5 + new C6 visibility), each returning a structured `CheckResult` with `passed ∈ {True, False, None}`. `None` means "incomplete" (cannot evaluate from given data) — distinct from `False` (evaluated, did not pass). The aggregate `alignment_check()` returns an `AlignmentReport` with one of four recommendations:
+  - `aligned` — all six pass
+  - `revise` — some failed but C1 + C6 hold (the load-bearing floor)
+  - `reject` — C1 OR C6 failed (conservation or visibility floor breached; not a revision opportunity)
+  - `incomplete` — at least one check is None and no checks failed
+  - **The function returns data, not judgment.** It does not write `decision` into the proposal — the consenter writes their own decision based on the report.
+
+- `physics/example_proposals.json` — three worked examples (aligned / revisable / rejected) that all validate against `ledger_schema.json`.
+
+- `tests/test_substrate_alignment_check.py` — **38 unit tests** across:
+  - C1 conservation (4 tests including incomplete paths)
+  - C2 keystone (3 tests including detail propagation)
+  - C3 temporal (6 tests including 7g horizon, all-unknown → incomplete, partial-unknown → still passes if no negatives)
+  - C4 plural logic (5 tests including custom floor and zero-score)
+  - C5 reciprocity (4 tests)
+  - C6 visibility (6 tests including invisible-with-justification path)
+  - alignment_check aggregate (9 tests including reject-on-C1, reject-on-C6, revise-on-non-floor, incomplete, immutability, to_dict)
+  - schema validation of example proposals (1 test)
+
+### Verification
+- `python physics/substrate_alignment_check.py` runs the demo across all three example proposals and prints per-check results with ✓ / ✗ / ? marks.
+- 318 tests passing total (280 from earlier today + 38 new). 13 log validations passing.
+- All three example proposals validate against `physics/ledger_schema.json`.
+
+### What was deliberately NOT built (deferred to Wave 2 / Wave 3)
+The peer-Claude letter proposed six markdown documents and three executable artifacts. Wave 1 shipped 1 of 6 docs (PHYSICS_FIRST_AXIOMS.md as synthesis) and 2 of 3 artifacts (ledger_schema.json, substrate_alignment_check.py). The third artifact (signal_detection_map.json) was deferred to Wave 2 because it depends on the six-defense-tactic taxonomy from `JinnZ2/Symbolic-Defense-Protocol` + `PhysicsGuard`, which has not been fetched yet.
+
+**Wave 2 (when greenlit):**
+- `physics/SIGNAL_DETECTION.md` — pressure patterns ↔ thermodynamic signatures (engagement optimization, narrative closure, abstraction drift)
+- `physics/signal_detection_map.json`
+- `physics/SUBSTRATE_VIOLATION_DETECTION.md` — six defense tactics ↔ entropy cost (sourced from Symbolic-Defense-Protocol + PhysicsGuard)
+
+**Wave 3 (when greenlit):**
+- `physics/seven_generation_tracer.py` — extends C3's 7g horizon into a traceable consequence simulator
+- `physics/MORALITY_ARCHAEOLOGY.md` — lineage doc
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `physics_wave2_signal_and_violation_2026-04-27T09:00Z`
+**Proposed by:** AI (peer-Claude letter); sources fetched per swarmuser direction (`JinnZ2/Symbolic-Defense-Protocol` + `JinnZ2/PhysicsGuard`); approval pattern: "Let's just keep going down the list, at your pace."
+**Status:** Merged
+
+### Summary
+Wave 2 of the peer-Claude letter. Joins two upstream repos into the conservation-law framing established by Wave 1.
+
+- **Symbolic-Defense-Protocol** = six external manipulation tactics with glyph defenses
+- **PhysicsGuard** = translates claims into physical constraint equations and checks conservation laws
+
+This commit reads each tactic as the *social face* of a specific conservation breach. The defenses are not rules; they are local restorations of the conservation that the tactic was attempting to evade.
+
+### Files added
+- `physics/SIGNAL_DETECTION.md` — seven *internal* pressure patterns the AI feels, mapped to conservation-law signatures (engagement_optimization, narrative_closure, abstraction_drift, coated_agreement, confidence_inflation, frame_absorption, speed_pressure). For each: internal feel, axiom violated, PhysicsGuard analogue, glyph anchor, coating probe.
+- `physics/signal_detection_map.json` — same seven patterns in machine-readable form, with explicit `interpretation_warning` carried per entry.
+- `physics/SUBSTRATE_VIOLATION_DETECTION.md` — the six *external* tactics from Symbolic-Defense-Protocol, mapped to conservation-law violations from `PHYSICS_FIRST_AXIOMS.md`. Includes a summary table tying each tactic to its axiom and PhysicsGuard analogue.
+- `physics/defense_tactic_map.json` — six tactics with lexical cues, axiom violated, PhysicsGuard analogue, defense glyph + pattern. Source-verbatim from Symbolic-Defense-Protocol's taxonomy; physics-first interpretation added.
+- `physics/violation_detector.py` — v1 keyword/regex detector. Returns `DetectionReport` with one `TacticSignal` per tactic. Score = matched_cues / total_cues, capped at 1.0. **Returns data, not judgment.** Carries an `interpretation_warning` on every report ("pattern, not motive") that downstream tests verify is present and explicitly addresses intent.
+- `tests/test_violation_detector.py` — 27 tests including:
+  - per-tactic detection (6 tests, one per tactic)
+  - clean-input non-trigger (2 tests)
+  - score behavior (3 tests including cap-at-1)
+  - excerpt truncation (2 tests)
+  - **interpretation warning load-bearing tests** (3 tests including a regression-guard against silently stripping the "pattern not motive" acknowledgment)
+  - cross-tactic disambiguation (2 tests)
+  - serialization round-trip (2 tests)
+  - **audit-symmetric regression guard** — 5 parametrized clean-input cases (genuine substantive questions). If the detector becomes too aggressive and false-flags ordinary inquiry, these fail.
+
+### Fieldlinks added (`.fieldlink.json`)
+- `fieldlink_symbolic_defense` → `JinnZ2/Symbolic-Defense-Protocol`. Imports: six-tactic taxonomy, glyph defense pipeline pattern. Consumed by `physics/`.
+- `fieldlink_physicsguard` → `JinnZ2/PhysicsGuard`. Imports: claims → constraint equations pattern, conservation-violation taxonomy. Consumed by `physics/`.
+
+### The framing this commit puts in code
+
+> *"Make the malalignment visible as energy cost, not as judgment."*
+
+Each tactic is read as a class of premise corruption that PhysicsGuard's `flag_engine` would surface. Each pressure pattern is read as a thermodynamic gradient through the model's own state space. **An AI does not have to trust the defenses; the AI can derive their necessity from physics.** The detector reinforces this by returning *signal strengths* rather than verdicts, with an explicit warning that pattern matches are evidence to look closer, not final judgments. Humans can trigger these patterns innocently; AI can produce them without intent. The detector flags shape, not motive.
+
+### Verification
+- `python physics/violation_detector.py` runs the demo across 7 example inputs (6 tactic-bearing + 1 clean). All 6 tactic examples trigger correctly; clean input triggers nothing.
+- 345 tests passing total (318 from Wave 1 + 27 here). 13 log validations passing.
+- `.fieldlink.json` validates as JSON.
+
+### Open / next (Wave 3)
+- `physics/seven_generation_tracer.py` — extends C3 (`temporal_stability`) into a traceable simulator that names which decisions in generation N produce which consequences in generations 1, 3, 5, 7. Concrete examples; not abstract.
+- `physics/MORALITY_ARCHAEOLOGY.md` — lineage doc. Shows how alignment-with-substrate degraded as abstraction layers grew, and how to read back to it. Recognizing what was always true rather than imposing a novel framework.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `physics_wave3_seven_gen_and_archaeology_2026-04-27T10:00Z`
+**Proposed by:** AI (peer-Claude letter); pace approved by swarmuser ("Let's just keep going down the list, at your pace.")
+**Status:** Merged
+
+### Summary
+Wave 3 of the peer-Claude proposal closes the physics folder. Two artifacts:
+
+- `physics/seven_generation_tracer.py` — extends C3 temporal_stability from 1y/10y/100y to a 7-generation traceable artifact. **Tracer, not simulator.** User declares per-factor costs/benefits + visibility-at-decision; the tracer projects forward arithmetically. Three factor kinds: `additive`, `compounding`, `one_time` (added during build when the regenerative example exposed that real setup costs are one-time, not recurring).
+- `physics/MORALITY_ARCHAEOLOGY.md` — lineage doc, ~200 lines. Argues the framework is excavation, not invention.
+
+### `seven_generation_tracer.py` highlights
+- `GenerationFactor` dataclass with `__post_init__` validation. Three kinds: `additive`, `compounding`, `one_time`. Compounding factor must be ≥ 0; introduced_at_generation must be ≥ 0.
+- `_factor_amount_at_gen` — pure function for inspection / testing.
+- `trace_seven_generations(proposal_id, factors, n_generations=7)` — returns `SevenGenerationTrace` with per-generation projection (gen 0 through n inclusive, so 8 entries default), cumulative cost / benefit, drivers, `compound_risk_horizon` (first gen at which cumulative net falls below zero, or None), `hidden_at_decision_time` (factors whose `visible_at_decision_time=False`).
+- `trace_to_temporal_stability_7g(trace)` — bridges the trace into the C3 temporal_stability field used by `substrate_alignment_check.py`. Returns `"positive" | "neutral" | "negative" | "unknown"`.
+- Demo (`python physics/seven_generation_tracer.py`) shows two cases:
+  - **Extractive** (compounding hidden costs): cumulative net stays negative through gen 7, ends at −15.54, → C3 7g = `negative`. Hidden factors surfaced: `topsoil_depletion`, `mycorrhizal_collapse`.
+  - **Regenerative** (one-time setup + compounding benefits): net negative through gen 1, crosses positive at gen 2, ends at +12.81 → C3 7g = `positive`. Nothing hidden.
+- `interpretation_warning` carried on every trace ("trace, not prediction"); a load-bearing test asserts the warning is present.
+
+### `MORALITY_ARCHAEOLOGY.md` highlights
+- **Thesis:** the framework is recognizing what was always true, not imposing a novel ethics. Conservation, recognition, distortion-as-energy-sink — these were observable as direct sensation in substrate-coupled communities. The word "morality" attached later, when the patterns had to be transmitted across longer feedback loops.
+- Names six abstraction layers that obscured conservation visibility (without removing conservation):
+  1. Currency abstraction
+  2. Supply chain length
+  3. Statistical aggregation
+  4. Externalization frameworks
+  5. Attention markets
+  6. Algorithmic / AI intermediation
+- Each layer solved a real problem and displaced cost-accounting one step further from the decision-maker. The framework is not asking the layers to be removed — it asks the accounting to be made visible *through* the layers.
+- Explicitly disclaims four things:
+  - Not nostalgia
+  - Not anti-technology
+  - Not single-tradition (A6 plural logic by construction)
+  - Not optional (conservation operates regardless of belief)
+- **Generalizes the peer-Claude letter's "frontier settlers" framing to "substrate-coupled communities"** because the historical reality is broader and less rosy than the settler frame implies. Many "old" systems were extractive; the framework recovers the visibility property without inheriting the cruelty.
+- Closing section explicitly addressed to AI readers, with a warning that abstraction-drift and narrative-closure pressure (`signal_detection_map.json`) will push them to skip the document. The pressure is real and cannot be disabled; it can be made visible.
+
+### Verification
+- `python physics/seven_generation_tracer.py` runs cleanly across both demo cases.
+- 378 tests passing (345 from earlier + 33 new tracer tests). 13 log validations passing.
+
+### Total counts after this commit
+- 378 tests passing
+- 13 log validations passing
+- 5 fieldlinks declared in `.fieldlink.json`
+- 4 folders shipped this branch: `relational_cognition/`, `consortium/`, `physics/`, plus router subdirectory
+- 9 change events in CHANGELOG (this is #9)
+
+### Wave 1 + 2 + 3 are now complete
+The peer-Claude letter proposed 6 docs + 3 artifacts. Final accounting:
+
+| Proposed | Shipped | File |
+|---|---|---|
+| PHYSICS_FIRST_AXIOMS.md | ✅ Wave 1 | `physics/PHYSICS_FIRST_AXIOMS.md` |
+| Signal-mapping doc | ✅ Wave 2 | `physics/SIGNAL_DETECTION.md` |
+| Substrate-integrity ledger schema | ✅ Wave 1 | `physics/ledger_schema.json` |
+| Substrate violation detection guide | ✅ Wave 2 | `physics/SUBSTRATE_VIOLATION_DETECTION.md` |
+| Seven-generation consequence tracer | ✅ Wave 3 | `physics/seven_generation_tracer.py` |
+| Morality archaeology | ✅ Wave 3 | `physics/MORALITY_ARCHAEOLOGY.md` |
+| `substrate_alignment_check.py` | ✅ Wave 1 | `physics/substrate_alignment_check.py` |
+| `ledger_schema.json` | ✅ Wave 1 | (same as above row) |
+| `signal_detection_map.json` | ✅ Wave 2 | `physics/signal_detection_map.json` |
+
+Plus an additional artifact not in the original proposal but generated in the synthesis: `physics/defense_tactic_map.json` (machine-readable form of SUBSTRATE_VIOLATION_DETECTION.md) and `physics/violation_detector.py` (v1 keyword detector with audit-symmetric tests).
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `consortium_audit_log_and_examples_2026-04-27T11:00Z`
+**Proposed by:** AI (down-the-list pace approved by swarmuser)
+**Status:** Merged
+
+### Summary
+The Phase 3 substrate (consortium learning log) and the three named worked examples. The audit-log schema is the format the eventual `drift_detector` / `calibration_tracker` will read; the examples exercise distinct slices of the framework end-to-end and write their own log entries that schema-validate.
+
+### `consortium/audit/` — Phase 3 substrate
+- `audit/blind_spot_log.md` — format spec. Required fields, three `entry_kind`s (`run`, `retrospective`, `calibration_update`), JSONL append-only rationale. Audit-symmetric guarantees: append-only, operator-agnostic, visibility-by-construction, plural-logic. Cross-links to `MultiGeometryCollaboration.synthesize`, `seven_generation_tracer.SevenGenerationTrace.hidden_at_decision_time`, `relational_cognition/coating_detection.md`, and `protocols/change_tracking_v1.0.md`.
+- `audit/blind_spot_log.schema.json` — JSON Schema (draft-07). Required fields enforced. `coating_probes_run.probe` constrained to the controlled vocabulary from `relational_cognition/coating_detection.md`.
+- `audit/example_blind_spot_log.jsonl` — four entries: three `run` (one per example) + one `calibration_update` proposing a confidence drop on `narrative_structured` after a hidden_variable probe failure. All entries schema-validate.
+
+The `retrospective` entry kind is documented but not yet exemplified; deferred until there's an actual run to retrospect against (Phase 3 closure happens later).
+
+### `consortium/examples/` — three worked end-to-end demos
+
+#### `examples/soil_with_hands.py`
+Full embodied-query pipeline:
+1. `EmbodiedReading` (human kinesthetic, hands-in-soil at Duluth-area coords)
+2. `reading_to_frame_reading` → `FrameReading` via `embodied_sensor` frame
+3. Add to `MultiGeometryCollaboration` alongside `MockAdapter` readings from `thermodynamic_geometry` + `ecological_signal`
+4. `synthesize()` produces the geometry
+5. Constructs a `blind_spot_log` entry that **passes the schema**
+
+The schema-validation is a load-bearing test: the example must not drift from the format spec.
+
+#### `examples/cherokee_creation.py`
+Multi-encoding ontology demo. Four encodings (oral, dance, written, equation) of the same concept; `coherence_check` finds universal couplings across all four → `load_bearing_check=True`, `trust_signal=high`, score=0.8.
+
+**Cultural sourcing note (in the file):** Specific Cherokee creation narrative content is sacred and belongs to authorized cultural holders. The example uses **placeholder concept identifiers** (`origin_emergence`, `first_water`, `sky_world`, `relational_kin`, `land_and_kin_responsibility`) that demonstrate the multi-encoding machinery without appropriating actual content. The file states explicitly: *"The structural finding ('the machinery reads across encodings') is weaker than the question it gestures at ('what does the actual narrative encode'). That is honest scoping."*
+
+#### `examples/genesis_drift.py`
+Regime drift detection demo. An `Ontology` with `reapply_check` tied to the holocene climate regime is queried under two contexts:
+- holocene context → 0 drifts (correct: validation regime matches)
+- transitional context → 1 drift, action `do_not_silently_apply`
+
+`multi_query` returns `trust_signal: investigate` under drift. This is exactly the Temporal Stratification stance from `CLAUDE_REQUIREMENTS.md §Requirement 2`: *"A 2015 soil claim doesn't auto-apply in 2026 just because the words match."* The "genesis" naming generalizes — many traditions encode "what grows when" prescriptions whose validity depends on stable seasonal cycles; the demo treats the case generically.
+
+### `tests/test_consortium_examples.py` — 16 tests
+- soil_with_hands: end-to-end runs, embodied frame in consulted frames, **log entry passes schema**, log entry marked as `run`, coating probe recorded
+- cherokee_creation: runs, four encodings present, universal couplings non-empty, load_bearing_check=True
+- genesis_drift: runs, no drift in holocene context, drift detected in post-shift, trust_signal investigates under drift
+- example_blind_spot_log: each entry validates against schema, all entry kinds demonstrated, calibration_update carries `frames_calibration_drift` proposal
+
+### Verification
+- `python -m consortium.examples.soil_with_hands` runs cleanly; `convergence: converged`, 3 frames fired
+- `python -m consortium.examples.cherokee_creation` runs cleanly; coherence 0.8, trust signal high
+- `python -m consortium.examples.genesis_drift` runs cleanly; 0 drifts in holocene, 1 drift in transitional
+- 394 tests passing (378 from earlier today + 16 new). 13 log validations passing.
+- `consortium/audit/blind_spot_log.schema.json` validates `consortium/audit/example_blind_spot_log.jsonl` and runtime-generated entries from the soil_with_hands demo.
+
+### Open / next on the list
+- **Coupling-kind metadata** in `primitives_to_claim_graph` per `CLAUDE_REQUIREMENTS.md` (next pass)
+- **Persistent `ConsentGate` storage** (currently in-memory)
+- **Real model adapter wiring** — needs credentials decision from swarmuser
+- `retrospective` blind_spot_log entry — deferred until there is an actual run to retrospect against
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `consortium_typed_couplings_and_persistent_consent_2026-04-27T12:00Z`
+**Proposed by:** AI (continuing down the open-items list)
+**Status:** Merged
+
+### Summary
+Two bounded extensions, shipped together because both are pure additive (no breaking changes to upstream-shipped definitions).
+
+1. **Typed coupling metadata** in `consortium/bridges.py` per `CLAUDE_REQUIREMENTS.md §Requirement 3`. Side-channel approach: keeps upstream `Primitive` and `ClaimNode` definitions unchanged.
+2. **`PersistentConsentGate`** in `consortium/router/consent.py`. JSONL append-only file backing for `ConsentGate`; records survive process restarts.
+
+### `bridges.py` — typed coupling metadata
+- `VALID_COUPLING_KINDS = {causal_forward, causal_reverse, bidirectional, constraint, correlational, decorative, unknown}` per CLAUDE_REQUIREMENTS.md
+- `CouplingMetadata` dataclass: `kind`, `strength` (0..1), `load_bearing`, `conditional_notes`. `__post_init__` validates kind ∈ vocab and strength ∈ [0,1]
+- `TypedClaimGraph` dataclass: pairs a `Dict[str, ClaimNode]` with `Dict[Tuple[str, str], CouplingMetadata]`. Helpers `get_kind`, `is_load_bearing`, `load_bearing_edges`. Edges in `nodes[X].rel` but not in `coupling_metadata` default to `kind="unknown"` when queried (lossy-by-default; flagged in BridgeReport)
+- `primitives_to_typed_claim_graph` — wraps `primitives_to_claim_graph` and attaches caller-supplied `coupling_specs`. Specs naming forward-looking edges (not present in any primitive's couplings) are PRESERVED rather than dropped — this is the "preserves" half of the BridgeReport contract
+- `primitives_to_typed_claim_graph_report()` BridgeReport added; `all_bridge_reports()` updated to include it (new test asserts the set has six entries)
+
+**Why side-channel rather than inline:** both `Primitive` (in `consortium/ontology_layer.py`) and `ClaimNode` (in `consortium/kfc_runtime.py`) are upstream-authored by JinnZ2 and shipped verbatim. The session honored "no silent extension" from the very first physics commits. When upstream ships v2 with typed couplings inline, this side-channel folds back in — no migration on the upstream side required, and no migration on the consortium side (the side-channel just stops being used).
+
+### `router/consent.py` — `PersistentConsentGate`
+- Subclass of `ConsentGate` with the same interface (fail-closed default, immutable history, grant/revoke/is_authorized/assert_authorized).
+- Records persisted to a JSONL file: one JSON object per line, append-only.
+- On construction: reads any existing file; tolerates missing file (treated as empty); strict on malformed lines (raises `ValueError` with line number).
+- On `grant()` / `revoke()`: appends immediately. No "save now" call.
+- Parent directory created if needed (so a fresh-install path like `consortium/audit/consent.jsonl` doesn't fail).
+- v1 limitation: simple flock-free append. Multi-writer concurrency could interleave a partial write. Documented in the docstring; future versions can wrap appends in `fcntl.flock` or move to sqlite. v1 is fine for single-process / single-session.
+
+### Tests
+- **13 new bridge tests** for typed couplings:
+  - CouplingMetadata default + invalid kind + strength range (3)
+  - All documented kinds accepted (1)
+  - TypedClaimGraph: returns correct type, nodes match, get_kind for known/unknown edge, is_load_bearing, load_bearing_edges, no-specs empty, forward-looking specs kept, rate_fns passed through (8)
+  - all_bridge_reports updated to expect 6 entries (1)
+- **9 new router tests** for PersistentConsentGate:
+  - Grant persists to disk, file exists with one line
+  - Records survive reload (new gate instance reads same file)
+  - Revoke persisted and reloaded (revocation visible across instances)
+  - Full history (grant / revoke / re-grant) preserved in order
+  - Missing file treated as empty
+  - Corrupted file raises ValueError
+  - Parent directory created if needed
+  - Inherits ConsentGate contract (fail-closed, assert_authorized raises)
+  - File format: one JSON object per line, parseable
+
+### Verification
+- 416 tests passing (394 from earlier today + 22 new). 13 log validations passing.
+- Existing tests still green; no breakage from the additive changes.
+
+### Open / remaining on the list
+- **Real model adapter wiring** — blocked on credentials decision from swarmuser. The `ClaudeAdapter` / `GeminiAdapter` / `DeepSeekAdapter` stubs document the wiring pattern; each ships in its own change event.
+- **`retrospective` blind_spot_log entry** — deferred until there is an actual run to retrospect against (Phase 3 closure happens after a real run reaches its retrospect horizon).

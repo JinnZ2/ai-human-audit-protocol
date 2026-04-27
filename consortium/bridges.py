@@ -23,7 +23,7 @@ if str(_repo_root) not in sys.path:
     sys.path.insert(0, str(_repo_root))
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from consortium.collaboration_protocol import (
     GeometricFrame,
@@ -373,11 +373,166 @@ def primitives_to_claim_graph_report() -> BridgeReport:
         lossy_on=["domain (ontology-level)",
                   "form (ontology-level)",
                   "role (ontology-level)",
-                  "epi / epi_confidence (provenance lives one layer up)"],
+                  "epi / epi_confidence (provenance lives one layer up)",
+                  "coupling kind / strength / load_bearing — these "
+                  "live in CouplingMetadata via the typed variant; "
+                  "the untyped bridge drops them"],
         notes="Forward bridge from ontology to dynamical layer. "
               "Caller MUST supply rate_fns to get non-zero integration; "
               "default _zero_rate produces nodes that hold state but "
-              "do not move.",
+              "do not move. For typed couplings (kind, strength, "
+              "load_bearing per edge), use primitives_to_typed_claim_graph.",
+    )
+
+
+# ------------------------------------------------------------
+# Typed coupling metadata (per CLAUDE_REQUIREMENTS.md §3)
+# Side-channel companion to ClaimNode graphs. Lives alongside
+# rather than inside ClaimNode because both Primitive and
+# ClaimNode are upstream-authored and shipped verbatim. When
+# upstream ships v2 with typed couplings inline, this side-channel
+# folds back in.
+# ------------------------------------------------------------
+
+# Coupling kinds per CLAUDE_REQUIREMENTS.md §Requirement 3.
+VALID_COUPLING_KINDS = {
+    "causal_forward",   # A drives B
+    "causal_reverse",   # B drives A
+    "bidirectional",    # mutual coupling
+    "constraint",       # A bounds B but doesn't drive it
+    "correlational",    # co-occur, mechanism unknown
+    "decorative",       # historical association, no current force
+    "unknown",          # not specified by caller
+}
+
+
+@dataclass
+class CouplingMetadata:
+    """
+    Per-edge typed metadata.
+
+    Used alongside a ClaimNode graph to carry the coupling
+    semantics from CLAUDE_REQUIREMENTS.md §Requirement 3 without
+    modifying the upstream-shipped Primitive / ClaimNode classes.
+
+    Fields:
+        kind: one of VALID_COUPLING_KINDS
+        strength: 0..1 (constant; the dynamic case is left for v2)
+        load_bearing: if removed, does the system collapse?
+        conditional_notes: free-form context where this coupling
+            fires (until rate_fn-conditional couplings ship)
+    """
+    kind: str = "unknown"
+    strength: float = 1.0
+    load_bearing: bool = False
+    conditional_notes: str = ""
+
+    def __post_init__(self):
+        if self.kind not in VALID_COUPLING_KINDS:
+            raise ValueError(
+                f"coupling kind {self.kind!r} not in "
+                f"{sorted(VALID_COUPLING_KINDS)}"
+            )
+        if not 0.0 <= self.strength <= 1.0:
+            raise ValueError(
+                f"strength {self.strength} outside [0, 1]"
+            )
+
+
+@dataclass
+class TypedClaimGraph:
+    """
+    A ClaimNode graph plus its typed coupling metadata.
+
+    `nodes` is the same dict shape returned by
+    `primitives_to_claim_graph`. `coupling_metadata` is keyed by
+    (source_concept_id, target_concept_id) tuples. Edges that
+    appear in `nodes[X].rel` but NOT in `coupling_metadata` default
+    to `kind="unknown"` when queried via `get_kind` / `is_load_bearing`.
+    """
+    nodes: Dict[str, ClaimNode]
+    coupling_metadata: Dict[Tuple[str, str], CouplingMetadata] = field(
+        default_factory=dict
+    )
+
+    def get_kind(self, source: str, target: str) -> str:
+        m = self.coupling_metadata.get((source, target))
+        return m.kind if m else "unknown"
+
+    def is_load_bearing(self, source: str, target: str) -> bool:
+        m = self.coupling_metadata.get((source, target))
+        return m.load_bearing if m else False
+
+    def load_bearing_edges(self) -> List[Tuple[str, str]]:
+        return [
+            (s, t) for (s, t), m in self.coupling_metadata.items()
+            if m.load_bearing
+        ]
+
+
+def primitives_to_typed_claim_graph(
+    primitives: List[Primitive],
+    coupling_specs: Optional[Dict[Tuple[str, str], CouplingMetadata]] = None,
+    rate_fns: Optional[Dict[str, Callable]] = None,
+    cyc: int = 1,
+    cond: Optional[List[Callable[[Dict], bool]]] = None,
+    fail: Optional[List[Callable[[Dict], bool]]] = None,
+) -> TypedClaimGraph:
+    """
+    Like `primitives_to_claim_graph` but carries typed coupling
+    metadata.
+
+    `coupling_specs` is `{(source_id, target_id): CouplingMetadata}`.
+    Specs are kept verbatim; missing edges default to `"unknown"`
+    when queried via `TypedClaimGraph.get_kind`. Specs that name
+    edges not present in any primitive's `couplings` are kept as
+    declared — they are caller-supplied metadata, possibly forward-
+    looking; the bridge does not silently drop them.
+
+    Returns a `TypedClaimGraph(nodes, coupling_metadata)`.
+
+    Preserves: everything `primitives_to_claim_graph` preserves,
+               plus per-edge kind / strength / load_bearing.
+    Lossy on:  same as `primitives_to_claim_graph` for the structural
+               fields (domain, form, role, epi); coupling specs are
+               PRESERVED rather than dropped.
+    """
+    nodes = primitives_to_claim_graph(
+        primitives,
+        rate_fns=rate_fns,
+        cyc=cyc,
+        cond=cond,
+        fail=fail,
+    )
+    return TypedClaimGraph(
+        nodes=nodes,
+        coupling_metadata=dict(coupling_specs or {}),
+    )
+
+
+def primitives_to_typed_claim_graph_report() -> BridgeReport:
+    return BridgeReport(
+        bridge_name="primitives_to_typed_claim_graph",
+        preserves=["concept_id", "couplings (as rel)", "bounds",
+                   "coupling kind per edge",
+                   "coupling strength per edge",
+                   "load_bearing per edge",
+                   "caller-supplied conditional notes per edge"],
+        lossy_on=["domain (ontology-level)",
+                  "form (ontology-level)",
+                  "role (ontology-level)",
+                  "epi / epi_confidence (provenance lives one layer up)",
+                  "edges absent from coupling_specs are reported as "
+                  "kind='unknown' (lossy because caller may have "
+                  "intended a default that is not 'unknown')"],
+        notes="Typed variant of primitives_to_claim_graph per "
+              "CLAUDE_REQUIREMENTS.md §Requirement 3. Coupling "
+              "metadata lives in a CouplingMetadata side-channel "
+              "(TypedClaimGraph.coupling_metadata) rather than "
+              "inside ClaimNode, because both Primitive and "
+              "ClaimNode are upstream-authored and shipped verbatim. "
+              "When upstream ships v2 with typed couplings inline, "
+              "this side-channel folds back in.",
     )
 
 
@@ -720,6 +875,7 @@ def all_bridge_reports() -> List[BridgeReport]:
         reading_to_primitives_report(),
         frame_reading_to_primitives_report(),
         primitives_to_claim_graph_report(),
+        primitives_to_typed_claim_graph_report(),
         trajectory_summary_report(),
         trajectory_to_frame_reading_report(),
     ]
