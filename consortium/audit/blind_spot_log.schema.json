@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/JinnZ2/ai-human-audit-protocol/consortium/audit/blind_spot_log.schema.json",
+  "title": "Consortium Blind Spot Log Entry",
+  "description": "One entry in the append-only consortium learning log. Used by Phase 3 calibration machinery to detect drift, blind-spot frequency, and outcome-vs-recommendation discrepancies over time. See consortium/audit/blind_spot_log.md for format spec.",
+  "type": "object",
+  "required": [
+    "entry_id",
+    "timestamp",
+    "problem_id",
+    "frames_consulted",
+    "blind_spots_per_frame",
+    "productive_disagreements",
+    "convergence",
+    "coating_probes_run",
+    "entry_kind"
+  ],
+  "properties": {
+    "entry_id": {
+      "type": "string",
+      "description": "Stable unique identifier. Suggested: bs-<problem_id>-<iso_timestamp>."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "problem_id": {
+      "type": "string",
+      "description": "References the problem the consortium ran on."
+    },
+    "entry_kind": {
+      "enum": ["run", "retrospective", "calibration_update"],
+      "description": "run = consortium run output. retrospective = N gens later, what actually happened. calibration_update = aggregated drift proposal."
+    },
+    "frames_consulted": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "frame_ids that produced readings (excludes refused / failed / unavailable)."
+    },
+    "blind_spots_per_frame": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {"type": "string"}
+      },
+      "description": "Per-frame array of coupling strings the frame missed, from MultiGeometryCollaboration.surface_blind_spots()."
+    },
+    "productive_disagreements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["frame_a", "frame_b", "type"],
+        "properties": {
+          "frame_a": {"type": "string"},
+          "frame_b": {"type": "string"},
+          "type": {"type": "string"},
+          "claim_a": {"type": "string"},
+          "claim_b": {"type": "string"},
+          "interpretation": {"type": "string"}
+        }
+      }
+    },
+    "convergence": {
+      "enum": ["converged", "divergent"],
+      "description": "From surface_invariants(). 'divergent' is data, not failure."
+    },
+    "coating_probes_run": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["reading_id", "probe", "result"],
+        "properties": {
+          "reading_id": {"type": "string"},
+          "probe": {
+            "enum": [
+              "adversarial_restatement",
+              "constraint_inversion",
+              "primitive_grounding",
+              "hidden_variable",
+              "silence_test",
+              "not_run"
+            ]
+          },
+          "result": {
+            "enum": ["passed", "failed", "inconclusive", "not_run"]
+          },
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "time_critical_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {"type": "string"},
+          "reversibility": {"type": "string"},
+          "fraction_support": {"type": "number"}
+        }
+      }
+    },
+    "recommended_action": {
+      "type": "string",
+      "description": "What the consenter decided based on the synthesis."
+    },
+    "actual_outcome": {
+      "type": "string",
+      "description": "Populated on retrospective entries. Compares recommendation to what happened."
+    },
+    "references": {
+      "type": "object",
+      "description": "For retrospective entries, the original run entry_id this references.",
+      "properties": {
+        "original_entry_id": {"type": "string"}
+      }
+    },
+    "frames_calibration_drift": {
+      "type": "object",
+      "description": "Per-frame confidence adjustment proposed (calibration_update entries only).",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "previous_calibration": {"type": "number"},
+          "proposed_calibration": {"type": "number"},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

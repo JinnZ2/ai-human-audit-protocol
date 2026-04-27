@@ -630,3 +630,64 @@ The peer-Claude letter proposed 6 docs + 3 artifacts. Final accounting:
 | `signal_detection_map.json` | ✅ Wave 2 | `physics/signal_detection_map.json` |
 
 Plus an additional artifact not in the original proposal but generated in the synthesis: `physics/defense_tactic_map.json` (machine-readable form of SUBSTRATE_VIOLATION_DETECTION.md) and `physics/violation_detector.py` (v1 keyword detector with audit-symmetric tests).
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `consortium_audit_log_and_examples_2026-04-27T11:00Z`
+**Proposed by:** AI (down-the-list pace approved by swarmuser)
+**Status:** Merged
+
+### Summary
+The Phase 3 substrate (consortium learning log) and the three named worked examples. The audit-log schema is the format the eventual `drift_detector` / `calibration_tracker` will read; the examples exercise distinct slices of the framework end-to-end and write their own log entries that schema-validate.
+
+### `consortium/audit/` — Phase 3 substrate
+- `audit/blind_spot_log.md` — format spec. Required fields, three `entry_kind`s (`run`, `retrospective`, `calibration_update`), JSONL append-only rationale. Audit-symmetric guarantees: append-only, operator-agnostic, visibility-by-construction, plural-logic. Cross-links to `MultiGeometryCollaboration.synthesize`, `seven_generation_tracer.SevenGenerationTrace.hidden_at_decision_time`, `relational_cognition/coating_detection.md`, and `protocols/change_tracking_v1.0.md`.
+- `audit/blind_spot_log.schema.json` — JSON Schema (draft-07). Required fields enforced. `coating_probes_run.probe` constrained to the controlled vocabulary from `relational_cognition/coating_detection.md`.
+- `audit/example_blind_spot_log.jsonl` — four entries: three `run` (one per example) + one `calibration_update` proposing a confidence drop on `narrative_structured` after a hidden_variable probe failure. All entries schema-validate.
+
+The `retrospective` entry kind is documented but not yet exemplified; deferred until there's an actual run to retrospect against (Phase 3 closure happens later).
+
+### `consortium/examples/` — three worked end-to-end demos
+
+#### `examples/soil_with_hands.py`
+Full embodied-query pipeline:
+1. `EmbodiedReading` (human kinesthetic, hands-in-soil at Duluth-area coords)
+2. `reading_to_frame_reading` → `FrameReading` via `embodied_sensor` frame
+3. Add to `MultiGeometryCollaboration` alongside `MockAdapter` readings from `thermodynamic_geometry` + `ecological_signal`
+4. `synthesize()` produces the geometry
+5. Constructs a `blind_spot_log` entry that **passes the schema**
+
+The schema-validation is a load-bearing test: the example must not drift from the format spec.
+
+#### `examples/cherokee_creation.py`
+Multi-encoding ontology demo. Four encodings (oral, dance, written, equation) of the same concept; `coherence_check` finds universal couplings across all four → `load_bearing_check=True`, `trust_signal=high`, score=0.8.
+
+**Cultural sourcing note (in the file):** Specific Cherokee creation narrative content is sacred and belongs to authorized cultural holders. The example uses **placeholder concept identifiers** (`origin_emergence`, `first_water`, `sky_world`, `relational_kin`, `land_and_kin_responsibility`) that demonstrate the multi-encoding machinery without appropriating actual content. The file states explicitly: *"The structural finding ('the machinery reads across encodings') is weaker than the question it gestures at ('what does the actual narrative encode'). That is honest scoping."*
+
+#### `examples/genesis_drift.py`
+Regime drift detection demo. An `Ontology` with `reapply_check` tied to the holocene climate regime is queried under two contexts:
+- holocene context → 0 drifts (correct: validation regime matches)
+- transitional context → 1 drift, action `do_not_silently_apply`
+
+`multi_query` returns `trust_signal: investigate` under drift. This is exactly the Temporal Stratification stance from `CLAUDE_REQUIREMENTS.md §Requirement 2`: *"A 2015 soil claim doesn't auto-apply in 2026 just because the words match."* The "genesis" naming generalizes — many traditions encode "what grows when" prescriptions whose validity depends on stable seasonal cycles; the demo treats the case generically.
+
+### `tests/test_consortium_examples.py` — 16 tests
+- soil_with_hands: end-to-end runs, embodied frame in consulted frames, **log entry passes schema**, log entry marked as `run`, coating probe recorded
+- cherokee_creation: runs, four encodings present, universal couplings non-empty, load_bearing_check=True
+- genesis_drift: runs, no drift in holocene context, drift detected in post-shift, trust_signal investigates under drift
+- example_blind_spot_log: each entry validates against schema, all entry kinds demonstrated, calibration_update carries `frames_calibration_drift` proposal
+
+### Verification
+- `python -m consortium.examples.soil_with_hands` runs cleanly; `convergence: converged`, 3 frames fired
+- `python -m consortium.examples.cherokee_creation` runs cleanly; coherence 0.8, trust signal high
+- `python -m consortium.examples.genesis_drift` runs cleanly; 0 drifts in holocene, 1 drift in transitional
+- 394 tests passing (378 from earlier today + 16 new). 13 log validations passing.
+- `consortium/audit/blind_spot_log.schema.json` validates `consortium/audit/example_blind_spot_log.jsonl` and runtime-generated entries from the soil_with_hands demo.
+
+### Open / next on the list
+- **Coupling-kind metadata** in `primitives_to_claim_graph` per `CLAUDE_REQUIREMENTS.md` (next pass)
+- **Persistent `ConsentGate` storage** (currently in-memory)
+- **Real model adapter wiring** — needs credentials decision from swarmuser
+- `retrospective` blind_spot_log entry — deferred until there is an actual run to retrospect against

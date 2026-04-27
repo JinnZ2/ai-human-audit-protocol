@@ -21,10 +21,13 @@
 | `router/coherence_aggregator.py` | ✅ shipped 2026-04-27 | `aggregate(dispatch_result, problem, frames)` — wraps `MultiGeometryCollaboration.synthesize()` with cross-adapter audit metadata. Surfaces "geometry of absence" when zero readings. |
 | `router/model_adapters/{claude,gemini,deepseek}_adapter.py` | ✅ shipped 2026-04-27 (stubs) | `available()` returns False with helpful reason; `query()` raises `NotImplementedError` with wiring instructions. Default frame_ids: Claude→narrative_structured, Gemini→pattern_spatial, DeepSeek→statistical_relational. |
 | `tests/test_router.py` | ✅ shipped 2026-04-27 | 45 tests: BaseModelAdapter contract, MockAdapter, ConsentGate, QueryDispatcher, CoherenceAggregator, API stubs, full-stack smoke |
-| `audit/blind_spot_log.md` | ⏳ open | P1 — append-only consortium learning log |
-| `examples/cherokee_creation.py` | ⏳ open | P2 |
-| `examples/genesis_drift.py` | ⏳ open | P2 |
-| `examples/soil_with_hands.py` | ⏳ open | P2 — embodied-query template |
+| `audit/blind_spot_log.md` | ✅ shipped 2026-04-27 | format spec + how-to-write. Required fields, three `entry_kind`s (run / retrospective / calibration_update), JSONL append-only. |
+| `audit/blind_spot_log.schema.json` | ✅ shipped 2026-04-27 | JSON Schema (draft-07) for entries. Schema-validated by tests. |
+| `audit/example_blind_spot_log.jsonl` | ✅ shipped 2026-04-27 | Worked examples covering run + calibration_update kinds. All entries schema-validate. |
+| `examples/cherokee_creation.py` | ✅ shipped 2026-04-27 | multi-encoding ontology demo. **Placeholder content** with explicit cultural sourcing note — exercises the machinery without appropriating actual narrative content. |
+| `examples/genesis_drift.py` | ✅ shipped 2026-04-27 | regime drift detection demo. holocene-validated agricultural prescription, drift_check fires under transitional climate context. |
+| `examples/soil_with_hands.py` | ✅ shipped 2026-04-27 | embodied-query end-to-end. EmbodiedReading → FrameReading → MultiGeometryCollaboration → synthesize → blind_spot_log entry (schema-validated). |
+| `tests/test_consortium_examples.py` | ✅ shipped 2026-04-27 | 16 tests across the three examples + the example log file |
 | `bridges.py` | ✅ shipped 2026-04-27 | `FrameReading ↔ Primitive ↔ ClaimNode` connectors. Forward AND inverse direction complete: `reading_to_primitives`, `frame_reading_to_primitives`, `primitives_to_claim_graph`, `trajectory_summary` (lightweight), `trajectory_to_frame_reading` (full inverse with shape classification). Each function declares `preserves`/`lossy_on` via `BridgeReport`. 81 tests. |
 | `tests/test_bridges.py` | ✅ shipped 2026-04-27 | 43 tests: mappings, frame selection, reading lift, frame reading lift, claim graph build, trajectory summary, bridge reports, end-to-end |
 | `tests/test_kfc_runtime.py` | ✅ shipped 2026-04-27 | 34 tests: CYC_DT, scope/bounds overlap, _within, should_activate, step, felt_sensor, query, soil graph |
