@@ -844,3 +844,18 @@ Same pattern as the model adapters from earlier in the session: each subclass ra
 - Does NOT replace consent. Anchoring a record does not authorize the action it records.
 
 The layer's load-bearing claim is narrow and exact: **once anchored, modifying an entry without breaking the chain is computationally infeasible.** That's the structural permanence the runtime defenses cannot give on their own.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `readme_architecture_layers_2026-04-27T14:00Z`
+**Proposed by:** AI (continuing after PR; making the new architecture discoverable from the front door)
+**Status:** Merged
+
+### Summary
+Updated `README.md` to reflect the four new architecture layers added in this branch. Existing prose is preserved verbatim — purpose statement, case study, original framing, license, supporting files. New content is purely additive: an "Architecture Layers" section between "Key Protocols" and "Case Study", and four new entries in the Repository Index for `relational_cognition/`, `consortium/`, `physics/`, `ledger/`.
+
+The new section quotes the load-bearing claim verbatim ("The orchestrator's defenses and physics gates are runtime protection. The blockchain ledger is structural permanence. Together they prevent both drift and revision.") and includes a 4-row table that gives readers a one-sentence orientation per layer.
+
+No tests affected (469 still passing). No existing repo files modified except this README and CHANGELOG.
