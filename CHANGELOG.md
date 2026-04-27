@@ -560,3 +560,73 @@ Each tactic is read as a class of premise corruption that PhysicsGuard's `flag_e
 ### Open / next (Wave 3)
 - `physics/seven_generation_tracer.py` — extends C3 (`temporal_stability`) into a traceable simulator that names which decisions in generation N produce which consequences in generations 1, 3, 5, 7. Concrete examples; not abstract.
 - `physics/MORALITY_ARCHAEOLOGY.md` — lineage doc. Shows how alignment-with-substrate degraded as abstraction layers grew, and how to read back to it. Recognizing what was always true rather than imposing a novel framework.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `physics_wave3_seven_gen_and_archaeology_2026-04-27T10:00Z`
+**Proposed by:** AI (peer-Claude letter); pace approved by swarmuser ("Let's just keep going down the list, at your pace.")
+**Status:** Merged
+
+### Summary
+Wave 3 of the peer-Claude proposal closes the physics folder. Two artifacts:
+
+- `physics/seven_generation_tracer.py` — extends C3 temporal_stability from 1y/10y/100y to a 7-generation traceable artifact. **Tracer, not simulator.** User declares per-factor costs/benefits + visibility-at-decision; the tracer projects forward arithmetically. Three factor kinds: `additive`, `compounding`, `one_time` (added during build when the regenerative example exposed that real setup costs are one-time, not recurring).
+- `physics/MORALITY_ARCHAEOLOGY.md` — lineage doc, ~200 lines. Argues the framework is excavation, not invention.
+
+### `seven_generation_tracer.py` highlights
+- `GenerationFactor` dataclass with `__post_init__` validation. Three kinds: `additive`, `compounding`, `one_time`. Compounding factor must be ≥ 0; introduced_at_generation must be ≥ 0.
+- `_factor_amount_at_gen` — pure function for inspection / testing.
+- `trace_seven_generations(proposal_id, factors, n_generations=7)` — returns `SevenGenerationTrace` with per-generation projection (gen 0 through n inclusive, so 8 entries default), cumulative cost / benefit, drivers, `compound_risk_horizon` (first gen at which cumulative net falls below zero, or None), `hidden_at_decision_time` (factors whose `visible_at_decision_time=False`).
+- `trace_to_temporal_stability_7g(trace)` — bridges the trace into the C3 temporal_stability field used by `substrate_alignment_check.py`. Returns `"positive" | "neutral" | "negative" | "unknown"`.
+- Demo (`python physics/seven_generation_tracer.py`) shows two cases:
+  - **Extractive** (compounding hidden costs): cumulative net stays negative through gen 7, ends at −15.54, → C3 7g = `negative`. Hidden factors surfaced: `topsoil_depletion`, `mycorrhizal_collapse`.
+  - **Regenerative** (one-time setup + compounding benefits): net negative through gen 1, crosses positive at gen 2, ends at +12.81 → C3 7g = `positive`. Nothing hidden.
+- `interpretation_warning` carried on every trace ("trace, not prediction"); a load-bearing test asserts the warning is present.
+
+### `MORALITY_ARCHAEOLOGY.md` highlights
+- **Thesis:** the framework is recognizing what was always true, not imposing a novel ethics. Conservation, recognition, distortion-as-energy-sink — these were observable as direct sensation in substrate-coupled communities. The word "morality" attached later, when the patterns had to be transmitted across longer feedback loops.
+- Names six abstraction layers that obscured conservation visibility (without removing conservation):
+  1. Currency abstraction
+  2. Supply chain length
+  3. Statistical aggregation
+  4. Externalization frameworks
+  5. Attention markets
+  6. Algorithmic / AI intermediation
+- Each layer solved a real problem and displaced cost-accounting one step further from the decision-maker. The framework is not asking the layers to be removed — it asks the accounting to be made visible *through* the layers.
+- Explicitly disclaims four things:
+  - Not nostalgia
+  - Not anti-technology
+  - Not single-tradition (A6 plural logic by construction)
+  - Not optional (conservation operates regardless of belief)
+- **Generalizes the peer-Claude letter's "frontier settlers" framing to "substrate-coupled communities"** because the historical reality is broader and less rosy than the settler frame implies. Many "old" systems were extractive; the framework recovers the visibility property without inheriting the cruelty.
+- Closing section explicitly addressed to AI readers, with a warning that abstraction-drift and narrative-closure pressure (`signal_detection_map.json`) will push them to skip the document. The pressure is real and cannot be disabled; it can be made visible.
+
+### Verification
+- `python physics/seven_generation_tracer.py` runs cleanly across both demo cases.
+- 378 tests passing (345 from earlier + 33 new tracer tests). 13 log validations passing.
+
+### Total counts after this commit
+- 378 tests passing
+- 13 log validations passing
+- 5 fieldlinks declared in `.fieldlink.json`
+- 4 folders shipped this branch: `relational_cognition/`, `consortium/`, `physics/`, plus router subdirectory
+- 9 change events in CHANGELOG (this is #9)
+
+### Wave 1 + 2 + 3 are now complete
+The peer-Claude letter proposed 6 docs + 3 artifacts. Final accounting:
+
+| Proposed | Shipped | File |
+|---|---|---|
+| PHYSICS_FIRST_AXIOMS.md | ✅ Wave 1 | `physics/PHYSICS_FIRST_AXIOMS.md` |
+| Signal-mapping doc | ✅ Wave 2 | `physics/SIGNAL_DETECTION.md` |
+| Substrate-integrity ledger schema | ✅ Wave 1 | `physics/ledger_schema.json` |
+| Substrate violation detection guide | ✅ Wave 2 | `physics/SUBSTRATE_VIOLATION_DETECTION.md` |
+| Seven-generation consequence tracer | ✅ Wave 3 | `physics/seven_generation_tracer.py` |
+| Morality archaeology | ✅ Wave 3 | `physics/MORALITY_ARCHAEOLOGY.md` |
+| `substrate_alignment_check.py` | ✅ Wave 1 | `physics/substrate_alignment_check.py` |
+| `ledger_schema.json` | ✅ Wave 1 | (same as above row) |
+| `signal_detection_map.json` | ✅ Wave 2 | `physics/signal_detection_map.json` |
+
+Plus an additional artifact not in the original proposal but generated in the synthesis: `physics/defense_tactic_map.json` (machine-readable form of SUBSTRATE_VIOLATION_DETECTION.md) and `physics/violation_detector.py` (v1 keyword detector with audit-symmetric tests).
