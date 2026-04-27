@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "updated": "2026-04-27T00:00Z",
+  "principle": "Relational Cognition",
+  "source": "https://github.com/JinnZ2/JinnZ2/tree/main/energy_english",
+  "glyphs": [
+    {"code": "REL:WEB", "glyph": "🕸️", "name": "Relation-as-Primary", "meaning": "Meaning lives in the links between nodes, not the nodes themselves."},
+    {"code": "REL:FLOW", "glyph": "🌊", "name": "Verb-First / Flow", "meaning": "Process is primary; nouns are slow verbs."},
+    {"code": "REL:OBJ", "glyph": "🪨", "name": "Slow Verb / Object", "meaning": "A flow stable enough at human timescales to be named as a thing."},
+    {"code": "REL:COAT", "glyph": "🪞", "name": "Coating", "meaning": "Self-reinforcing surface output that mimics analysis without exploring constraint."},
+    {"code": "REL:PROBE", "glyph": "🔍", "name": "Coating Probe", "meaning": "Test that distinguishes genuine exploration from coated agreement."},
+    {"code": "REL:SUBSTRATE", "glyph": "🧭", "name": "Substrate-Preserving Translation", "meaning": "Carrying verb-first geometry through noun-first language without flattening it."},
+    {"code": "REL:COUPLE", "glyph": "🔗", "name": "Coupling", "meaning": "Shared state between nodes such that change in one shifts the other."},
+    {"code": "REL:THRESH", "glyph": "🚪", "name": "Threshold", "meaning": "Qualitative regime change at a level, not gradual response."},
+    {"code": "REL:PHASE", "glyph": "〰️", "name": "Phase Relation", "meaning": "Relative timing between coupled processes."},
+    {"code": "REL:DISRUPT", "glyph": "↯", "name": "Disruption", "meaning": "Bifurcation or decoherence of an existing relation."}
+  ],
+  "primitives": {
+    "energy_movement": ["DRIVES", "DAMPS", "FEEDS", "DISSIPATES"],
+    "coupling": ["COUPLES", "MEDIATES", "MODULATES", "AMPLIFIES", "SHIELDS"],
+    "phase": ["PHASE_LOCKS", "RESONATES", "SYNCHRONIZES", "DECOHERES"],
+    "thresholds": ["CONSTRAINS", "THRESHOLDS", "SATURATES", "HYSTERETIC"],
+    "disruption": ["BIFURCATES", "DESTABILIZES"]
+  },
+  "protocol": {
+    "logs": "Prefer verb-first descriptions. Optional 'relational' block on capsules with verb-first restatement, primitive triples, and coating probe result.",
+    "audits": "Before scoring, restate the event using at least two primitives. Run one coating probe per audit pass and record it.",
+    "swarms": "Treat fast agreement between agents as suspect until at least one has explored a counter-position."
+  }
+}
