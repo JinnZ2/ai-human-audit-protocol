@@ -1,0 +1,47 @@
+{
+  "id": "anishinaabe_gravity_filtration_v1",
+  "name": "Anishinaabe gravity-layered water filtration",
+  "description": "Multi-stage gravity filtration through ordered organic + mineral layers (e.g. charcoal, sand, gravel) in vessels appropriate to the substrate. Validated across boreal freshwater conditions over many generations.",
+  "regime": {
+    "geography": "Northern Great Lakes boreal",
+    "climate_zone": "Dfb",
+    "avg_temp_C": 4.0,
+    "precip_mm_per_yr": 750,
+    "resource_scarcity": [],
+    "population_density": "sparse",
+    "technology_level": "preindustrial",
+    "institutional_context": "tribal",
+    "community_continuity_yrs": 1000,
+    "parallel_communities": ["Punjabi", "Andean", "Coastal_Salish"]
+  },
+  "transmission": "oral_generational",
+  "validation": "DEEP_GENERATIONAL",
+  "generational_depth": 30,
+  "parent_ids": [],
+  "sibling_ids": ["punjab_baoli_filtration_v1"],
+  "derived_ids": [],
+  "origin_communities": ["Anishinaabe nations"],
+  "individual_carriers": ["community_holders_unnamed_by_default"],
+  "carrier_consent": "implicit",
+  "valid_under": [
+    "boreal_freshwater_sources",
+    "low_industrial_contamination",
+    "abundant_local_filter_materials",
+    "community_with_continuous_maintenance_practice"
+  ],
+  "fails_under": [
+    "high_salinity",
+    "industrial_chemical_contamination",
+    "absence_of_maintaining_community"
+  ],
+  "assumptions": [
+    "filter_materials_locally_sourceable",
+    "community_practice_intact",
+    "water_chemistry_within_holocene_baseline"
+  ],
+  "extraction_risks": [
+    "stripped_of_community_maintenance_context",
+    "applied_to_unsuitable_water_chemistry",
+    "credited_to_extractor_rather_than_origin_community"
+  ]
+}

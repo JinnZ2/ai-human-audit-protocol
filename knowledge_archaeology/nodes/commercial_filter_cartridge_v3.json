@@ -1,0 +1,49 @@
+{
+  "id": "commercial_filter_cartridge_v3",
+  "name": "Commercial gravity-filter cartridge (consumer product)",
+  "description": "Disposable cartridge marketed for home use. Combines stratified-medium principles drawn from multiple traditional filtration lineages with industrial materials and a supply-chain-dependent replacement model.",
+  "regime": {
+    "geography": "industrial supply chain",
+    "climate_zone": "indoor_controlled",
+    "resource_scarcity": [],
+    "population_density": "dense",
+    "technology_level": "industrial",
+    "institutional_context": "corporate"
+  },
+  "transmission": "extracted_aggregated",
+  "validation": "SINGLE_CYCLE",
+  "generational_depth": 0,
+  "parent_ids": [
+    "anishinaabe_gravity_filtration_v1",
+    "punjab_baoli_filtration_v1"
+  ],
+  "sibling_ids": [],
+  "derived_ids": [],
+  "origin_communities": ["product_marketing_team_corp_x"],
+  "individual_carriers": [],
+  "carrier_consent": "contested",
+  "valid_under": [
+    "supply_chain_present",
+    "electricity_for_distribution",
+    "replacement_cartridges_available",
+    "municipal_water_baseline"
+  ],
+  "fails_under": [
+    "no_supply_chain",
+    "post-grid",
+    "sparse",
+    "tribal",
+    "preindustrial",
+    "no_replacement_availability"
+  ],
+  "assumptions": [
+    "consumer_can_purchase_replacements",
+    "manufacturer_continues_production",
+    "input_water_within_municipal_norm"
+  ],
+  "extraction_risks": [
+    "deployed_to_post_grid_or_supply_chain_failure_region",
+    "credited_as_corporate_innovation_without_acknowledging_traditional_lineage",
+    "displaces_local_filtration_practice_that_already_fits"
+  ]
+}

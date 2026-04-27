@@ -962,3 +962,104 @@ Without this update, a Claude session opening the project would read `CLAUDE.md`
 - `python -m pytest tests/ -q` still 480 passing.
 - `python validate.py` still 13 passing.
 - No code changed in this commit; only documentation.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `python_310_required_2026-04-27T17:30Z`
+**Proposed by:** AI (responding to CI failure on PR #6 — Python 3.8 job failed; 3.11 + 3.12 + json-lint all passed)
+**Status:** Merged
+
+### Summary
+Bumped `requires-python` from `>=3.8` to `>=3.10` in `pyproject.toml` and dropped 3.8 from the CI matrix.
+
+### Why
+`consortium/kfc_runtime.py:82` uses Python 3.10+ union syntax (`-> str | None`). That code was authored verbatim by JinnZ2 and ships unmodified per the "no silent extension of upstream definitions" rule. The pyproject `>=3.8` requirement was inconsistent with the actual code.
+
+Resolution: bring the version requirement into line with the code (rather than modifying the code to fit an older requirement). This honors the verbatim commitment.
+
+### CI matrix
+- Was: `["3.8", "3.11", "3.12"]`
+- Now: `["3.10", "3.11", "3.12"]`
+
+### Verification
+- 519 tests still passing (was 480; +39 new for knowledge_archaeology, see next change event).
+- 13 log validations still passing.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `knowledge_archaeology_2026-04-27T18:00Z`
+**Proposed by:** swarmuser (forwarded `knowledge_archaeology.py` + `example_deploy_check.py` modules; suggested new folder)
+**Status:** Merged
+
+### Summary
+Added `knowledge_archaeology/` — a fifth top-level architecture layer. Constraint provenance for knowledge: every piece of knowledge carries the regime it was forged in (geographic substrate, forcing functions, transmission mode, validation depth, attribution + consent state). Mismatch between source regime and target deployment regime is detected explicitly rather than being silent.
+
+The user's framing in code form: *"When that knowledge moves -- into a person, a model, a tool, a repo -- the provenance usually doesn't move with it. The capability persists; the conditions of its validity become invisible."*
+
+### Files added (8)
+
+```
+knowledge_archaeology/
+├── README.md                           (orchestrating doc)
+├── knowledge_archaeology.py            (the module — verbatim from swarmuser)
+├── examples/
+│   └── example_deploy_check.py         (3 worked demos — verbatim from swarmuser)
+└── nodes/
+    ├── anishinaabe_gravity_filtration_v1.json
+    ├── punjab_baoli_filtration_v1.json
+    └── commercial_filter_cartridge_v3.json
+tests/test_knowledge_archaeology.py     (39 tests)
+```
+
+Plus `.github/workflows/ci.yml` updated to add `knowledge_archaeology.examples.example_deploy_check` to the demo smoke tests.
+
+### `knowledge_archaeology.py` — three core types
+- **`Regime`** dataclass — geographic, climate, social, institutional, temporal context. All fields optional; `fingerprint()` returns only declared fields.
+- **`KnowledgeNode`** dataclass — id + name + description + provenance (regime, transmission, validation, generational depth) + lineage (parent_ids / sibling_ids / derived_ids) + attribution (origin_communities, individual_carriers, **carrier_consent**) + validity scope (valid_under, fails_under, assumptions, extraction_risks).
+- **`KnowledgeTree`** — graph of nodes. `add()` reconciles bidirectional links; `ancestors()` / `parallel_lineages()` / `attribution_trail()` / `deploy_check()` walk the graph; `export_json()` serializes the whole tree.
+
+Two enums (`TransmissionMode`, `ValidationDepth`) provide controlled vocabularies for the categorical provenance fields.
+
+### Three failure modes the layer catches
+
+1. **Regime mismatch.** `regime_distance(source, target)` quantifies displacement; `applicability()` returns `applicable | review_required | regime_mismatch`. Hard checks against `fails_under` strings can override the score-based verdict.
+2. **Extraction audit.** `attribution_trail(node_id)` walks the ancestor graph and surfaces every community + carrier whose knowledge contributed, with `carrier_consent` recorded per ancestor. The `commercial_filter_cartridge_v3` example demonstrates: ancestors include Anishinaabe + Punjabi traditional lineages, with `carrier_consent: "contested"`.
+3. **Validation-depth gate.** A node with `validation = SINGLE_CYCLE` carries a `WARN: shallow validation history` flag regardless of regime distance. Even a perfect regime match doesn't grant credibility to knowledge that hasn't been tested across cycles.
+
+### Demo (`python -m knowledge_archaeology.examples.example_deploy_check`)
+1. **Boreal filter → Punjab regime**: distance flagged; `parallel_lineages` surfaces `punjab_baoli_filtration_v1` as the local-already-fits alternative.
+2. **Commercial cartridge → attribution trail**: walks back through Anishinaabe and Punjabi ancestors; `consent: contested` surfaces at the commercial node.
+3. **Commercial cartridge → post-grid sparse**: `regime_mismatch` with 4 explicit failure-condition flags (post-grid, sparse, tribal, preindustrial) + ETHICS flag for contested consent + WARN for shallow validation.
+
+### Cultural sourcing
+The example node files reference real traditional knowledge systems (Anishinaabe gravity-layered filtration, Punjab baoli step-well filtration). They are intentionally **structural and respectful**:
+- Communities named at identification level, not deep-description level
+- `individual_carriers` anonymized by default
+- `carrier_consent: "implicit"` — general existence is widely acknowledged; specific implementation detail belongs to authorized cultural holders
+- The example demonstrates the *machinery*, not the depth of the practices
+
+The `commercial_filter_cartridge_v3` example deliberately carries `carrier_consent: "contested"` to show what the audit catches when traditional lineages are absorbed into commercial products without acknowledgment. **This is the load-bearing demonstration**: the framework treats extraction as a detectable, auditable, named event rather than as background noise.
+
+### Tests (39 across 8 sections)
+- `Regime`: defaults + fingerprint stripping (2)
+- `regime_distance`: identical = 0, geographic differs raises, numeric scaling, Jaccard, empty (5)
+- `applicability`: applicable / review / mismatch verdicts; `fails_under` override; shallow-validation WARN; contested/none/implicit consent flags; assumptions + extraction_risks returned (10)
+- `KnowledgeTree`: add, sibling reconciliation, parent→derived back-link, ancestors (with diamond + depth limit + self exclusion), parallel_lineages, attribution_trail, deploy_check (3 blocks + unknown-node error), export_json (11)
+- JSON loaders: regime_from_dict, node_from_dict (int + string validation), load_tree_from_directory + bidirectional link verification + derived back-links (6)
+- Example demo end-to-end (4): runs without error, commercial trail includes traditional sources, post-grid deployment flagged as regime_mismatch, boreal → Punjab finds parallel lineage
+- 1 cross-load assertion
+
+### Connection to other layers
+- `physics/MORALITY_ARCHAEOLOGY.md` is the prose form of the same insight; this folder is the operational form.
+- `consortium/ontology_layer.py`'s `Ontology.regime` + `reapply_check` is a smaller version of the same mechanism.
+- `consortium/embodied_sensor.py`'s `epi` sub-tag system parallels `TransmissionMode`.
+- `physics/seven_generation_tracer.py` uses generational time; `KnowledgeNode.generational_depth` and `validation: DEEP_GENERATIONAL` operate on the same scale.
+
+### Verification
+- `python -m knowledge_archaeology.examples.example_deploy_check` runs cleanly; output shows all three demos.
+- `python -m pytest tests/test_knowledge_archaeology.py -v` passes 39 tests.
+- 519 tests passing total (480 + 39 new). 13 log validations passing. CI demo step extended to include the new demo.

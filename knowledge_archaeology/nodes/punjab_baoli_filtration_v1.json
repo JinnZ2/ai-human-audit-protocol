@@ -1,0 +1,46 @@
+{
+  "id": "punjab_baoli_filtration_v1",
+  "name": "Punjab baoli (step well) filtration",
+  "description": "Step-well architecture with stratified gravel + sand strata that filter groundwater as it rises through the well. Validated across dense agrarian Punjab plain over many generations.",
+  "regime": {
+    "geography": "Punjab plain",
+    "climate_zone": "BSh",
+    "avg_temp_C": 24.0,
+    "precip_mm_per_yr": 600,
+    "resource_scarcity": ["potable_groundwater"],
+    "population_density": "dense",
+    "technology_level": "preindustrial",
+    "institutional_context": "agrarian",
+    "community_continuity_yrs": 800,
+    "parallel_communities": ["Anishinaabe", "Andean", "Mediterranean"]
+  },
+  "transmission": "embodied_apprentice",
+  "validation": "DEEP_GENERATIONAL",
+  "generational_depth": 25,
+  "parent_ids": [],
+  "sibling_ids": ["anishinaabe_gravity_filtration_v1"],
+  "derived_ids": [],
+  "origin_communities": ["Punjabi village water managers"],
+  "individual_carriers": ["baoli_builders_lineage"],
+  "carrier_consent": "implicit",
+  "valid_under": [
+    "groundwater_table_present",
+    "dense_settlement_for_maintenance",
+    "agrarian_seasonal_cycle"
+  ],
+  "fails_under": [
+    "depleted_groundwater_table",
+    "sparse_settlement_no_maintenance",
+    "industrial_contamination_upstream"
+  ],
+  "assumptions": [
+    "groundwater_recharge_intact",
+    "village_governance_for_shared_resource",
+    "construction_materials_locally_available"
+  ],
+  "extraction_risks": [
+    "applied_where_groundwater_unsuitable",
+    "stripped_of_governance_context",
+    "credited_to_engineer_rather_than_lineage"
+  ]
+}
