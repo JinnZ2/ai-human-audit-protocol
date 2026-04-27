@@ -934,3 +934,31 @@ All demos verified locally before adding to CI. The step uses `set -e` so any no
 ### Verification
 - `python -m consortium.bridges` now runs cleanly (was failing).
 - 480 tests still passing. 13 log validations still passing.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `claude_md_architecture_layers_2026-04-27T17:00Z`
+**Proposed by:** AI (continuing; making the new architecture legible to future Claude sessions)
+**Status:** Merged
+
+### Summary
+Updated `CLAUDE.md` so future Claude sessions reading the project guide have a complete map of the four new architecture layers. Existing prose preserved verbatim — the original Project Overview, Symbolic System, Trust & Clarity Scoring, the AI partnership framing — all unchanged.
+
+### What was added
+- **Repository Structure tree:** entries for `relational_cognition/`, `consortium/` (with `audit/`, `examples/`, `router/` subdirs), `physics/`, `ledger/`, top-level `examples/`. Test file list updated from 2 to 14 files.
+- **Languages & Technologies:** noted use of `dataclasses`, `abc`, `hashlib`, `pathlib`, `typing` in newer code (still no third-party runtime deps); added JSONL as a format used by append-only logs and ledger; noted `jsonschema` as optional test dependency.
+- **Build / Test / Lint:** test count updated from 25 to 480+; added 13-line block for running each integration demo; CI section now mentions the demo smoke-test step.
+- **New "Audit-Symmetric Code" sub-section under Key Conventions** — names the conventions newer code follows: `__init_subclass__` enforcement, confidence ceilings per epi, `BridgeReport.preserves`/`lossy_on`, coating-risk acknowledgments, side-channel-over-upstream-modification, returns-data-not-judgment, fail-closed defaults.
+- **New "Architecture Layers" section** parallel to "Symbolic System" — 4-row table with one-sentence orientation per folder; quotes the load-bearing claim; notes that `examples/full_audit_session.py` is the cross-layer end-to-end demo.
+- **AI Assistant Guidelines extended** from 8 to 13 items: original 8 preserved verbatim; 5 new items cover the audit-symmetric conventions, cultural sourcing, and the consent-gate-before-adapter-call discipline.
+- **Ecosystem section split** into "original ecosystem" (unchanged), "consumed by consortium/" (Geometric-to-Binary, thermodynamic-accountability, AI-arena), "consumed by physics/" (Symbolic-Defense-Protocol, PhysicsGuard).
+
+### Why this matters for future sessions
+Without this update, a Claude session opening the project would read `CLAUDE.md`, find no mention of any of the four new layers, and might either: (a) miss them entirely, (b) reinvent them, or (c) silently violate audit-symmetric conventions (e.g. modifying `Primitive` directly instead of using a side-channel). The update prevents all three.
+
+### Verification
+- `python -m pytest tests/ -q` still 480 passing.
+- `python validate.py` still 13 passing.
+- No code changed in this commit; only documentation.
