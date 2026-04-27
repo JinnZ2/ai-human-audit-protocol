@@ -21,11 +21,11 @@
 | `examples/cherokee_creation.py` | ⏳ open | P2 |
 | `examples/genesis_drift.py` | ⏳ open | P2 |
 | `examples/soil_with_hands.py` | ⏳ open | P2 — embodied-query template |
-| `bridges.py` | ✅ shipped 2026-04-27 | `FrameReading ↔ Primitive ↔ ClaimNode` connectors. Forward direction complete (`reading_to_primitives`, `frame_reading_to_primitives`, `primitives_to_claim_graph`); inverse stubbed honestly (`trajectory_summary`). Each function declares `preserves`/`lossy_on` via `BridgeReport`. 43 tests. |
+| `bridges.py` | ✅ shipped 2026-04-27 | `FrameReading ↔ Primitive ↔ ClaimNode` connectors. Forward AND inverse direction complete: `reading_to_primitives`, `frame_reading_to_primitives`, `primitives_to_claim_graph`, `trajectory_summary` (lightweight), `trajectory_to_frame_reading` (full inverse with shape classification). Each function declares `preserves`/`lossy_on` via `BridgeReport`. 81 tests. |
 | `tests/test_bridges.py` | ✅ shipped 2026-04-27 | 43 tests: mappings, frame selection, reading lift, frame reading lift, claim graph build, trajectory summary, bridge reports, end-to-end |
-| `tests/test_kfc_runtime.py` | ⏳ open | P1 |
-| `tests/test_ontology_layer.py` | ⏳ open | P1 |
-| `tests/test_collaboration_protocol.py` | ⏳ open | P1 |
+| `tests/test_kfc_runtime.py` | ✅ shipped 2026-04-27 | 34 tests: CYC_DT, scope/bounds overlap, _within, should_activate, step, felt_sensor, query, soil graph |
+| `tests/test_ontology_layer.py` | ✅ shipped 2026-04-27 | 30 tests: Primitive, Ontology, TransformRule, MultiEncodingRegistry, coherence_check, drift_check, multi_query, water_cycle demo |
+| `tests/test_collaboration_protocol.py` | ✅ shipped 2026-04-27 | 33 tests: REVERSIBILITY_RANK, frame/problem/reading construction, add_reading, invariants/blind_spots/contradictions, synthesize, build_consortium_frames, AMOC demo |
 
 ---
 
@@ -33,7 +33,7 @@
 
 ### P0 — needed for v1 functional
 
-1. ~~**Bridge between abstraction layers.**~~ → forward direction done 2026-04-27 in `consortium/bridges.py`: `reading_to_primitives`, `frame_reading_to_primitives`, `primitives_to_claim_graph`. Each declares `preserves`/`lossy_on`. **Inverse direction (trajectory → FrameReading) is still open** — `trajectory_summary` is a v1 stub that explicitly warns callers not to mistake its output for a real lift. The honest inverse needs trajectory-shape interpretation: saturation, oscillation, regime drift, FELT event semantics. Separate change event when ready.
+1. ~~**Bridge between abstraction layers.**~~ → forward + inverse done 2026-04-27 in `consortium/bridges.py`. Forward: `reading_to_primitives`, `frame_reading_to_primitives`, `primitives_to_claim_graph`. Inverse: `trajectory_to_frame_reading` with shape classification (`stable | monotonic_increase | monotonic_decrease | saturating_* | accelerating_* | oscillating | mixed`), load-bearing detection by total |delta|, FELT-aware diagnosis synthesis, heuristic confidence. Each function declares `preserves`/`lossy_on`. The inverse explicitly flags itself as a coating risk via `assumptions_required: trajectory_classification=heuristic_v1` so downstream readers can audit the heuristic. Round-trip tested: lifted FrameReadings can be re-injected into `MultiGeometryCollaboration.synthesize()` without error.
 
 2. **`embodied_sensor.py` primitive — operator-agnostic.** A direct reading is a direct reading regardless of substrate. Plants, animals, humans, AI vision/audio models, and instruments all produce readings that share the same primitive shape; they differ only in `operator_type`, `epi` sub-tag, and confidence calibration. The audit-symmetry stance fails the moment one operator type is privileged as automatic ground truth.
 
@@ -72,7 +72,7 @@
 
 ### P1 — accountability
 
-5. **Consortium tests.** `tests/test_kfc_runtime.py`, `tests/test_ontology_layer.py`, `tests/test_collaboration_protocol.py`. Should at minimum exercise: bounds-overlap correctness, FELT trigger threshold, ontology drift detection, coherence-check edge cases (empty readings, single reading, all identical), action-ranking determinism.
+5. ~~**Consortium tests.**~~ → done 2026-04-27. 97 tests across the three files (34 + 30 + 33). All pass. Total consortium test count: 172 (97 here + 32 embodied_sensor + 43 bridges).
 
 6. **`.claims` text parser.** `consortium/claims_parser.py`. Reads the extended line format (`id|rate_fn|bounds|cond|rel|fail|meas|cyc|epi|epi_src|epi_conf|regime|coupling_kinds|load_bearing`), returns `ClaimNode` graphs. Required before any external `.claims` corpus can be consumed.
 

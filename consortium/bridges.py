@@ -382,42 +382,37 @@ def primitives_to_claim_graph_report() -> BridgeReport:
 
 
 # ------------------------------------------------------------
-# Trajectory → summary (v1 stub; not yet a full FrameReading)
+# Trajectory → summary (lightweight; for full FrameReading lift
+# use trajectory_to_frame_reading below)
 # ------------------------------------------------------------
 
 def trajectory_summary(
     trajectory: Dict[str, List[float]],
 ) -> Dict[str, Any]:
     """
-    Honest stub for the inverse direction.
+    Lightweight summary of a KFC trajectory.
 
-    Turning a KFC trajectory into a FrameReading requires interpreting
-    trajectory shape — saturation, oscillation, regime drift, FELT
-    events — and that interpretation is real work that gets its own
-    pass. This function is the smallest useful thing: per-claim
-    final state and a coarse direction tag.
+    Returns per-claim final state, coarse direction tag, and any
+    FELT events. For a full inverse lift back into a FrameReading
+    suitable for re-injection into MultiGeometryCollaboration, use
+    `trajectory_to_frame_reading` below.
 
-    This is NOT a FrameReading. Do not pass its output to
-    MultiGeometryCollaboration without a real lift.
-
-    Preserves: per-claim final state, count, basic direction.
-    Lossy on:  EVERYTHING ELSE (frame attribution, blind spots,
-               confidence semantics, action proposals, regime drift
-               flags, FELT events). v1 stub by design.
+    Preserves: per-claim final state, count, basic direction,
+               FELT event count.
+    Lossy on:  trajectory shape (only direction, not curvature),
+               coupling structure, frame attribution.
     """
     summary: Dict[str, Any] = {
         "claim_count": 0,
         "claims": {},
         "felt_events": [],
-        "_warning": (
-            "trajectory_summary is a v1 stub — interpreting trajectory "
-            "shape into a FrameReading is real work and is open. "
-            "Do not pass this output to MultiGeometryCollaboration."
+        "_note": (
+            "trajectory_summary is a lightweight summary. For a full "
+            "FrameReading lift, use trajectory_to_frame_reading."
         ),
     }
     for k, v in trajectory.items():
         if k.startswith("_"):
-            # FELT events and other meta channels
             summary["felt_events"].extend(v if isinstance(v, list) else [v])
             continue
         summary["claim_count"] += 1
@@ -445,15 +440,275 @@ def trajectory_summary(
 def trajectory_summary_report() -> BridgeReport:
     return BridgeReport(
         bridge_name="trajectory_summary",
-        preserves=["per-claim final state", "claim count", "coarse direction"],
-        lossy_on=["frame attribution", "blind spot information",
-                  "confidence semantics", "regime drift flags",
-                  "load-bearing structure", "action proposals",
-                  "FELT event interpretation"],
-        notes="V1 STUB. The honest inverse bridge (trajectory → "
-              "FrameReading) requires interpreting trajectory shape "
-              "(saturation, oscillation, drift, FELT events) and "
-              "is open work.",
+        preserves=["per-claim final state", "claim count",
+                   "coarse direction", "FELT event count"],
+        lossy_on=["trajectory shape (curvature, oscillation, saturation)",
+                  "coupling structure",
+                  "frame attribution",
+                  "regime drift interpretation"],
+        notes="Lightweight summary. For full FrameReading lift, "
+              "use trajectory_to_frame_reading.",
+    )
+
+
+# ------------------------------------------------------------
+# Trajectory shape classification
+# ------------------------------------------------------------
+
+# Trajectory shape categories. The classifier maps a numeric series
+# onto one of these. Each category is itself a frame imposed on raw
+# numbers — classification is a coating risk by construction.
+TRAJECTORY_SHAPES = {
+    "no_steps",            # empty series
+    "single_point",        # only one entry
+    "stable",              # range below epsilon
+    "monotonic_increase",
+    "monotonic_decrease",
+    "saturating_increase", # monotonic with decreasing |deltas|
+    "saturating_decrease",
+    "accelerating_increase",   # monotonic with increasing |deltas|
+    "accelerating_decrease",
+    "oscillating",         # multiple sign changes in deltas
+    "mixed",               # neither monotonic nor oscillating-enough
+}
+
+
+def _monotonic_subkind(deltas: List[float], direction: str) -> str:
+    """Refine a monotonic trajectory into saturating / accelerating /
+    plain monotonic. Compares first-half mean |delta| to second-half."""
+    abs_d = [abs(d) for d in deltas]
+    if len(abs_d) < 4:
+        return f"monotonic_{direction}"
+    half = len(abs_d) // 2
+    first = abs_d[:half]
+    last = abs_d[half:]
+    first_avg = sum(first) / max(len(first), 1)
+    last_avg = sum(last) / max(len(last), 1)
+    if first_avg < 1e-12:
+        return f"monotonic_{direction}"
+    ratio = last_avg / first_avg
+    if ratio < 0.5:
+        return f"saturating_{direction}"
+    if ratio > 2.0:
+        return f"accelerating_{direction}"
+    return f"monotonic_{direction}"
+
+
+def classify_trajectory(
+    series: List[float],
+    epsilon: float = 1e-6,
+    min_oscillations: int = 2,
+) -> str:
+    """
+    Classify a single-claim trajectory into one of TRAJECTORY_SHAPES.
+
+    The classification is a coarse interpretive frame. A stable
+    series and an oscillating series with frequency higher than the
+    sampling rate look identical; this function does not attempt to
+    detect that aliasing. Callers should treat the output as a
+    coating-risk interpretation, not a fact about the system.
+    """
+    n = len(series)
+    if n == 0:
+        return "no_steps"
+    if n == 1:
+        return "single_point"
+
+    range_ = max(series) - min(series)
+    if range_ < epsilon:
+        return "stable"
+
+    deltas = [series[i+1] - series[i] for i in range(n-1)]
+
+    # multiple sign changes → oscillating
+    sign_changes = sum(
+        1 for i in range(len(deltas)-1)
+        if deltas[i] * deltas[i+1] < 0
+    )
+    if sign_changes >= min_oscillations:
+        return "oscillating"
+
+    if all(d >= -epsilon for d in deltas):
+        return _monotonic_subkind(deltas, "increase")
+    if all(d <= epsilon for d in deltas):
+        return _monotonic_subkind(deltas, "decrease")
+
+    return "mixed"
+
+
+# ------------------------------------------------------------
+# Trajectory → FrameReading (full inverse lift)
+# ------------------------------------------------------------
+
+def _compute_load_bearing(
+    trajectory: Dict[str, List[float]],
+    top_n: int = 3,
+) -> List[str]:
+    """Identify load-bearing claims by total |delta| over the
+    trajectory. Excludes meta-channels (underscore-prefixed keys)."""
+    movement = {}
+    for cid, series in trajectory.items():
+        if cid.startswith("_"):
+            continue
+        if not series:
+            continue
+        movement[cid] = abs(max(series) - min(series))
+    return [
+        cid for cid, _ in sorted(
+            movement.items(),
+            key=lambda x: x[1],
+            reverse=True,
+        )[:top_n]
+    ]
+
+
+def _synthesize_diagnosis(
+    shapes: Dict[str, str],
+    felt_events: List[Any],
+) -> str:
+    """Synthesize a diagnosis sentence from trajectory shapes + FELT
+    events. FELT presence dominates because it indicates the runtime
+    itself flagged coherence loss during integration."""
+    if felt_events:
+        return (
+            f"FELT_TRIGGER fired {len(felt_events)} time(s) during "
+            f"integration; regime drift or coherence loss suspected"
+        )
+
+    accelerating = [c for c, s in shapes.items()
+                    if s.startswith("accelerating")]
+    oscillating = [c for c, s in shapes.items() if s == "oscillating"]
+    saturating = [c for c, s in shapes.items()
+                  if s.startswith("saturating")]
+    monotonic = [c for c, s in shapes.items() if s.startswith("monotonic")]
+    mixed = [c for c, s in shapes.items() if s == "mixed"]
+    stable = [c for c, s in shapes.items() if s == "stable"]
+
+    parts = []
+    if accelerating:
+        parts.append(f"divergent dynamics in {accelerating}")
+    if oscillating:
+        parts.append(f"oscillation in {oscillating}")
+    if saturating:
+        parts.append(f"saturation in {saturating}")
+    if monotonic and not (accelerating or saturating):
+        parts.append(f"monotonic drift in {monotonic}")
+    if mixed:
+        parts.append(f"mixed dynamics in {mixed}")
+    if stable and not (accelerating or oscillating
+                        or saturating or monotonic or mixed):
+        return f"system stable across observation window in {stable}"
+    if not parts:
+        return "no characteristic dynamics detected"
+    return "; ".join(parts)
+
+
+def _derive_confidence(
+    shapes: Dict[str, str],
+    felt_events: List[Any],
+) -> float:
+    """Heuristic confidence for the inverse lift. Lower when FELT
+    fired, lower when shape is ambiguous (mixed/oscillating). NOT
+    calibrated — callers should treat this as a starting prior, not
+    a calibrated value."""
+    base = 0.70
+    if felt_events:
+        return max(0.30, base - 0.10 * len(felt_events))
+    types = set(shapes.values())
+    if "mixed" in types:
+        base -= 0.15
+    if "oscillating" in types:
+        base -= 0.10
+    return max(0.30, min(0.85, base))
+
+
+def trajectory_to_frame_reading(
+    trajectory: Dict[str, List[float]],
+    frame: GeometricFrame,
+    problem_id: str,
+    proposed_actions: Optional[List[tuple]] = None,
+) -> FrameReading:
+    """
+    Lift a KFC trajectory into a FrameReading suitable for
+    re-injection into MultiGeometryCollaboration.
+
+    The classifier ascribes a shape category to each per-claim
+    series; each category is a frame imposed on numbers and is
+    therefore a coating risk. The resulting FrameReading carries
+    its `trajectory_classification=heuristic_v1` flag in
+    `assumptions_required` so downstream readers can audit it.
+
+    Args:
+        trajectory: KFC `query()` output, possibly including
+            underscore-prefixed meta channels (e.g. _felt).
+        frame: the GeometricFrame that owns this reading. Typically
+            the frame whose model produced the integration.
+        problem_id: problem identifier for the resulting FrameReading.
+        proposed_actions: optional list of (action, reversibility);
+            inverse lifts may include actions if the integrating
+            frame proposes any.
+
+    Preserves: claim ids that integrated, trajectory shape per claim,
+               FELT event count, relative load-bearing (by total
+               |delta|).
+    Lossy on:  continuous trajectory (compressed to a category),
+               exact rate dynamics, coupling kind (inferred only
+               from co-movement), FELT event semantic content,
+               confidence (derived heuristically).
+    """
+    series_data = {k: v for k, v in trajectory.items()
+                   if not k.startswith("_")}
+    felt_events: List[Any] = []
+    for k, v in trajectory.items():
+        if k.startswith("_"):
+            felt_events.extend(v if isinstance(v, list) else [v])
+
+    shapes = {cid: classify_trajectory(s) for cid, s in series_data.items()}
+    load_bearing = _compute_load_bearing(trajectory)
+    diagnosis = _synthesize_diagnosis(shapes, felt_events)
+    confidence = _derive_confidence(shapes, felt_events)
+
+    return FrameReading(
+        frame=frame,
+        problem_id=problem_id,
+        visible_couplings=list(series_data.keys()),
+        load_bearing_elements=load_bearing,
+        invisible_aspects=list(frame.couplings_invisible),
+        proposed_diagnosis=diagnosis,
+        proposed_actions=list(proposed_actions or []),
+        confidence=confidence,
+        assumptions_required=[
+            "trajectory_classification=heuristic_v1",
+            f"shapes={shapes}",
+            f"felt_events_count={len(felt_events)}",
+            f"load_bearing_top_n={len(load_bearing)}",
+        ],
+        where_this_frame_breaks=list(frame.couplings_invisible),
+    )
+
+
+def trajectory_to_frame_reading_report() -> BridgeReport:
+    return BridgeReport(
+        bridge_name="trajectory_to_frame_reading",
+        preserves=["claim ids that integrated",
+                   "trajectory shape per claim "
+                   "(stable / monotonic / saturating / accelerating / "
+                   "oscillating / mixed)",
+                   "FELT event count",
+                   "relative load-bearing (top-N by total |delta|)"],
+        lossy_on=["continuous trajectory (compressed to category)",
+                  "exact rate dynamics",
+                  "coupling kind (inferred from co-movement only)",
+                  "FELT event semantic content (count only)",
+                  "confidence (derived heuristically; not calibrated)"],
+        notes="V1 interpretive bridge. Each shape category is itself "
+              "a frame imposed on raw numbers — classification is a "
+              "coating risk by construction. The resulting "
+              "FrameReading carries trajectory_classification="
+              "heuristic_v1 in assumptions_required so the heuristic "
+              "is auditable downstream. Caller should run a coating "
+              "probe on the resulting FrameReading before treating "
+              "it as ground truth.",
     )
 
 
@@ -466,6 +721,7 @@ def all_bridge_reports() -> List[BridgeReport]:
         frame_reading_to_primitives_report(),
         primitives_to_claim_graph_report(),
         trajectory_summary_report(),
+        trajectory_to_frame_reading_report(),
     ]
 
 

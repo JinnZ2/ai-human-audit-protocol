@@ -13,6 +13,7 @@ import pytest
 from consortium.bridges import (
     EPI_TO_FRAME,
     EPI_TO_DOMAIN,
+    TRAJECTORY_SHAPES,
     BridgeReport,
     select_frame,
     select_frame_for_reading,
@@ -20,8 +21,13 @@ from consortium.bridges import (
     frame_reading_to_primitives,
     primitives_to_claim_graph,
     trajectory_summary,
+    classify_trajectory,
+    trajectory_to_frame_reading,
     all_bridge_reports,
     _zero_rate,
+    _compute_load_bearing,
+    _synthesize_diagnosis,
+    _derive_confidence,
 )
 from consortium.collaboration_protocol import (
     GeometricFrame,
@@ -303,7 +309,7 @@ class TestTrajectorySummary:
         assert s["claim_count"] == 0
         assert s["claims"] == {}
         assert s["felt_events"] == []
-        assert "_warning" in s
+        assert "_note" in s
 
     def test_increasing_direction(self):
         s = trajectory_summary({"a": [1.0, 2.0, 3.0]})
@@ -330,11 +336,12 @@ class TestTrajectorySummary:
         assert s["claim_count"] == 1
         assert s["felt_events"] == ["FELT_TRIGGER coherence=0.30"]
 
-    def test_warning_is_present(self):
-        # the v1 stub MUST carry a warning so callers don't mistake
-        # its output for a real FrameReading lift
+    def test_note_points_to_full_lift(self):
+        # the lightweight summary must direct callers to the full
+        # inverse lift so they don't mistake the summary for a
+        # FrameReading
         s = trajectory_summary({"a": [1.0]})
-        assert "stub" in s["_warning"].lower()
+        assert "trajectory_to_frame_reading" in s["_note"]
 
 
 # ------------------------------------------------------------
@@ -350,6 +357,7 @@ class TestBridgeReports:
             "frame_reading_to_primitives",
             "primitives_to_claim_graph",
             "trajectory_summary",
+            "trajectory_to_frame_reading",
         }
 
     def test_every_report_declares_preserves_and_lossy(self):
@@ -358,10 +366,299 @@ class TestBridgeReports:
             assert r.preserves, f"{r.bridge_name} declares no preserves"
             assert r.lossy_on, f"{r.bridge_name} declares no lossy_on"
 
-    def test_trajectory_summary_report_flags_v1_stub(self):
-        from consortium.bridges import trajectory_summary_report
-        r = trajectory_summary_report()
-        assert "stub" in r.notes.lower() or "stub" in (r.notes or "").lower()
+    def test_trajectory_to_frame_reading_report_flags_coating_risk(self):
+        from consortium.bridges import trajectory_to_frame_reading_report
+        r = trajectory_to_frame_reading_report()
+        # the inverse bridge MUST flag itself as a coating risk because
+        # classification is a frame imposed on numbers
+        assert ("coating" in r.notes.lower()
+                or "heuristic" in r.notes.lower())
+
+    def test_all_reports_include_inverse_bridge(self):
+        names = {r.bridge_name for r in all_bridge_reports()}
+        assert "trajectory_to_frame_reading" in names
+
+
+# ------------------------------------------------------------
+# Trajectory shape classification
+# ------------------------------------------------------------
+
+class TestClassifyTrajectory:
+    def test_empty(self):
+        assert classify_trajectory([]) == "no_steps"
+
+    def test_single_point(self):
+        assert classify_trajectory([1.0]) == "single_point"
+
+    def test_stable(self):
+        assert classify_trajectory([1.0, 1.0, 1.0, 1.0]) == "stable"
+
+    def test_stable_within_epsilon(self):
+        assert classify_trajectory([1.0, 1.0 + 1e-9, 1.0]) == "stable"
+
+    def test_monotonic_increase(self):
+        # roughly linear increase
+        s = [0.0, 1.0, 2.0, 3.0, 4.0]
+        assert classify_trajectory(s) == "monotonic_increase"
+
+    def test_monotonic_decrease(self):
+        s = [4.0, 3.0, 2.0, 1.0, 0.0]
+        assert classify_trajectory(s) == "monotonic_decrease"
+
+    def test_saturating_increase(self):
+        # large jumps early, small jumps late
+        s = [0.0, 5.0, 9.0, 9.5, 9.6, 9.65, 9.66]
+        assert classify_trajectory(s) == "saturating_increase"
+
+    def test_saturating_decrease(self):
+        s = [10.0, 5.0, 1.0, 0.5, 0.4, 0.35, 0.34]
+        assert classify_trajectory(s) == "saturating_decrease"
+
+    def test_accelerating_increase(self):
+        # small jumps early, large jumps late (think exponential)
+        s = [0.0, 0.1, 0.2, 0.3, 1.0, 3.0, 9.0]
+        assert classify_trajectory(s) == "accelerating_increase"
+
+    def test_oscillating(self):
+        # multiple sign changes
+        s = [0.0, 1.0, -1.0, 1.0, -1.0, 1.0]
+        assert classify_trajectory(s) == "oscillating"
+
+    def test_mixed_when_not_oscillating_enough(self):
+        # one sign change → not oscillating, not strictly monotonic
+        s = [0.0, 1.0, 2.0, 1.0]   # only one sign change in deltas
+        assert classify_trajectory(s) == "mixed"
+
+    def test_known_shapes_set(self):
+        # every output of classify_trajectory must be in TRAJECTORY_SHAPES
+        cases = [
+            [], [1.0], [1.0, 1.0],
+            [0.0, 1.0, 2.0, 3.0], [3.0, 2.0, 1.0, 0.0],
+            [0.0, 5.0, 9.0, 9.5], [10.0, 5.0, 1.0, 0.5],
+            [0.0, 0.1, 0.2, 1.0, 3.0],
+            [0.0, 1.0, -1.0, 1.0, -1.0],
+            [0.0, 1.0, 2.0, 1.0],
+        ]
+        for s in cases:
+            assert classify_trajectory(s) in TRAJECTORY_SHAPES
+
+
+# ------------------------------------------------------------
+# Load-bearing detection
+# ------------------------------------------------------------
+
+class TestComputeLoadBearing:
+    def test_excludes_underscore_keys(self):
+        traj = {
+            "a": [0.0, 5.0],
+            "_felt": ["FELT_TRIGGER"],
+        }
+        assert "_felt" not in _compute_load_bearing(traj)
+
+    def test_orders_by_total_delta(self):
+        traj = {
+            "small_move": [0.0, 0.1],
+            "big_move":   [0.0, 10.0],
+            "no_move":    [1.0, 1.0],
+        }
+        result = _compute_load_bearing(traj, top_n=3)
+        assert result[0] == "big_move"
+
+    def test_skips_empty_series(self):
+        traj = {"a": [], "b": [0.0, 5.0]}
+        result = _compute_load_bearing(traj)
+        assert "a" not in result
+        assert "b" in result
+
+    def test_top_n_caps_output(self):
+        traj = {f"c{i}": [0.0, float(i)] for i in range(10)}
+        result = _compute_load_bearing(traj, top_n=3)
+        assert len(result) == 3
+
+
+# ------------------------------------------------------------
+# Diagnosis synthesis
+# ------------------------------------------------------------
+
+class TestSynthesizeDiagnosis:
+    def test_felt_dominates(self):
+        d = _synthesize_diagnosis(
+            shapes={"a": "stable"},
+            felt_events=["FELT_TRIGGER"],
+        )
+        assert "FELT_TRIGGER" in d
+        assert "regime drift" in d.lower() or "coherence" in d.lower()
+
+    def test_accelerating_called_divergent(self):
+        d = _synthesize_diagnosis(
+            shapes={"a": "accelerating_increase"},
+            felt_events=[],
+        )
+        assert "divergent" in d.lower()
+
+    def test_oscillating_named(self):
+        d = _synthesize_diagnosis(
+            shapes={"a": "oscillating"},
+            felt_events=[],
+        )
+        assert "oscillation" in d.lower()
+
+    def test_saturating_named(self):
+        d = _synthesize_diagnosis(
+            shapes={"a": "saturating_increase"},
+            felt_events=[],
+        )
+        assert "saturation" in d.lower()
+
+    def test_all_stable(self):
+        d = _synthesize_diagnosis(
+            shapes={"a": "stable", "b": "stable"},
+            felt_events=[],
+        )
+        assert "stable" in d.lower()
+
+
+# ------------------------------------------------------------
+# Confidence derivation
+# ------------------------------------------------------------
+
+class TestDeriveConfidence:
+    def test_clean_trajectory_above_50pct(self):
+        c = _derive_confidence(shapes={"a": "stable"}, felt_events=[])
+        assert c > 0.5
+
+    def test_felt_lowers(self):
+        clean = _derive_confidence({"a": "stable"}, [])
+        with_felt = _derive_confidence({"a": "stable"}, ["FELT_TRIGGER"])
+        assert with_felt < clean
+
+    def test_felt_floor(self):
+        c = _derive_confidence({"a": "stable"},
+                               ["F1", "F2", "F3", "F4", "F5"])
+        assert c >= 0.30
+
+    def test_oscillating_lowers(self):
+        clean = _derive_confidence({"a": "stable"}, [])
+        osc = _derive_confidence({"a": "oscillating"}, [])
+        assert osc < clean
+
+    def test_mixed_lowers(self):
+        clean = _derive_confidence({"a": "stable"}, [])
+        mixed = _derive_confidence({"a": "mixed"}, [])
+        assert mixed < clean
+
+    def test_in_unit_interval(self):
+        c = _derive_confidence({"a": "stable"}, [])
+        assert 0.0 <= c <= 1.0
+
+
+# ------------------------------------------------------------
+# trajectory_to_frame_reading (full inverse lift)
+# ------------------------------------------------------------
+
+class TestTrajectoryToFrameReading:
+    def setup_method(self):
+        self.frames = {f.frame_id: f for f in build_consortium_frames()}
+
+    def test_produces_frame_reading(self):
+        traj = {"a": [0.0, 1.0, 2.0]}
+        fr = trajectory_to_frame_reading(
+            traj, self.frames["thermodynamic_geometry"], "prob_x",
+        )
+        assert isinstance(fr, FrameReading)
+        assert fr.problem_id == "prob_x"
+
+    def test_visible_couplings_from_claim_ids(self):
+        traj = {"a": [0.0, 1.0], "b": [0.0, 2.0]}
+        fr = trajectory_to_frame_reading(
+            traj, self.frames["thermodynamic_geometry"], "prob_x",
+        )
+        assert set(fr.visible_couplings) == {"a", "b"}
+
+    def test_underscore_keys_excluded_from_visible(self):
+        traj = {"a": [0.0, 1.0], "_felt": ["FELT_TRIGGER"]}
+        fr = trajectory_to_frame_reading(
+            traj, self.frames["thermodynamic_geometry"], "prob_x",
+        )
+        assert "_felt" not in fr.visible_couplings
+
+    def test_load_bearing_populated(self):
+        traj = {"big": [0.0, 10.0], "small": [0.0, 0.01]}
+        fr = trajectory_to_frame_reading(
+            traj, self.frames["thermodynamic_geometry"], "prob_x",
+        )
+        assert "big" in fr.load_bearing_elements
+
+    def test_assumptions_carry_audit_metadata(self):
+        traj = {"a": [0.0, 1.0]}
+        fr = trajectory_to_frame_reading(
+            traj, self.frames["thermodynamic_geometry"], "prob_x",
+        )
+        joined = " ".join(fr.assumptions_required)
+        assert "trajectory_classification=heuristic_v1" in joined
+        assert "shapes=" in joined
+        assert "felt_events_count=" in joined
+
+    def test_felt_events_lower_confidence(self):
+        clean = trajectory_to_frame_reading(
+            {"a": [0.0, 1.0, 2.0]},
+            self.frames["thermodynamic_geometry"], "prob_x",
+        )
+        noisy = trajectory_to_frame_reading(
+            {"a": [0.0, 1.0, 2.0], "_felt": ["F1", "F2"]},
+            self.frames["thermodynamic_geometry"], "prob_x",
+        )
+        assert noisy.confidence < clean.confidence
+
+    def test_default_proposed_actions_empty(self):
+        fr = trajectory_to_frame_reading(
+            {"a": [0.0, 1.0]},
+            self.frames["thermodynamic_geometry"], "prob_x",
+        )
+        assert fr.proposed_actions == []
+
+    def test_explicit_proposed_actions(self):
+        fr = trajectory_to_frame_reading(
+            {"a": [0.0, 1.0]},
+            self.frames["thermodynamic_geometry"], "prob_x",
+            proposed_actions=[("respond", "high_reversibility")],
+        )
+        assert fr.proposed_actions == [("respond", "high_reversibility")]
+
+    def test_where_breaks_carries_frame_blind_spots(self):
+        frame = self.frames["thermodynamic_geometry"]
+        fr = trajectory_to_frame_reading(
+            {"a": [0.0, 1.0]}, frame, "prob_x",
+        )
+        assert fr.where_this_frame_breaks == list(frame.couplings_invisible)
+
+    def test_round_trip_lift_into_collaboration(self):
+        # the FrameReading produced by the inverse lift must be valid
+        # input for MultiGeometryCollaboration without raising
+        from consortium.collaboration_protocol import (
+            MultiGeometryCollaboration,
+            Problem,
+        )
+        problem = Problem(
+            problem_id="rt",
+            presenting_symptoms=[], suspected_couplings=[],
+            bounds=("s", "t", "z"),
+            regime_context={}, stakes=[],
+        )
+        collab = MultiGeometryCollaboration(problem=problem, frames=[])
+        fr = trajectory_to_frame_reading(
+            {"a": [0.0, 1.0, 2.0]},
+            self.frames["thermodynamic_geometry"], "rt",
+        )
+        collab.add_reading(fr)
+        # second reading from a different frame for invariants to compute
+        fr2 = trajectory_to_frame_reading(
+            {"a": [0.0, 0.5, 1.0]},
+            self.frames["pattern_spatial"], "rt",
+        )
+        collab.add_reading(fr2)
+        result = collab.synthesize()
+        assert result["problem_id"] == "rt"
 
 
 # ------------------------------------------------------------

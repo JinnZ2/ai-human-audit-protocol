@@ -250,3 +250,124 @@ Every bridge function has a corresponding `*_report()` that returns a `BridgeRep
 - **Tests for `kfc_runtime.py`, `ontology_layer.py`, `collaboration_protocol.py`** — the consortium's own modules still need direct unit tests (currently exercised via `bridges.py` and demos only).
 - **Router** (`consortium/router/`): `query_dispatcher.py`, `coherence_aggregator.py`, `model_adapters/`.
 - **Coupling-kind metadata.** Bridge currently treats all couplings as untyped. Per `CLAUDE_REQUIREMENTS.md` the next-generation bridge should preserve coupling kind (causal_forward, bidirectional, etc.) when lifting from `Primitive` to `ClaimNode`.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `consortium_module_tests_2026-04-27T05:00Z`
+**Proposed by:** AI (Claude) — recommended sequence accepted by swarmuser ("Aligned on reasons and recommendations")
+**Status:** Merged
+
+### Summary
+Direct unit tests for the three consortium modules that were previously exercised only via demos and via `bridges.py`. The audit-symmetry stance demands the consortium's own code be checkable on the same axis as everything else.
+
+- `tests/test_kfc_runtime.py` — 34 tests
+- `tests/test_ontology_layer.py` — 30 tests
+- `tests/test_collaboration_protocol.py` — 33 tests
+
+### test_kfc_runtime.py — 34 tests
+- `CYC_DT`: three timescales present, ordering (transient < seasonal < generational)
+- `_scope_overlap`: None query, both-contain, one-contain, neither-contain
+- `bounds_overlap`: full overlap when no query dims, zero when any miss, full when all overlap
+- `_within`: all dims match, skips None-in-ctx dims, fails when missed
+- `should_activate`: bounds gating, fail conditions, all conds must pass
+- `step`: inactive doesn't change, active integrates, history accumulates, cyc_dt scales step size
+- `felt_sensor`: empty / no-history / low-drift / high-drift / threshold override
+- `query`: returns observe keys, n_steps proportional to duration, unobserved id zero-defaults, history cleared
+- soil graph demo: constructs, each node has rate_fn + bounds
+
+### test_ontology_layer.py — 30 tests
+- `Primitive`: construction, default `epi="assumed"`, default confidence 0.5
+- `Ontology`: add primitive, rejects domain mismatch, `is_valid_in` default True, uses `reapply_check`
+- `TransformRule`: apply, reverse without inverse returns None, reverse uses `inverse_fn`, default empty preserves/lossy_on
+- `MultiEncodingRegistry`: register ontology / transform, `get_concept_across_domains` filters by presence
+- `coherence_check`: insufficient encodings flagged, universal couplings as intersection, domain-specific as set differences, bounds agreement true/false, score 1.0 on full agreement, score 0.0 on disjoint
+- `drift_check`: no drift when valid, drift recorded with `do_not_silently_apply` action
+- `multi_query`: views per domain, missing encodings listed, `trust_signal: high` when coherent + no drift, `investigate` when low coherence OR drift
+- water_cycle demo: constructs, present in all four encodings, runs through `multi_query`
+
+### test_collaboration_protocol.py — 33 tests
+- `REVERSIBILITY_RANK`: `irreversible_if_delayed` ranks highest (use-or-lose bubbles up), high > medium > low, irreversible ranks low under uncertainty, unknown at bottom
+- construction: `GeometricFrame`, `Problem`, `FrameReading`
+- `add_reading`: starts empty, appends correctly
+- `surface_invariants`: insufficient when <2 readings, `convergence: "converged"` when universal couplings exist, `"divergent"` when none, convergence_note explains divergent (NOT abandon analysis), load-bearing intersection
+- `surface_blind_spots`: each frame blind to others' couplings, no entries when all match
+- `surface_contradictions`: diagnostic disagreement flagged with frame_a/frame_b ids, same diagnosis → no contradiction
+- `synthesize`: all expected keys present, time_critical_actions surfaces `irreversible_if_delayed`, irreversible_if_delayed ranks first overall, every action has `reversibility_rank`, fraction_support reflects overlap, epistemic_warning present
+- `build_consortium_frames`: 7 frames, all distinct ids, includes embodied_sensor + ecological_signal + generational_transmission, every frame has required attributes
+- AMOC demo: constructs, synthesizes without error, ≥3 readings present
+
+### Total test count
+**197 tests passing** (25 original audit-protocol + 32 embodied_sensor + 43 bridges + 97 here). 13 log validations passing.
+
+### Audit-symmetry note
+Every public function and dataclass in the consortium now has at least one test. The `convergence: "divergent"` correctness fix from earlier today is now locked in by `test_convergence_note_explains_divergent` — future regressions where someone restores the ambiguous "low" label will fail this test.
+
+### Open / next
+- **Inverse bridge** (`trajectory → FrameReading`) — next P0.
+- **Router** (`query_dispatcher`, `coherence_aggregator`, `model_adapters`) — biggest remaining engineering lift.
+- **Coupling-kind metadata** in bridges — preserve `coupling.kind` per `CLAUDE_REQUIREMENTS.md`.
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `consortium_inverse_bridge_2026-04-27T06:00Z`
+**Proposed by:** AI (Claude) — recommended sequence accepted by swarmuser
+**Status:** Merged
+
+### Summary
+Added the inverse bridge: `trajectory → FrameReading`. Plus tests and a refined `trajectory_summary`.
+
+- `consortium/bridges.py` extended with:
+  - `TRAJECTORY_SHAPES` controlled vocabulary
+  - `classify_trajectory(series)` — coarse shape classifier
+  - `_compute_load_bearing` / `_synthesize_diagnosis` / `_derive_confidence` helpers
+  - `trajectory_to_frame_reading(trajectory, frame, problem_id, ...)` — full inverse lift
+  - `trajectory_to_frame_reading_report()` — declares preserves/lossy_on with explicit coating-risk note
+  - `all_bridge_reports()` updated to include the inverse
+  - `trajectory_summary` refactored: now points callers at `trajectory_to_frame_reading` for full lift; renamed `_warning` field to `_note`
+- `tests/test_bridges.py` extended with **38 new tests** across:
+  - `classify_trajectory` (11 tests including all shape categories + edge cases)
+  - `_compute_load_bearing` (4 tests)
+  - `_synthesize_diagnosis` (5 tests)
+  - `_derive_confidence` (6 tests)
+  - `trajectory_to_frame_reading` (10 tests including round-trip into `MultiGeometryCollaboration`)
+  - 2 reports tests updated for the fifth bridge
+
+### Trajectory shape categories
+```
+no_steps                # empty
+single_point            # len=1
+stable                  # range below epsilon
+monotonic_increase      # all deltas positive (within epsilon)
+monotonic_decrease      # all deltas negative
+saturating_increase     # monotonic with deltas magnitude declining
+saturating_decrease
+accelerating_increase   # monotonic with deltas magnitude growing
+accelerating_decrease
+oscillating             # multiple sign changes in deltas
+mixed                   # neither monotonic nor oscillating-enough
+```
+
+### Coating-risk acknowledgment
+Classification is itself a frame imposed on raw numbers. A stable series and an oscillation faster than the sampling rate are indistinguishable; saturation vs. monotonic-with-noise depends on a heuristic threshold. The `trajectory_to_frame_reading` function flags this in two ways:
+1. The resulting `FrameReading.assumptions_required` carries `trajectory_classification=heuristic_v1` so downstream readers know it is a heuristic.
+2. The `BridgeReport` notes explicitly: *"each shape category is itself a frame imposed on raw numbers — classification is a coating risk by construction. Caller should run a coating probe on the resulting FrameReading before treating it as ground truth."*
+
+A test asserts the report carries the coating-risk language. A future regression that hides this acknowledgment will fail the test.
+
+### Round-trip property tested
+`test_round_trip_lift_into_collaboration` constructs two trajectories, lifts each into a `FrameReading`, adds both to a `MultiGeometryCollaboration`, calls `synthesize()`, and asserts no error. The inverse bridge produces FrameReadings that the collaboration layer accepts without modification.
+
+### Confidence is heuristic, not calibrated
+`_derive_confidence` is bounded `[0.30, 0.85]`. FELT events lower it (`-0.10` per event, floor 0.30); ambiguous shapes lower it further. **Not calibrated.** Callers must treat as a starting prior, not a calibrated value. Documented in the function's docstring and in the BridgeReport.
+
+### Verification
+- 235 tests passing (197 from earlier today + 38 new). 13 log validations passing.
+- Round-trip into `MultiGeometryCollaboration.synthesize()` succeeds.
+
+### Open / next P0
+- **Router** (`consortium/router/`) — biggest remaining engineering lift. `query_dispatcher`, `coherence_aggregator`, `model_adapters/{base,claude,gemini,deepseek}`. API auth, rate limits, structured response parsing, consent gate before fan-out.
+- **Coupling-kind metadata** in `primitives_to_claim_graph` — preserve `coupling.kind` per `CLAUDE_REQUIREMENTS.md`.
