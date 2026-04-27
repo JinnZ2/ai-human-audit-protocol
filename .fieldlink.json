@@ -21,5 +21,40 @@
       "symbols/**"
     ],
     "role": "shapes|translation|geometry"
+  },
+  "fieldlink_geometric_to_binary": {
+    "repo": "https://github.com/JinnZ2/Geometric-to-Binary-Computational-Bridge",
+    "description": "Source of .claims and .obs formats, sensor primitives, solver registry, and bridge contract validation. The consortium adopts these schemas rather than duplicating them.",
+    "shared_paths": [
+      "CLAIM_SCHEMA.py",
+      "CLAIM_TABLE.json",
+      "solver_registry.py",
+      "cross_repo_bridge_contract.py",
+      "sensing/**"
+    ],
+    "role": "claims|sensing|solver-registry|bridge-contract",
+    "consumed_by": "consortium/"
+  },
+  "fieldlink_thermodynamic_accountability": {
+    "repo": "https://github.com/JinnZ2/thermodynamic-accountability-framework",
+    "description": "Energy Accountant, Narrative Stripper (= coating detection, formalized), friction-ratio scoring, organism-agnostic accountability. The consortium uses this as its primary accountability layer; humans and AI are scored on the same physics-based axis.",
+    "shared_paths": [
+      "core/**",
+      "AI_ENTRY.md"
+    ],
+    "role": "accountability|coating-detection|friction-scoring|organism-agnostic",
+    "consumed_by": "consortium/"
+  },
+  "fieldlink_ai_arena": {
+    "repo": "https://github.com/JinnZ2/AI-arena",
+    "description": "Cherry-picked: LOGOS bounded-claim grammar and oracle-grounding pattern only. The adversarial trust-decay-via-cannibalization mechanic is intentionally NOT imported — the consortium is peers, not arena.",
+    "shared_paths": [
+      "arena/logos/**",
+      "scenarios/**"
+    ],
+    "imports": ["LOGOS bounded-claim grammar", "oracle-grounding pattern"],
+    "excludes": ["adversarial trust decay", "winner-takes-loser cannibalization"],
+    "role": "claim-grammar|oracle-grounding",
+    "consumed_by": "consortium/"
   }
 }
