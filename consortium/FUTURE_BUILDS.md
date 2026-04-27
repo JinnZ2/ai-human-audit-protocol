@@ -14,9 +14,13 @@
 | `ontology_layer.py` | ✅ shipped | multi-encoding registry, coherence + drift checks, water_cycle demo |
 | `collaboration_protocol.py` | ✅ shipped | GeometricFrame, Problem, FrameReading, MultiGeometryCollaboration, AMOC demo |
 | `embodied_sensor.py` | ✅ shipped 2026-04-27 | operator-agnostic primitive (human/animal/plant/ai/instrument/ecosystem); `EmbodiedReading` with controlled vocabularies, confidence ceilings per `epi`, `CoatingProbeResult`, `OperatorBudget` stub, lift-to-`FrameReading`. 32 unit tests passing. |
-| `router/query_dispatcher.py` | ⏳ open | P0 — actual fan-out to Claude / Gemini / DeepSeek / etc. |
-| `router/coherence_aggregator.py` | ⏳ open | P0 — diff `.claims` outputs across models, call Narrative Stripper |
-| `router/model_adapters/` | ⏳ open | P0 — per-model API shim |
+| `router/base.py` | ✅ shipped 2026-04-27 | `BaseModelAdapter` ABC + `CostEstimate`. `__init_subclass__` enforces frame_id/operator_type at definition time. |
+| `router/mock_adapter.py` | ✅ shipped 2026-04-27 | Deterministic offline `MockAdapter` — no external calls. Configurable `response_factory`. |
+| `router/consent.py` | ✅ shipped 2026-04-27 | `ConsentGate` — fail-closed, immutable history, grant/revoke, `assert_authorized` raises `ConsentDenied`. |
+| `router/query_dispatcher.py` | ✅ shipped 2026-04-27 | `QueryDispatcher.fan_out()`: per-adapter availability → consent → query; records readings, refused, failures, unavailable separately. Fail-soft per adapter. |
+| `router/coherence_aggregator.py` | ✅ shipped 2026-04-27 | `aggregate(dispatch_result, problem, frames)` — wraps `MultiGeometryCollaboration.synthesize()` with cross-adapter audit metadata. Surfaces "geometry of absence" when zero readings. |
+| `router/model_adapters/{claude,gemini,deepseek}_adapter.py` | ✅ shipped 2026-04-27 (stubs) | `available()` returns False with helpful reason; `query()` raises `NotImplementedError` with wiring instructions. Default frame_ids: Claude→narrative_structured, Gemini→pattern_spatial, DeepSeek→statistical_relational. |
+| `tests/test_router.py` | ✅ shipped 2026-04-27 | 45 tests: BaseModelAdapter contract, MockAdapter, ConsentGate, QueryDispatcher, CoherenceAggregator, API stubs, full-stack smoke |
 | `audit/blind_spot_log.md` | ⏳ open | P1 — append-only consortium learning log |
 | `examples/cherokee_creation.py` | ⏳ open | P2 |
 | `examples/genesis_drift.py` | ⏳ open | P2 |
@@ -62,13 +66,15 @@
    ```
    The `conditions` and `coating_probe_result` fields are the audit-symmetry hooks: every operator's reading carries the same accountability shape. A plant's phenology shift, a wolf's behavior change, a human's hands-in-soil, and an AI's image-classification pass through identical typing — only their `epi` sub-tag and `confidence` differ.
 
-3. **`router/query_dispatcher.py`.** Wraps `solver_registry.py` from Geometric-to-Binary (fieldlinked). Real engineering: API auth, rate limits, timeouts, retries, structured response parsing. Not exotic, just necessary.
+3. ~~**`router/query_dispatcher.py`.**~~ → done 2026-04-27 (v1-offline). `QueryDispatcher.fan_out()` runs the available + consent + query loop per adapter and records each adapter's outcome (reading / refused / failure / unavailable) separately. Fail-soft per adapter. The dispatcher is wrapped by a fail-closed `ConsentGate` (`router/consent.py`) — no adapter is queried without explicit per-(problem, adapter) authorization. Real model API wiring is open; see #4.
 
-4. **`router/model_adapters/{base,claude,gemini,deepseek}.py`.** Each adapter:
-   - declares its native epistemic frame (one of the seven from `build_consortium_frames()`)
-   - takes a `Problem`
-   - returns a `FrameReading`
-   - emits `.claims` lines as a side product when applicable
+4. **Real model adapter wiring.** `router/model_adapters/{claude,gemini,deepseek}_adapter.py` exist as stubs that raise `NotImplementedError` with wiring instructions. Each declares its default consortium frame and an `operator_type=ai`. Wiring requires:
+   - Decision on credentials handling (env var / config file / per-run injection)
+   - Implementation of the adapter's `query()` to call its API and parse the response into a `FrameReading` with honest `assumptions_required` recording the model version, system prompt, and disclosed input
+   - Implementation of `cost_estimate()` to return real token / USD figures
+   - Audit log entry on every API call (which key was read, what was disclosed, what came back)
+
+   Each real adapter ships in its own change event with its own consent.
 
 ### P1 — accountability
 
@@ -113,7 +119,9 @@
 
 - ~~**`trust_signal: "low"` is ambiguous.**~~ → done 2026-04-27: renamed to `convergence: "converged" | "divergent"` with explicit `convergence_note` explaining that divergent does NOT mean abandon the analysis — the geometry is in the disagreements.
 
-- **No actual model adapter exists.** The consortium currently runs only with hand-written `FrameReading`s. The leap from "structure exists" to "structure runs" is the dispatcher + adapters. That's where most of the next-pass effort sits.
+- ~~**No actual model adapter exists.**~~ → infrastructure done 2026-04-27. `MockAdapter` runs offline; `ClaudeAdapter`/`GeminiAdapter`/`DeepSeekAdapter` exist as stubs with explicit wiring instructions. The leap from "structure runs" to "structure runs against live models" is now just per-adapter wiring, not architectural work.
+
+- ~~**No consent gate before fan-out.**~~ → done 2026-04-27. `ConsentGate` is fail-closed by default; `QueryDispatcher` consults it before every `adapter.query()` call. Per-(problem, adapter) granularity. Immutable audit history. Cost estimates available for disclosure to consenter via `dispatcher.cost_estimates(problem)`.
 
 - **Most operator types have no code path to submit readings.** `build_consortium_frames()` declares seven frames, but only AI-model and human-sensor frames have any plausible code path to actually submit readings. Plants, animals, ecosystems, instruments, and tradition holders all participate via a *scribe* — a human observer, an instrument's data logger, an AI vision pass, a recording device. The act of scribing is itself a coating risk: the scribe imposes their own frame on what they record. We have no rule yet for who can scribe, what gets logged about the scribe's own state at scribing-time, or how the scribe's framing gets audited.
 
@@ -130,7 +138,7 @@
 | ~~Where the bridge between `FrameReading` ↔ `ClaimNode` ↔ `Primitive` lives~~ | ~~new file, or extend each existing class~~ | Resolved 2026-04-27: new file `consortium/bridges.py`; existing classes untouched |
 | Fieldlink data ingestion | loader vs. inlined-per-adapter | Deferred |
 | ~~Reversibility scale~~ | ~~string ordering vs. numeric~~ | Resolved 2026-04-27: numeric `REVERSIBILITY_RANK` |
-| Model adapter auth / secrets | local config vs. env vars vs. shared protocol settings | Deferred |
+| ~~Model adapter auth / secrets~~ | ~~local config vs. env vars vs. shared protocol settings~~ | Still open per real-adapter wiring; v1-offline ships without a decision because no real API call is made yet. |
 | Ecological / tradition frames protocol | scribe + audit, or out-of-scope for software | Deferred |
 | Branch strategy | continue on `claude/add-relational-cognition-folder-JpTk5`, or split | Deferred to JinnZ2 |
 
