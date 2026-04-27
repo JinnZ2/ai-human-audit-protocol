@@ -106,3 +106,32 @@ Every `epi` tag (`measured | inferred | assumed | contradicted | missing`) appli
 - `consortium/audit/blind_spot_log.md`
 - `consortium/examples/` — cherokee_creation, genesis_drift, soil_with_hands
 - KFC v2 per `CLAUDE_REQUIREMENTS.md` (ClaimNode epi/regime/coupling-kind extensions, query_signature, recalibration_event) — separate change event, separate consent
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `consortium_collaboration_protocol_2026-04-27T01:00Z`
+**Proposed by:** swarmuser (collaboration protocol authored by JinnZ2)
+**Drafted by:** AI (Claude) — file placement, FUTURE_BUILDS roadmap only
+**Status:** Merged
+
+### Summary
+- Added `consortium/collaboration_protocol.py` — `GeometricFrame`, `Problem`, `FrameReading`, `MultiGeometryCollaboration`, seven-frame consortium roster, AMOC/upper-Midwest resilience worked example.
+- Added `consortium/FUTURE_BUILDS.md` — append-only roadmap. Status snapshot, P0–P3 priority-ordered open builds, known gaps, decisions deferred, test corpus seeds.
+
+### Clarification
+The collaboration protocol is the layer where `relational_cognition/` (prose), KFC (formal mechanics), and the multi-encoding ontology layer meet **actual operators** — AI models, embodied human sensors (Kavik), tradition holders, ecological signals. The seven frames in `build_consortium_frames()` are not disciplines; they are *shapes through which a problem becomes legible*. None is canonical. Disagreement between frames is data, not error.
+
+The synthesize() output deliberately returns the whole geometry — invariants, blind spots, productive disagreements, action ranking — rather than a single answer. The epistemic warning is part of the return value, not a docstring: "no single frame holds the answer. the geometry is what survives across frames. what survives is load-bearing. what disagrees is data."
+
+The file ships verbatim as authored by JinnZ2. Claude's contribution: file placement, smoke-testing, FUTURE_BUILDS roadmap, CHANGELOG entry. No silent edits.
+
+### Demo behavior worth flagging
+The AMOC example registers 3 readings (thermodynamic / embodied / ecological) with no exact coupling-string overlap, producing `trust_signal: "low"` and empty `universal_couplings`. This is correct behavior — the three frames see genuinely different geometries — but `"low"` may be misread as "abandon the analysis" when it should mean "no single coupling is canonical; the geometry is in the disagreements." Documented in FUTURE_BUILDS.md as a needed clarification.
+
+### Open / next
+See `consortium/FUTURE_BUILDS.md` (append-only roadmap). P0 priorities:
+- bridge between `FrameReading` ↔ `ClaimNode` ↔ `Primitive`
+- `embodied_sensor.py` primitive
+- `router/query_dispatcher.py` + `model_adapters/`
