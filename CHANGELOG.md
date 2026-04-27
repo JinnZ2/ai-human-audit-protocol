@@ -747,3 +747,100 @@ Two bounded extensions, shipped together because both are pure additive (no brea
 ### Open / remaining on the list
 - **Real model adapter wiring** — blocked on credentials decision from swarmuser. The `ClaudeAdapter` / `GeminiAdapter` / `DeepSeekAdapter` stubs document the wiring pattern; each ships in its own change event.
 - **`retrospective` blind_spot_log entry** — deferred until there is an actual run to retrospect against (Phase 3 closure happens after a real run reaches its retrospect horizon).
+
+---
+
+## [2026-04-27] ✍️📜 → ⚖️✅
+
+**Change ID:** `ledger_structural_permanence_layer_2026-04-27T13:00Z`
+**Proposed by:** swarmuser (forwarding peer-Claude proposal: "blockchain-agnostic ledger schema + three implementation paths + verification code")
+**Status:** Merged
+
+### Summary
+Added `ledger/` — the structural-permanence layer. Wraps any audit-protocol payload (RCR entries, blind_spot_log entries, ConsentRecord, change events) with cryptographic hash-chain integrity via a backend-agnostic interface. The user's framing on the load-bearing claim:
+
+> *"The orchestrator's defenses and physics gates are runtime protection. The blockchain ledger is structural permanence. Together they prevent both drift and revision."*
+
+Both layers ship in this branch. Runtime protection is `physics/substrate_alignment_check.py` + `consortium/router/consent.py` + the coating probes. Structural permanence is the new `ledger/` folder.
+
+### Files added (10 total)
+
+```
+ledger/
+├── README.md                         (orchestrating doc; quotes the load-bearing claim)
+├── ledger_schema.json                (anchored-entry envelope schema; draft-07)
+├── blockchain_alternatives.md        (three paths + tradeoff matrix + decision tree)
+├── ledger_interface.py               (LedgerBackend ABC + canonical JSON + hash primitives)
+├── verification_tools.py             (verify_chain — verifies without trusting the system)
+└── implementations/
+    ├── local_filesystem.py           (REFERENCE; offline; no external deps)
+    ├── ethereum_stub.py              (public chain — stub with wiring docstring)
+    ├── hyperledger_stub.py           (private/consortium — stub)
+    └── ipfs_stub.py                  (content-addressed storage — stub)
+tests/test_ledger.py                  (53 tests)
+```
+
+### `ledger_interface.py` — the foundation
+- **Canonical JSON** (`canonicalize`): `sort_keys=True, separators=(',',':'), ensure_ascii=False`. Two callers canonicalizing the same object MUST produce the same bytes (test verifies). Makes hashing deterministic across implementations.
+- **Hashing primitives**: `sha256_hex`, `hash_payload`, `hash_entry_chain_input`. `chain_input` deliberately includes `entry_id`, `timestamp`, `payload_kind`, `payload_hash`, `previous_entry_hash`, `hash_algorithm`, `envelope_version` — every modification of any of these breaks the entry_hash.
+- **`build_envelope`**: pure function. Constructs an envelope per `ledger_schema.json`. Backend-agnostic.
+- **`LedgerBackend` ABC**: 4 abstract methods (`append`, `read_all`, `head`, `available`). Stubs and reference all subclass.
+- **`AppendResult`** dataclass: returned by `append()` so callers can chain references.
+
+### `local_filesystem.py` — reference implementation
+- JSONL append-only file. Each line is one envelope.
+- On append: reads `head()` to get previous_entry_hash, builds envelope (computes hashes deterministically), appends one line atomically.
+- On read: parses each line; raises `ValueError` with line number on corruption.
+- Parent directory created if missing. Available unless filesystem is read-only.
+- **No external dependencies.** Works offline, in tests, in containers, on flights. The test surface for the entire ledger interface.
+
+### `verification_tools.verify_chain` — verify without trusting
+Four independent checks per entry:
+1. `payload_hash` matches `sha256(canonicalize(payload))`
+2. `entry_hash` matches `sha256(canonicalize(chain_input))`
+3. `previous_entry_hash` matches the prior entry's `entry_hash` (or `None` for genesis)
+4. Envelope schema is well-formed (required fields, version)
+
+Returns `VerificationReport` with per-entry results + aggregate recommendation:
+- `verified` — all entries passed all four checks
+- `tampered` — at least one hash or chain check failed
+- `incomplete` — schema-level issues but no tampering detected
+- `empty` — zero entries
+
+**Carries an explicit `interpretation_warning`** that verification reports cryptographic integrity ONLY — a passing verification means the chain is internally consistent, NOT that payloads are correct or honest. A regression-guarding test asserts this acknowledgment is present.
+
+### `blockchain_alternatives.md` — the decision matrix
+Trade-off table across the four backends + decision tree:
+- local_filesystem → tests / dev / single-machine
+- ipfs+timestamp → **default recommendation** for most deployments (cheap, decentralized, broadly verifiable)
+- public chain → maximum trust-minimization, adversarial domains, seven-generation horizon
+- private chain → consortium with operational capacity for shared infrastructure
+
+### Three stub adapters
+Same pattern as the model adapters from earlier in the session: each subclass raises `NotImplementedError` with a class-docstring wiring pattern (RPC endpoint + wallet + anchor contract for Ethereum; Fabric SDK + consortium membership for Hyperledger; IPFS daemon/gateway + optional timestamp authority for IPFS). `available()` returns `(False, helpful_reason)`. The orchestrator handles "no credentials yet" as a design state, not an error.
+
+### `tests/test_ledger.py` — 53 tests
+- Canonical JSON: sorts keys, no whitespace, unicode preserved, nested sorting
+- Hashing primitives: sha256 length, deterministic, key-order-invariant payload hashing, chain_input field sensitivity
+- Envelope construction: required fields, versions, genesis null previous, hash format, optional fields
+- LedgerBackend ABC: cannot instantiate
+- LocalFilesystemLedger: genesis no previous, second entry links to first, read order, head, missing file empty, corrupted file raises, anchor metadata records filesystem kind, parent directory created, payload_kind recorded, available
+- verify_chain clean: empty / single / multiple / per-entry passes
+- **verify_chain tampering detection: payload tampering, entry_hash tampering, chain_link break, entry deletion, genesis replacement, to_dict round-trip, interpretation_warning present (regression guard)**
+- Schema-level checks: missing required field flagged, wrong envelope_version flagged
+- Stub backends parametrized: 3 stubs × 3 tests = 9
+- Schema validation against `ledger_schema.json` via `jsonschema`
+- End-to-end: anchor → verify clean → tamper file directly → verify tampered
+
+### Verification (the demo)
+`python ledger/verification_tools.py` anchors three entries, prints clean verification (3 ✓), then directly tampers with entry 1 in the file and re-verifies (✗ on entry 1 with payload_hash mismatch). The note printed at end: *"Tampering is detected by re-hashing — no trust in the writing system required."*
+
+### Total
+469 tests passing (416 from earlier today + 53 new). 13 log validations passing.
+
+### What this layer does NOT do (named in `blockchain_alternatives.md`)
+- Does NOT validate payload semantics. A perfectly-anchored RCR entry that violates conservation law is still a violation; the ledger just makes the record permanent. Substantive audit (`physics/substrate_alignment_check.py`) is separate.
+- Does NOT prevent adversaries from publishing FALSE payloads with VALID hashes. The chain proves payload existed at time T; not that it's true.
+- Does NOT replace consent. Anchoring a record does not authorize the action it records.
+
+The layer's load-bearing claim is narrow and exact: **once anchored, modifying an entry without breaking the chain is computationally infeasible.** That's the structural permanence the runtime defenses cannot give on their own.
