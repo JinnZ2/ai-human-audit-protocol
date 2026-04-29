@@ -47,6 +47,7 @@ jobs:
           python -m consortium.examples.genesis_drift > /dev/null
           python -m examples.full_audit_session > /dev/null
           python -m knowledge_archaeology.examples.example_deploy_check > /dev/null
+          python -m knowledge_archaeology.playground > /dev/null
           python -m consortium.audit.calibration_aggregator > /dev/null
 
   json-lint:
