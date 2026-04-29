@@ -1290,3 +1290,76 @@ The demo prints per-agent session summary, cross-agent patterns surfaced, and th
 - Wiring playground sessions into a `ledger/` envelope so the trace is structurally permanent (architecturally available; needs a change event of its own)
 - Real-model adapter integration (still credentials-blocked at the `consortium/router/` layer)
 - Expanding the `REGIMES` library beyond the starter 9 — needs cultural-sourcing diligence per regime, not Claude-authored additions
+
+---
+
+## [2026-04-29] ✍️📜 → ⚖️✅
+
+**Change ID:** `knowledge_archaeology_dmalka_k_as_ligand_node_2026-04-29T14:00Z`
+**Proposed by:** swarmuser (forwarded a structured research note on Shimomura et al., Nat Commun 17:3453, 2026; suggested it be encoded as a `KnowledgeNode` to demonstrate the framework on scientific-literature knowledge alongside the traditional-knowledge nodes already shipped)
+**Status:** Merged
+
+### Summary
+
+Added `knowledge_archaeology/nodes/dmalka_k_as_ligand_v1.json` — a fourth example node encoding a 2026 ion-channel biophysics finding: K+ acts as an allosteric mode-switch on a *chloride* channel (Drosophila DmAlka / CG12344), contradicting the field's implicit operating regime that "K+ effects appear only on K+ channels." This is the regime-mismatch insight applied to *scientific framing itself*: the field's assumption constrained what could be discovered until a screen that varied extracellular K+ on a Cl- channel caught it.
+
+The node sits beside the existing three nodes (`anishinaabe_gravity_filtration_v1`, `punjab_baoli_filtration_v1`, `commercial_filter_cartridge_v3`). It demonstrates the framework's reach: regime, validation depth, transmission mode, and consent are properties of *all* knowledge, including peer-reviewed scientific literature, not just traditional / community lineages.
+
+### Source
+
+Shimomura et al., *Nat Commun* **17**:3453 (2026); DOI: 10.1038/s41467-026-71629-z. CC-BY open access. The paper is fully open-license; `carrier_consent: "granted"` reflects that.
+
+### What the node encodes
+
+- **Regime**: academic neuroscience / ion-channel biophysics; postindustrial; institutional (academic); parallel_communities = `KcsA_filter_geometry_lineage`, `pyruvate_kinase_K_coordination_lineage`, `WNK_Fray_kinase_K_Cl_coupling_lineage` (the three independent lineages where K+ coordination at 2.8 Å O-distance is documented).
+- **Transmission**: `experimental_institutional` (peer-reviewed publication ecosystem).
+- **Validation**: `SINGLE_CYCLE` — one paper, even though internally the paper validates through multiple mutant rescues (D82A / M77R / D68A / Q164A) and a human-variant test (engineered Qm GlyR α2 + RNA-edited P219L). The framework intentionally distinguishes *internal cross-validation* from *cross-cycle validation*; one paper, however thorough, is one cycle.
+- **Origin communities**: Shimomura lab + Drosophila neurogenetics + Cys-loop receptor biophysics (the three communities the finding actually drew on; the lab alone is the *publishing entity*, not the full provenance).
+- **`fails_under`** — five conditions, including `field_assumes_K_effects_appear_only_on_K_channels` and `wild_type_human_GlyR_alpha2A_at_normal_brain_K_3_to_5_mM` (the wild-type human variant requires ischemic / seizure K+ levels to engage; the engineered variant data does not transfer to normal physiology).
+- **`assumptions`** — four invisible preconditions, including `binding_kinetics_treated_as_steady_state_only_in_paper_no_on_off_rates` and `voltage_dependence_of_K_binding_not_directly_measured_in_paper` (named open questions that future work needs to close).
+- **`extraction_risks`** — five named patterns the framework would flag, including `transferred_into_drug_discovery_without_acknowledging_arthropod_phylum_evolutionary_reach`, `engineered_GlyR_Qm_variants_used_clinically_without_native-variant_phenotype_data`, and `K_Cl_mode_switch_mechanism_re-narrated_as_company_innovation_stripping_basic_science_attribution` — the same extraction pattern the boreal-filter / commercial-cartridge demonstration already catches, transposed onto scientific knowledge.
+
+### What the audit catches
+
+A `deploy_check` of this node into a clinical drug-discovery regime returns:
+- `verdict: review_required` (regime distance ≈ 0.71)
+- `WARN: knowledge has shallow validation history` (single-cycle validation)
+- All four `assumptions` surfaced for verification
+- All five `extraction_risks` named explicitly
+
+This is the load-bearing demonstration: even peer-reviewed open-access science with strong internal validation triggers framework flags when redeployed across regimes. The framework treats "single thorough paper" as *one cycle of validation*, not as universal grounding — which preserves the same audit symmetry the traditional-knowledge nodes get (a single trial of a filter design is also one cycle, regardless of who built it).
+
+### Why this node was added
+
+Two reasons:
+1. **Reach demonstration.** The framework was built and tested against traditional-knowledge regimes (boreal filter, baoli step-well, commercial cartridge). Adding a peer-reviewed scientific finding shows the same machinery applies to academic knowledge — and that academic knowledge is *not exempt* from regime audit.
+2. **The K+/Cl- inversion is itself a regime-mismatch case study.** Quoting the original research note: *"The channel SENSES K+ but CONDUCTS Cl-. K+ is pure signal here, never substrate. This is why it was missed for decades — nobody looked for K+ effects on a Cl- channel."* That sentence is the same shape as `cultural ceremonies became "cultural artifacts"` or `traditional ecological knowledge became "folk wisdom"` — a category misframe that hid the function. The node's `fails_under` field encodes the misframe explicitly so future readers can see the constraint that previously hid the finding.
+
+### Files added
+
+```
+knowledge_archaeology/nodes/dmalka_k_as_ligand_v1.json    (the node — 1 file)
+```
+
+CHANGELOG entry only; no module code, no tests, no README change. The existing tests (`tests/test_knowledge_archaeology.py` includes `test_load_tree_from_directory_loads_all_nodes`) automatically picks up the fourth node in the directory; the existing demos (`example_deploy_check.py`, `playground.py`) remain valid because they reference specific node IDs by name.
+
+### Verification
+
+- `python validate.py` → 13 log validations passing (unchanged)
+- `python -m pytest tests/ -q` → 616 tests passing (unchanged — the directory loader test is N-agnostic; new nodes appear without test changes)
+- `python -m knowledge_archaeology.examples.example_deploy_check` → 3 demos still run cleanly (they reference specific node IDs; the new node is additive)
+- `python -m knowledge_archaeology.playground` → demo still runs cleanly
+- `load_tree_from_directory` reports 4 nodes (was 3); manual `deploy_check('dmalka_k_as_ligand_v1', clinical_regime)` returns the expected `review_required` + WARN + assumptions + extraction_risks payload
+
+### Cultural sourcing / honest scoping
+
+- The Shimomura paper is CC-BY; consent for the structural attribution is granted by the license itself.
+- `origin_communities` names *three* communities, not just the publishing lab, because the finding genuinely drew on Drosophila neurogenetics infrastructure (CG12344 was a known gene before this paper) and Cys-loop receptor biophysics (the structural framework for interpreting the K+ binding site). Crediting only the lab would reproduce the extraction pattern the framework was built to catch.
+- `KcsA_filter_geometry_lineage` is named as a parallel community because the 4-oxygen, 2.79 Å K+ coordination geometry that DmAlka uses was first characterized in KcsA (Doyle et al. 1998) and pyruvate kinase decades earlier. The DmAlka finding is structurally homologous to those lineages; the parallel-communities field encodes that.
+- The node is honest about what the paper *does not* establish: binding kinetics, voltage-dependence of K+ binding, mammalian CNS receptor analogs, and in vivo phenotype of DmAlka knockout under elevated brain K+ are all in `assumptions` (open questions), not in `valid_under` (established).
+
+### Open / not addressed in this change
+
+- No `parent_ids` or `sibling_ids` link this node to existing nodes. Connecting it to the KcsA / pyruvate-kinase nodes would require those nodes to be authored first; that's a separate change event with its own consent.
+- The node does not extend `Regime` or `KnowledgeNode` shape. Encoding "field framing" as a first-class regime category (alongside geography / institutional context / etc.) would be a future architectural change with its own design discussion; for now the field framing is captured implicitly via `fails_under` strings.
+- The K+/Cl- mode-switch mechanism is not transposed into the `consortium/` ontology layer (where it could become a multi-encoding example like `cherokee_creation` or `genesis_drift`). That's also a future change event.

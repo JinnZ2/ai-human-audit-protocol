@@ -1,0 +1,50 @@
+{
+  "id": "dmalka_k_as_ligand_v1",
+  "name": "K+ as allosteric ligand on a chloride channel (DmAlka)",
+  "description": "Drosophila DmAlka (CG12344) is a Cys-loop pentameric ligand-gated anion channel previously labeled an alkaline-activated chloride channel. Shimomura et al. (Nat Commun 17:3453, 2026) showed extracellular K+ binds at the ECD-TMD interface (5 K+ per pentamer, IC50 = 0.645 mM, 4-oxygen coordination, K+-O distance 2.79 Å — matching KcsA filter geometry) and acts as an allosteric mode-switch: K+ binding alters ligand sensitivity, desensitization kinetics, blocker binding, anion selectivity, and HCO3- permeability. The channel SENSES K+ but CONDUCTS Cl-. Engineered human GlyR alpha2 variants (S81D + G83N + N95D + P173Q; or RNA-edited P219L on alpha2B) reproduce K+ sensitivity at ischemic / seizure K+ levels (>50 mM); these variants are upregulated in temporal lobe epilepsy hippocampus.",
+  "regime": {
+    "geography": "academic neuroscience / ion-channel biophysics",
+    "climate_zone": "peer-reviewed publication ecosystem",
+    "resource_scarcity": ["X-ray / cryo-EM beamtime", "patch-clamp expertise", "K+-clean buffer preparation"],
+    "population_density": "dense",
+    "technology_level": "postindustrial",
+    "institutional_context": "academic",
+    "community_continuity_yrs": 70,
+    "parallel_communities": ["KcsA_filter_geometry_lineage", "pyruvate_kinase_K_coordination_lineage", "WNK_Fray_kinase_K_Cl_coupling_lineage"]
+  },
+  "transmission": "experimental_institutional",
+  "validation": "SINGLE_CYCLE",
+  "generational_depth": 0,
+  "parent_ids": [],
+  "sibling_ids": [],
+  "derived_ids": [],
+  "origin_communities": ["Shimomura_et_al_lab_2026", "Drosophila_neurogenetics_community", "Cys-loop_receptor_biophysics_community"],
+  "individual_carriers": ["Shimomura_et_al_2026"],
+  "carrier_consent": "granted",
+  "valid_under": [
+    "Drosophila_brain_extracellular_K_range_mM",
+    "Cys-loop_pentameric_architecture",
+    "ECD_TMD_interface_residues_intact_D68_Q164_I69_K207",
+    "human_brain_K_above_50_mM_for_engineered_GlyR_variants"
+  ],
+  "fails_under": [
+    "field_assumes_K_effects_appear_only_on_K_channels",
+    "screens_that_do_not_vary_extracellular_K_on_Cl_channels",
+    "wild_type_human_GlyR_alpha2A_at_normal_brain_K_3_to_5_mM",
+    "D82A_mutant_locked_K_insensitive",
+    "D68A_or_Q164A_mutants_abolish_K_sensitivity"
+  ],
+  "assumptions": [
+    "Cl-_channel_screens_routinely_omit_K_titration",
+    "ligand_gated_anion_channels_treated_as_separate_from_K_homeostasis",
+    "binding_kinetics_treated_as_steady_state_only_in_paper_no_on_off_rates",
+    "voltage_dependence_of_K_binding_not_directly_measured_in_paper"
+  ],
+  "extraction_risks": [
+    "transferred_into_drug_discovery_without_acknowledging_arthropod_phylum_evolutionary_reach",
+    "DmAlka_KO_invertebrate_phenotype_data_treated_as_pre-clinical_validation_for_human_TLE",
+    "K_Cl_mode_switch_mechanism_re-narrated_as_company_innovation_stripping_basic_science_attribution",
+    "engineered_GlyR_Qm_variants_used_clinically_without_native-variant_phenotype_data",
+    "binding_site_geometry_2.79_angstrom_K_O_used_as_universal_K_sensor_motif_without_domain-specific_validation"
+  ]
+}
