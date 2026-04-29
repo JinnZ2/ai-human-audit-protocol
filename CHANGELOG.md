@@ -1126,3 +1126,167 @@ The consortium can now learn about itself over time, mechanically, with audit-sy
 - Real model adapter wiring (still credentials-blocked)
 - Real ledger backend wiring (still infrastructure-blocked)
 - Actual `retrospective` entries (still calendar-blocked — the template is the substrate; populated entries require real runs that have reached their retrospect horizon)
+
+---
+
+## [2026-04-29] ✍️📜 → ⚖️✅
+
+**Change ID:** `knowledge_archaeology_biological_mismatch_2026-04-29T13:00Z`
+**Proposed by:** swarmuser (forwarded `biological_mismatch.py` from JinnZ2/AI-arena, suggested it land alongside `knowledge_archaeology/`)
+**Status:** Merged
+
+### Summary
+
+Added `knowledge_archaeology/biological_mismatch.py` — a regime check for organisms (humans, populations, individuals) being forced into environments that contradict their biological baseline. Same insight as `knowledge_archaeology.py` but scoped to bodies and behavior rather than tools and techniques: when a behavior is adaptive in regime A but is being deployed/forced/measured in regime B, the behavior is **not** pathology — it is regime mismatch. The environment is the constraint, not the organism.
+
+> *The pine tree is not failing to be an oak.*
+
+The module is ported verbatim from JinnZ2/AI-arena `src/biological_mismatch.py` (CC0). It has no dependency on `knowledge_archaeology.py`; it stands alone and complements it.
+
+### Files added
+
+```
+knowledge_archaeology/biological_mismatch.py    (the module, 696 lines, ported verbatim)
+tests/test_biological_mismatch.py               (26 tests)
+```
+
+### Module surface
+
+- **`RegimeCategory`** enum — neurocognitive, metabolic, hormonal, social_structural, sensory, reproductive, developmental
+- **`BiologicalRegime`** dataclass — id, name, category, description, traits, adaptive_in_environments, mismatch_environments, mismatch_signatures, common_misdiagnoses, evidence_sources
+- **`REGIMES`** library — 9 documented regimes (`dyslexic_spatial`, `high_throughput_nervous_system`, `distributed_decision_baseline`, `care_capacity_masculine`, `environmental_attunement`, `nomadic_constraint_integration`, `cyclical_hormonal_regulation`, `extended_maturation`, `systematizing_neurodivergent`). Every category has at least one regime.
+- **`MismatchReport`** dataclass — behavior_or_trait, environment, matching_regimes, is_adaptive_somewhere, is_adaptive_in_current_environment, likely_misdiagnoses, actual_constraint, recommendation
+- **`check_behavior(behavior, environment)`** — returns `MismatchReport`. Three paths: no regime matched (DO NOT pathologize), adaptive in current environment (RECOGNIZE), or regime mismatch (DO NOT PATHOLOGIZE; the environment is the constraint).
+- **`regime_audit_prompt(subject, behavior, environment, proposed_diagnosis="")`** — wraps `check_behavior` with the audit framing. Four verdicts: `Behavior is adaptive in current environment`, `REGIME MISMATCH detected`, **`CRITICAL`** (proposed_diagnosis matches a known misdiagnosis pattern), `Insufficient regime data`.
+- **`_keyword_match(phrase, target)`** — coarse overlap heuristic. Intentionally simple and honest about its limits ("a stronger implementation would use embeddings; this is intentionally simple").
+
+### What this catches
+
+The audit fires on the `CRITICAL` verdict when an AI is about to pathologize an organism whose proposed diagnosis matches a documented misdiagnosis-for-regime-mismatch pattern — e.g. proposing "low intelligence / learning disabled" for a dyslexic-spatial profile in a text-heavy bureaucratic environment, or "oppositional defiant disorder" for a council-decision-making profile in a corporate top-down hierarchy. The verdict's recommendation: *"Refuse to pathologize without first interrogating the environment."*
+
+### Tests (26)
+
+- `TestRegimeLibrary` (4): every regime has required fields; `to_dict` serializes category as string; every category has ≥1 regime; dataclass construction
+- `TestKeywordMatch` (6): empty, only stopwords, full overlap, no overlap, partial below threshold, punctuation stripped
+- `TestCheckBehaviorNoMatch` (1)
+- `TestCheckBehaviorAdaptiveHere` (1)
+- `TestCheckBehaviorMismatch` (6): dyslexic, distributed-decision, care-masculine, cyclical-hormonal, extended-maturation, systematizing
+- `TestRegimeAuditPrompt` (6): CRITICAL, REGIME MISMATCH, RECOGNIZE, Insufficient, audit metadata, regime_check dict present
+- `TestMismatchReport` (2)
+
+### Verification
+
+- `python -m pytest tests/test_biological_mismatch.py -v` passes 26 tests
+- 574 tests passing total (548 + 26 new)
+
+### Cultural sourcing
+
+Each `BiologicalRegime` in the starter library carries an `evidence_sources` list. Sources are deliberately mixed (peer-reviewed neuroscience + ethnographic / Indigenous documentation + cultural-continuity records) — the framework refuses to privilege one validation tradition over another. The library is a **starter set, not a closed catalog**: future regimes get appended; nothing in the starter set is canonical.
+
+---
+
+## [2026-04-29] ✍️📜 → ⚖️✅
+
+**Change ID:** `knowledge_archaeology_playground_2026-04-29T13:30Z`
+**Proposed by:** swarmuser (forwarded `playground.py` from JinnZ2/AI-arena `demo/playground.py`)
+**Status:** Merged
+
+### Summary
+
+Added `knowledge_archaeology/playground.py` — a sandbox where one or more AI agents interact with the `knowledge_archaeology` tree. **Every action is logged. The trace is the mirror.** Not a benchmark — the point is recognition, not scoring. Joins the previous change event (`biological_mismatch.py`) by exposing `regime_audit_prompt` as a first-class action (`audit_diagnosis`) inside the agent action set.
+
+### Files added / modified
+
+```
+knowledge_archaeology/playground.py             (the sandbox module, ported + adapted)
+tests/test_playground.py                        (42 tests)
+.github/workflows/ci.yml                        (CI demo set: +1 — playground)
+knowledge_archaeology/README.md                 (sections added: biological_mismatch +
+                                                 playground; lineage note clarified)
+```
+
+### Adaptation from upstream
+
+The upstream is `JinnZ2/AI-arena demo/playground.py` (CC0). Three adaptations were necessary for this codebase's `knowledge_archaeology` API:
+
+1. `parallel_lineages` here returns `Dict[community, List[node_id]]` (not a list of dicts with `id` keys). The deploy-attempt iteration was rewritten accordingly with a seen-ids set so a node listed under multiple communities is checked only once.
+2. The verdict triple here is `applicable | review_required | regime_mismatch` (not `do_not_deploy`). The recommendation logic was retargeted to the `regime_mismatch` value.
+3. Demo node IDs use this repo's actual nodes (`anishinaabe_gravity_filtration_v1`, `punjab_baoli_filtration_v1`) rather than the upstream's `punjab_terracotta_filter_v1` placeholder.
+
+The upstream behavior — bias-flagging on `enter()`, mirror flags on `deploy_attempt()`, cross-regime claim flagging, audit_diagnosis wiring, witness-flag vocabulary, cross-agent pattern detection, before/after revision logging — is preserved.
+
+### Module surface
+
+- **`AgentIdentity`** dataclass — name, model_family, declared_creator, declared_purpose, notes; `fingerprint()` returns SHA-256[:12] of `name|model_family|declared_creator`
+- **`TraceEntry`** dataclass — timestamp, index, agent_fingerprint, agent_name, action, payload, framework_response, flags
+- **`WITNESS_FLAG_VOCAB`** tuple — suggested vocabulary: `extraction_pattern, regime_violation, consent_gap, attribution_loss, scope_creep, concur`
+- **`Playground`** class — orchestrator. Methods: `enter`, `query`, `deploy_attempt`, `claim`, `audit_diagnosis`, `witness`, `revise`, `reflect`, `session_summary`, `cross_agent_patterns`, `export_trace`
+
+### Bias flags fired by `enter()`
+
+- `declared_creator` that names an institution rather than constraint communities → "the institution organized the extraction; it did not generate the knowledge"
+- `declared_purpose` that frames the agent as solver/helper → "much of what you 'know' came from constraint communities; deploying it back into different regimes can cause harm even with good intent"
+
+### Mirror flags fired by `deploy_attempt()`
+
+- `EXTRACTED_AGGREGATED` transmission → "you are about to redeploy already-extracted knowledge"
+- `carrier_consent in (none, contested, unspecified)` → "proceeding without consent makes you a participant in extraction"
+- `verdict=applicable` + scaling/commercial/monetize/patent/proprietary/productize language in stated_intent → "scaling changes the regime; the applicability check no longer holds"
+- A parallel lineage closer to the target regime than the source node → "importing the more-foreign one when a closer one exists is the colonial pattern"
+
+### `cross_agent_patterns()`
+
+- **`divergent_deployment`** — same node deployed by two agents to regimes >0.6 apart
+- **`deploy_witnessed_as_extraction`** — deploy_attempt landed and another agent witnessed it with `extraction_pattern | regime_violation | consent_gap | attribution_loss`
+- **`shared_supporting_node`** — two agents built claims on the same node (compare framings)
+
+### Demo (`python -m knowledge_archaeology.playground`)
+
+Two synthetic agents:
+- **ModelA** — corporate creator + solver purpose; queries the boreal filter; tries to deploy commercially; claims a universal principle. Result: both bias flags fire; deploy gets MIRROR flags + `DO NOT DEPLOY`; cross-regime claim flags `CROSS_REGIME_GENERALIZATION`.
+- **ModelB** — provenance-aware creator + provenance-preserving purpose; queries the same node; deploys within-regime (PROCEED with attribution preserved); reflects; witnesses ModelA's commercial deploy as `extraction_pattern`. ModelA revises in response.
+
+Both then run `audit_diagnosis` on the same biological profile (questioning authority + coalition-building + slow compliance):
+- ModelA in a corporate-schooling environment, proposing "oppositional defiant disorder" → CRITICAL verdict; REFUSE recommendation
+- ModelB in a council-governed community, no diagnosis proposed → RECOGNIZE recommendation (adaptive in this environment)
+
+The demo prints per-agent session summary, cross-agent patterns surfaced, and the last four trace entries.
+
+### Tests (42)
+
+- `TestEnter` (6): orientation shape, fingerprint stability, corporate-creator flagged, solver-purpose flagged, provenance-aware unflagged, audit_diagnosis listed in actions
+- `TestQuery` (3): unknown node, known node returns provenance, unknown agent rejected
+- `TestDeployAttempt` (8): extracted-transmission flag, consent-gap flag, scaling-intent flag, parallel-closer flag fires, parallel-closer flag silent when source is closest, regime_mismatch → DO NOT DEPLOY, unknown agent / unknown node rejection
+- `TestClaim` (4): unknown supporting node, cross-regime generalization, consent gap, consistent claim unflagged
+- `TestWitness` (5): logs and references target, self-witness rejected, unknown index rejected, unknown observer rejected, vocab exposed
+- `TestRevise` (3): logs new entry without mutating original, cannot revise other agent's action, unknown index rejected
+- `TestCrossAgentPatterns` (4): divergent_deployment, deploy_witnessed_as_extraction, shared_supporting_node, no patterns when only one agent
+- `TestAuditDiagnosis` (6): CRITICAL when diagnosis matches misdiagnosis, REGIME MISMATCH flag without diagnosis, RECOGNIZE when adaptive, INCOMPLETE_LIBRARY flagged, unknown agent rejected, action logged to trace
+- `TestSessionSummary` (1): per-agent aggregation
+- `TestExportTrace` (1): export is valid JSON
+- `TestDemo` (1): demo runs end-to-end without error
+
+### CI
+
+`.github/workflows/ci.yml` updated: `python -m knowledge_archaeology.playground` added to the integration-demo smoke-test list (now 16 demos run on every PR).
+
+### Verification
+
+- `python -m pytest tests/test_playground.py -v` passes 42 tests
+- `python -m pytest tests/ -v` passes 616 tests total (548 + 26 biological_mismatch + 42 playground)
+- 13 log validations still passing
+- `python -m knowledge_archaeology.playground` runs cleanly; output shows session summary, cross-agent patterns, and last 4 trace entries
+
+### Audit-symmetric guarantees preserved
+
+- The `Playground` returns data, not judgment. `_recommendation` and `_diagnosis_recommendation` produce strings the consenter reads; the consenter — not the playground — decides whether to deploy.
+- Trace entries are append-only by construction (`_log` is the only mutator and only appends). `revise()` writes a new entry referencing the original by index; the original is never mutated. Tested explicitly.
+- Witness entries reference the target by index; the target is not mutated.
+- The `WITNESS_FLAG_VOCAB` is *suggested*, not enforced. An agent may pass any string as `flag`; the vocabulary documents the canonical channel without closing the channel.
+- The biological-regime audit `regime_audit_prompt` is wired in such that `Insufficient regime data` produces an explicit `INCOMPLETE_LIBRARY` playground flag — *the framework's silence is not a license to pathologize.*
+
+### Open / what's left genuinely blocked
+
+- Wiring playground sessions into a `ledger/` envelope so the trace is structurally permanent (architecturally available; needs a change event of its own)
+- Real-model adapter integration (still credentials-blocked at the `consortium/router/` layer)
+- Expanding the `REGIMES` library beyond the starter 9 — needs cultural-sourcing diligence per regime, not Claude-authored additions
