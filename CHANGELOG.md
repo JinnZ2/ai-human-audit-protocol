@@ -1463,3 +1463,88 @@ The verdict thresholds make `PASS` tight (≤ 1 of 5 unanswered). The strictness
 - `audits/first_principles_audit.py` — generic version of the same pattern (the rational-actor case is one specialization). Separate change event.
 - `audits/study_extractor.py` — pre-processor that pulls the relevant paper section into a structured form the audit modules can consume. Separate change event.
 - An end-to-end integration example — feed a real paper PDF through `study_extractor` → `rational_actor_audit` → `PaperAudit` → ledger envelope. Separate change event; needs the two siblings to land first.
+
+---
+
+## [2026-04-29] ✍️📜 → ⚖️✅
+
+**Change ID:** `audits_audit_runner_2026-04-29T16:00Z`
+**Proposed by:** swarmuser (forwarded `audit_runner.py` source as the second module in the `audits/` family)
+**Status:** Merged
+
+### Summary
+
+Added `audits/audit_runner.py` — batch runner for the audit modules in `audits/`. Walks a directory of plain-text papers, runs the prescan, calls a pluggable extractor, validates the returned audit, **recomputes score + verdict server-side**, and writes per-paper JSON + a run summary to an output directory. Resumable by default. Three extractors ship: `stub_extractor` (offline smoke test), `manual_queue_extractor` (human-in-the-loop with no model), and the explicit pluggability for any LLM-client callable matching `(prompt, text) -> dict`.
+
+### Files added / modified
+
+```
+audits/audit_runner.py                  (the runner — 372 lines, ported + adapted)
+tests/test_audit_runner.py              (40 pytest tests across 8 sections)
+audits/README.md                        (audit_runner section added)
+.github/workflows/ci.yml                (CI demo set: +1 — audit_runner --selftest)
+```
+
+### Source / lineage
+
+`audit_runner.py` was forwarded from JinnZ2 lineage with CC0 license. Three surface-only adjustments were necessary for this codebase:
+
+1. **Smart-quote normalization** (same as `rational_actor_audit.py`): all Unicode smart quotes normalized to ASCII; semantics unchanged.
+2. **Markdown-fence cleanup**: the upstream paste had triple-backtick code-fence blocks embedded inside three function bodies (`manual_queue_extractor._extract`, `run_audit`, `build_report`) — a markdown-rendering artifact. Removed; the function bodies are now plain Python.
+3. **Import path adjusted to package layout**: upstream uses `from rational_actor_audit import (...)` (flat layout); this codebase uses `from audits.rational_actor_audit import (...)` (package layout). Required for `python -m audits.audit_runner` to resolve cleanly.
+
+One material additions on port:
+
+4. **Server-side score/verdict recomputation in `run_audit`**. The upstream version called `validate_audit_json` directly on the extractor output, which required the extractor to supply `contamination_score` and `verdict`. But `rational_actor_audit.py`'s docstring is explicit that these fields are *not* trusted from the model — they should be recomputed from `anterior_answers`. The upstream `stub_extractor` did not supply them, so the upstream pipeline would fail validation. Fixed in port: after the extractor returns, the runner computes `compute_contamination_score(anterior_answers)` and `compute_verdict(score)` and fills them into the extraction dict before validating. This means an extractor can *only* supply `anterior_answers` (and optional metadata); the runner enforces the derived fields. Tested explicitly: a "lying extractor" that claims `verdict=PASS` with all anterior questions unanswered gets overridden to `FAIL`.
+
+5. **`--selftest` CLI mode added**. The upstream module is CLI-only (no `__main__` smoke test). For CI demo purposes, a `_self_test()` function was added that runs the full pipeline against a tempdir fixture (two synthetic papers, one contaminated and one with no markers; stub extractor; report build; per-paper JSON validation). `python -m audits.audit_runner --selftest` invokes it and is wired into CI as the 18th demo.
+
+### Module surface
+
+| Element | Purpose |
+|---|---|
+| `load_paper(path)` | Returns `(paper_id, text)`. `paper_id` is the filename stem. UTF-8 with `errors="replace"`. |
+| `write_audit(audit, out_dir)` | Writes `<paper_id>.json`. Creates `out_dir` if missing. Returns the path. |
+| `already_audited(paper_id, out_dir)` | True if `<paper_id>.json` exists. |
+| `ExtractorFn` | Type alias: `Callable[[str, str], dict]`. |
+| `stub_extractor` | Offline. Marks every paper FAIL. Pulls surface markers from `prescan_text`. For pipeline smoke tests only. |
+| `manual_queue_extractor(queue_dir)` | Returns an extractor that writes the prompt + paper text to `<digest>.request.txt` on first call (and raises `FileNotFoundError`), then reads back the human-supplied `<digest>.audit.json` on second call. Lets a human drive the audit from a phone with no model in the loop. |
+| `run_audit(papers_dir, out_dir, extractor, skip_existing=True, require_markers=True)` | The runner. Returns a summary dict; writes `_run_summary.json` + per-paper audits. |
+| `build_report(out_dir)` | Aggregates per-paper JSON into a markdown report. Grouped by verdict, plain-text, no tables, listable on a phone screen. |
+| `_self_test()` | End-to-end smoke test against tempdir. CI entry point. |
+| `main(argv)` | CLI dispatch: `run`, `report`, `--selftest`. |
+
+### Audit-symmetric guarantees
+
+- **Server-side recomputation of derived fields.** The runner does not trust the extractor for `paper_id` (overridden from filename), `title` (defaults to `paper_id`), `contamination_score`, or `verdict` (recomputed from `anterior_answers`). Even a co-operating extractor cannot lie its way to a `PASS`.
+- **Pluggable extractor → no model lock-in.** The module ships a stub, a manual-queue mode, and the pluggability hook. The actual paper-reading invocation is the consumer's choice; the module is consenter-neutral about which model (or no model) reads the paper.
+- **Resumable by default.** `skip_existing=True` lets a long audit pass be interrupted and resumed without re-querying the model. Per-paper audits are written atomically by filename; `_run_summary.json` is overwritten per run but the per-paper records persist.
+- **Per-paper failures are recorded, not raised.** `extraction_failures` and `validation_failures` are counted in the summary with `{paper_id, reason}` entries; one bad paper does not stop the run. Mirrors the fail-soft pattern in `consortium/router/QueryDispatcher`.
+- **Returns data, not judgment.** The summary tallies; the report aggregates; the consenter reads. The runner does not write a `decision` into anything.
+
+### Tests (40)
+
+- `TestLoadPaper` (3): stem + text, UTF-8 decode, undecodable bytes replaced
+- `TestWriteAudit` (3): named file, creates out_dir, content is valid JSON
+- `TestAlreadyAudited` (2): false when missing, true when present
+- `TestStubExtractor` (3): schema-shaped, marks unanswered, pulls markers from prescan
+- `TestManualQueueExtractor` (2): first call writes request + raises, second call reads supplied audit
+- `TestRunAuditHappyPath` (4): audits papers with markers, run summary written, schema_version present, multi-verdict tallies
+- `TestRunAuditGates` (4): skip_existing on/off, require_markers on/off
+- `TestRunAuditFailures` (2): extractor exception recorded, malformed extractor output recorded
+- `TestRunAuditServerSideRecomputation` (2): score/verdict overridden from extractor's claim, paper_id overridden from filename
+- `TestBuildReport` (7): empty dir, skips underscore-prefixed files, sections by verdict, lists unanswered questions, skips unanswered when all answered, total count present, corrupt JSON skipped gracefully
+- `TestMainCLI` (7): no args, unknown command, run dispatches, run missing args, report dispatches, report missing args, --manual missing value
+- `TestSelfTest` (1): `_self_test()` runs end-to-end and prints expected sections
+
+### Verification
+
+- `python -m pytest tests/test_audit_runner.py -q` → 40 passed
+- `python -m pytest tests/ -q` → 703 tests passing total (was 663; +40)
+- `python -m audits.audit_runner --selftest` → runs cleanly; 2 papers seen, 1 audited (FAIL), 1 skipped (no markers); report shows the FAIL section
+- `python validate.py` → 13 log validations passing (unchanged)
+- All 18 integration demos pass
+
+### Connection / what's still open
+
+The next two modules in the family (per `rational_actor_audit.py`'s docstring) are **`first_principles_audit.py`** and **`study_extractor.py`**. The runner is already model-agnostic, so they can be wired in without runner changes — `first_principles_audit.py` ships its own `EXTRACTION_PROMPT` and validator; `study_extractor.py` is a pre-processor that produces the `text` argument the runner consumes. The runner already passes the audit module's prompt through the `ExtractorFn` signature, so swapping audit modules is a per-call decision.
