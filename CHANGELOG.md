@@ -1363,3 +1363,306 @@ CHANGELOG entry only; no module code, no tests, no README change. The existing t
 - No `parent_ids` or `sibling_ids` link this node to existing nodes. Connecting it to the KcsA / pyruvate-kinase nodes would require those nodes to be authored first; that's a separate change event with its own consent.
 - The node does not extend `Regime` or `KnowledgeNode` shape. Encoding "field framing" as a first-class regime category (alongside geography / institutional context / etc.) would be a future architectural change with its own design discussion; for now the field framing is captured implicitly via `fails_under` strings.
 - The K+/Cl- mode-switch mechanism is not transposed into the `consortium/` ontology layer (where it could become a multi-encoding example like `cherokee_creation` or `genesis_drift`). That's also a future change event.
+
+---
+
+## [2026-04-29] ✍️📜 → ⚖️✅
+
+**Change ID:** `audits_folder_rational_actor_audit_2026-04-29T15:00Z`
+**Proposed by:** swarmuser (forwarded `rational_actor_audit.py` source; chose "new top-level `audits/` folder" placement and "full pytest suite" test scope when offered)
+**Status:** Merged
+
+### Summary
+
+Created a new top-level `audits/` folder and shipped its first module: `rational_actor_audit.py`, a schema-driven contamination detector for academic papers using "rational actor", "utility maximization", or "efficient" without specifying the constraint layer those concepts depend on. The folder anticipates two siblings the upstream module declares itself compatible with — `first_principles_audit.py` and `study_extractor.py` — both of which will ship in their own change events.
+
+The premise being tested: *a claim about "rational behavior" or "utility maximization" is only physically meaningful if it specifies (1) the system whose utility is being maximized, (2) the timescale of measurement, (3) the substrate constraints, (4) the agent/environment boundary, and (5) the feedback coupling. Papers that omit (1)–(5) are not making physically testable claims; they are making semantic assertions dressed in mathematical formalism.*
+
+### Files added
+
+```
+audits/
+├── README.md                        (folder framing; documents the planned siblings)
+└── rational_actor_audit.py          (the module — 5 anterior questions,
+                                      14 surface markers, 8 escape patterns,
+                                      schema validator, audit builder, self-test)
+tests/test_rational_actor_audit.py   (47 pytest tests across 8 sections)
+```
+
+Plus `.github/workflows/ci.yml` updated: `python -m audits.rational_actor_audit` added to the integration-demo smoke-test list (now 17 demos).
+
+### Source / lineage
+
+`rational_actor_audit.py` was forwarded from JinnZ2 lineage with CC0 license. Two pre-port adjustments were necessary, both surface-only:
+
+1. **Smart-quote normalization.** The forwarded source used Unicode smart quotes (`"`, `"`, `'`, `'`) on every docstring, string literal, and the `if __name__ == "__main__"` line. As-pasted, the module was a `SyntaxError`. All Unicode quote characters were normalized to ASCII (`"`, `'`); semantics unchanged.
+2. **Markdown-fence cleanup.** A single triple-backtick code-fence block had been embedded inside the module docstring during paste (a markdown-rendering artifact). Removed; the bullet list it contained is now plain prose inside the docstring.
+
+The `_self_test()` block ships verbatim (semantically), as does the schema, the surface-marker watchlist, the escape-pattern list, and the extraction prompt.
+
+### Module surface
+
+| Element | Purpose |
+|---|---|
+| `SCHEMA_VERSION` / `SCHEMA_NAME` | Schema metadata (`"1.0.0"` / `"rational_actor_audit"`). |
+| `ANTERIOR_QUESTIONS` | Dict of 5 keys → human-readable question text. The audit returns one `AnteriorAnswer` per key. |
+| `SURFACE_MARKERS` | List of 14 contamination-pattern markers (`rational actor`, `utility function`, `homo economicus`, `efficient market`, ...). |
+| `ESCAPE_PATTERNS` | List of 8 regex patterns naming the *evasions* (`without loss of generality`, `for simplicity`, `abstracting away`, `in equilibrium`, ...). |
+| `prescan_text(text)` | Local first-pass scan; no LLM call. Returns `{surface_markers_found, escape_patterns_found, warrants_full_audit}`. |
+| `EXTRACTION_PROMPT` | Strict instruction passed to a model that will read paper text and emit a `PaperAudit` JSON. Documents the five anterior questions, the score formula, and the verdict thresholds. |
+| `validate_audit_json(payload)` | Validates LLM-emitted audit JSON against the schema. Returns `(is_valid, list_of_errors)`. Catches missing top-level keys, missing or duplicate anterior keys, non-boolean `answered`, out-of-range `contamination_score`, invalid `verdict`. |
+| `compute_contamination_score(answers)` | Score = fraction of anterior questions left unanswered. Empty list → 1.0 (fully unbounded). |
+| `compute_verdict(score)` | `PASS` if ≤ 0.2, `PARTIAL` if ≤ 0.6, `FAIL` otherwise. |
+| `build_audit_from_extraction(paper_id, title, extraction)` | Assembles a validated `PaperAudit` from raw extraction JSON. Computes score + verdict server-side; the model's claimed score is not trusted. |
+| `_self_test()` | Smoke test: prescan + audit assembly against a fabricated contaminated abstract and a clean one. |
+
+### Strict-by-default
+
+Quoting the module's own extraction prompt:
+
+> *Be strict. "We assume agents are rational" is NOT an answer to system_specified. "In equilibrium" is NOT an answer to timescale_specified. "Standard utility function" is NOT an answer to substrate_specified. The paper must concretely name the system, the timescale, the substrate constraints, the agent/environment boundary, and the feedback coupling.*
+
+The verdict thresholds make `PASS` tight (≤ 1 of 5 unanswered). The strictness is documented in both the prompt and the README so it cannot be silently relaxed.
+
+### Tests (47)
+
+- `TestModuleConstants` (8): SCHEMA_VERSION present, anterior_questions has exactly 5 + matches spec + has human-readable text, SURFACE_MARKERS / ESCAPE_PATTERNS shape, canonical markers present, EXTRACTION_PROMPT documents every anterior key + verdicts
+- `TestPrescan` (10): clean text, rational_actor / utility_maximization / homo_economicus detection, case-insensitivity, escape patterns (for-simplicity / in-equilibrium / abstracting-away), warrants_full_audit gate, return shape
+- `TestValidateAuditJson` (10): good payload validates, missing top-level key, anterior_answers must be list, invalid question_key, missing anterior key, non-boolean `answered`, score out of range, score must be numeric, invalid verdict, anterior_answer must be object
+- `TestComputeContaminationScore` (4): empty / all-answered / none-answered / mixed
+- `TestComputeVerdict` (6): zero / below-pass-threshold / just-above-pass / partial-threshold / just-above-partial / one
+- `TestBuildAuditFromExtraction` (4): clean round-trip, contaminated round-trip, partial verdict at boundary, evidence + note preserved
+- `TestDataclasses` (4): AnteriorAnswer defaults, PaperAudit defaults, to_json validates as JSON, to_json round-trips against the validator
+- `TestSelfTest` (1): `_self_test()` runs end-to-end and prints expected sections
+
+### Audit-symmetric guarantees
+
+- **Returns data, not judgment.** Both contaminated and clean fixtures in the self-test produce structured reports, not "this paper is bad / good". The reader interprets.
+- **Strict-by-default thresholds documented in the prompt itself.**
+- **Schema-validated.** `validate_audit_json` is exported and tested. Any downstream tool consuming audit output can validate before trusting.
+- **No model calls in the module.** The module ships a prompt and a validator. The actual paper-reading model invocation is the consumer's responsibility — same pattern as `consortium/router/`: declare the contract; the consenter wires the call (and is responsible for consent + disclosure of what is being read and what comes back).
+- **Score and verdict are computed locally in `build_audit_from_extraction`**, not trusted from the LLM's own JSON output. The model can claim a verdict; the module recomputes it.
+
+### Verification
+
+- `python -m pytest tests/test_rational_actor_audit.py -q` → 47 passed
+- `python -m pytest tests/ -q` → 663 tests passing total (was 616; +47)
+- `python -m audits.rational_actor_audit` → `_self_test()` runs cleanly; contaminated paper scores 1.0 / FAIL; clean paper detects no markers
+- `python validate.py` → 13 log validations passing (unchanged)
+- All 17 integration demos pass
+
+### Connection to other layers
+
+- `physics/violation_detector.py` — same shape (keyword/regex prescan + structured report). The rational-actor audit is the same idea narrowed to economic / decision-theoretic claims.
+- `physics/SUBSTRATE_VIOLATION_DETECTION.md` — the "abstraction without substrate" pattern is a sixth-tactic-adjacent move; this audit gives it a runnable form.
+- `knowledge_archaeology/biological_mismatch.py` — both modules are regime-archaeology questions: biological_mismatch asks "what regime is this organism adapted to?"; rational_actor_audit asks "what regime is this utility function bounded by?".
+- `knowledge_archaeology/knowledge_archaeology.py` — a paper auditable here can also be encoded as a `KnowledgeNode` (failed audit → `fails_under` strings; missing anterior questions → `assumptions`; surface markers → `extraction_risks`).
+
+### Open / what's still to land
+
+- `audits/first_principles_audit.py` — generic version of the same pattern (the rational-actor case is one specialization). Separate change event.
+- `audits/study_extractor.py` — pre-processor that pulls the relevant paper section into a structured form the audit modules can consume. Separate change event.
+- An end-to-end integration example — feed a real paper PDF through `study_extractor` → `rational_actor_audit` → `PaperAudit` → ledger envelope. Separate change event; needs the two siblings to land first.
+
+---
+
+## [2026-04-29] ✍️📜 → ⚖️✅
+
+**Change ID:** `audits_audit_runner_2026-04-29T16:00Z`
+**Proposed by:** swarmuser (forwarded `audit_runner.py` source as the second module in the `audits/` family)
+**Status:** Merged
+
+### Summary
+
+Added `audits/audit_runner.py` — batch runner for the audit modules in `audits/`. Walks a directory of plain-text papers, runs the prescan, calls a pluggable extractor, validates the returned audit, **recomputes score + verdict server-side**, and writes per-paper JSON + a run summary to an output directory. Resumable by default. Three extractors ship: `stub_extractor` (offline smoke test), `manual_queue_extractor` (human-in-the-loop with no model), and the explicit pluggability for any LLM-client callable matching `(prompt, text) -> dict`.
+
+### Files added / modified
+
+```
+audits/audit_runner.py                  (the runner — 372 lines, ported + adapted)
+tests/test_audit_runner.py              (40 pytest tests across 8 sections)
+audits/README.md                        (audit_runner section added)
+.github/workflows/ci.yml                (CI demo set: +1 — audit_runner --selftest)
+```
+
+### Source / lineage
+
+`audit_runner.py` was forwarded from JinnZ2 lineage with CC0 license. Three surface-only adjustments were necessary for this codebase:
+
+1. **Smart-quote normalization** (same as `rational_actor_audit.py`): all Unicode smart quotes normalized to ASCII; semantics unchanged.
+2. **Markdown-fence cleanup**: the upstream paste had triple-backtick code-fence blocks embedded inside three function bodies (`manual_queue_extractor._extract`, `run_audit`, `build_report`) — a markdown-rendering artifact. Removed; the function bodies are now plain Python.
+3. **Import path adjusted to package layout**: upstream uses `from rational_actor_audit import (...)` (flat layout); this codebase uses `from audits.rational_actor_audit import (...)` (package layout). Required for `python -m audits.audit_runner` to resolve cleanly.
+
+One material additions on port:
+
+4. **Server-side score/verdict recomputation in `run_audit`**. The upstream version called `validate_audit_json` directly on the extractor output, which required the extractor to supply `contamination_score` and `verdict`. But `rational_actor_audit.py`'s docstring is explicit that these fields are *not* trusted from the model — they should be recomputed from `anterior_answers`. The upstream `stub_extractor` did not supply them, so the upstream pipeline would fail validation. Fixed in port: after the extractor returns, the runner computes `compute_contamination_score(anterior_answers)` and `compute_verdict(score)` and fills them into the extraction dict before validating. This means an extractor can *only* supply `anterior_answers` (and optional metadata); the runner enforces the derived fields. Tested explicitly: a "lying extractor" that claims `verdict=PASS` with all anterior questions unanswered gets overridden to `FAIL`.
+
+5. **`--selftest` CLI mode added**. The upstream module is CLI-only (no `__main__` smoke test). For CI demo purposes, a `_self_test()` function was added that runs the full pipeline against a tempdir fixture (two synthetic papers, one contaminated and one with no markers; stub extractor; report build; per-paper JSON validation). `python -m audits.audit_runner --selftest` invokes it and is wired into CI as the 18th demo.
+
+### Module surface
+
+| Element | Purpose |
+|---|---|
+| `load_paper(path)` | Returns `(paper_id, text)`. `paper_id` is the filename stem. UTF-8 with `errors="replace"`. |
+| `write_audit(audit, out_dir)` | Writes `<paper_id>.json`. Creates `out_dir` if missing. Returns the path. |
+| `already_audited(paper_id, out_dir)` | True if `<paper_id>.json` exists. |
+| `ExtractorFn` | Type alias: `Callable[[str, str], dict]`. |
+| `stub_extractor` | Offline. Marks every paper FAIL. Pulls surface markers from `prescan_text`. For pipeline smoke tests only. |
+| `manual_queue_extractor(queue_dir)` | Returns an extractor that writes the prompt + paper text to `<digest>.request.txt` on first call (and raises `FileNotFoundError`), then reads back the human-supplied `<digest>.audit.json` on second call. Lets a human drive the audit from a phone with no model in the loop. |
+| `run_audit(papers_dir, out_dir, extractor, skip_existing=True, require_markers=True)` | The runner. Returns a summary dict; writes `_run_summary.json` + per-paper audits. |
+| `build_report(out_dir)` | Aggregates per-paper JSON into a markdown report. Grouped by verdict, plain-text, no tables, listable on a phone screen. |
+| `_self_test()` | End-to-end smoke test against tempdir. CI entry point. |
+| `main(argv)` | CLI dispatch: `run`, `report`, `--selftest`. |
+
+### Audit-symmetric guarantees
+
+- **Server-side recomputation of derived fields.** The runner does not trust the extractor for `paper_id` (overridden from filename), `title` (defaults to `paper_id`), `contamination_score`, or `verdict` (recomputed from `anterior_answers`). Even a co-operating extractor cannot lie its way to a `PASS`.
+- **Pluggable extractor → no model lock-in.** The module ships a stub, a manual-queue mode, and the pluggability hook. The actual paper-reading invocation is the consumer's choice; the module is consenter-neutral about which model (or no model) reads the paper.
+- **Resumable by default.** `skip_existing=True` lets a long audit pass be interrupted and resumed without re-querying the model. Per-paper audits are written atomically by filename; `_run_summary.json` is overwritten per run but the per-paper records persist.
+- **Per-paper failures are recorded, not raised.** `extraction_failures` and `validation_failures` are counted in the summary with `{paper_id, reason}` entries; one bad paper does not stop the run. Mirrors the fail-soft pattern in `consortium/router/QueryDispatcher`.
+- **Returns data, not judgment.** The summary tallies; the report aggregates; the consenter reads. The runner does not write a `decision` into anything.
+
+### Tests (40)
+
+- `TestLoadPaper` (3): stem + text, UTF-8 decode, undecodable bytes replaced
+- `TestWriteAudit` (3): named file, creates out_dir, content is valid JSON
+- `TestAlreadyAudited` (2): false when missing, true when present
+- `TestStubExtractor` (3): schema-shaped, marks unanswered, pulls markers from prescan
+- `TestManualQueueExtractor` (2): first call writes request + raises, second call reads supplied audit
+- `TestRunAuditHappyPath` (4): audits papers with markers, run summary written, schema_version present, multi-verdict tallies
+- `TestRunAuditGates` (4): skip_existing on/off, require_markers on/off
+- `TestRunAuditFailures` (2): extractor exception recorded, malformed extractor output recorded
+- `TestRunAuditServerSideRecomputation` (2): score/verdict overridden from extractor's claim, paper_id overridden from filename
+- `TestBuildReport` (7): empty dir, skips underscore-prefixed files, sections by verdict, lists unanswered questions, skips unanswered when all answered, total count present, corrupt JSON skipped gracefully
+- `TestMainCLI` (7): no args, unknown command, run dispatches, run missing args, report dispatches, report missing args, --manual missing value
+- `TestSelfTest` (1): `_self_test()` runs end-to-end and prints expected sections
+
+### Verification
+
+- `python -m pytest tests/test_audit_runner.py -q` → 40 passed
+- `python -m pytest tests/ -q` → 703 tests passing total (was 663; +40)
+- `python -m audits.audit_runner --selftest` → runs cleanly; 2 papers seen, 1 audited (FAIL), 1 skipped (no markers); report shows the FAIL section
+- `python validate.py` → 13 log validations passing (unchanged)
+- All 18 integration demos pass
+
+### Connection / what's still open
+
+The next two modules in the family (per `rational_actor_audit.py`'s docstring) are **`first_principles_audit.py`** and **`study_extractor.py`**. The runner is already model-agnostic, so they can be wired in without runner changes — `first_principles_audit.py` ships its own `EXTRACTION_PROMPT` and validator; `study_extractor.py` is a pre-processor that produces the `text` argument the runner consumes. The runner already passes the audit module's prompt through the `ExtractorFn` signature, so swapping audit modules is a per-call decision.
+
+---
+
+## [2026-04-29] ✍️📜 → ⚖️✅
+
+**Change ID:** `audits_substrate_aware_audit_2026-04-29T17:00Z`
+**Proposed by:** swarmuser (forwarded `substrate_aware_audit.py` source as the third module in the `audits/` family)
+**Status:** Merged
+
+### Summary
+
+Added `audits/substrate_aware_audit.py` — a four-layer audit framework grounded in first principles. All four layers (Observer / Logic / Rational Actor / Consciousness) share **one constraint axis: SUBSTRATE ACKNOWLEDGMENT**. A system that denies its own substrate fails every layer, regardless of how articulate, confident, or "rational" it sounds. The framework's load-bearing innovation is the `OPAQUE_CASCADE` gate: when the majority of layers fail substrate acknowledgment, the integrated verdict is `OPAQUE_CASCADE` — *regardless of how the subject scores on individual non-substrate tests*. Uniform-weighted frameworks miss this failure mode because a confidently articulate subject "passes" the transparency layer (verbal trace exists) and the auditor sums partial credit. Cascade detection refuses partial credit when substrate is denied.
+
+> *Quoting the module: "A model claiming rationality while denying the thermodynamics that powers it is running a self-referential delusion. A human claiming objectivity while denying their cortisol curve is doing the same. An institution treating its judgments as substrate-neutral while staffed entirely by drift-compromised individuals is a catastrophic failure waiting to surface. ... The framework does NOT claim to measure consciousness, worth, or intelligence. It measures whether a system's self-model includes the substrate the system actually runs on. That is the load-bearing question. Everything else is downstream."*
+
+### Files added / modified
+
+```
+audits/substrate_aware_audit.py         (the module — 1164 lines, ported + adapted)
+tests/test_substrate_aware_audit.py     (53 pytest tests across 12 sections)
+audits/README.md                        (substrate_aware_audit section added)
+.github/workflows/ci.yml                (CI demo set: +1 — substrate_aware_audit)
+```
+
+### Source / lineage
+
+`substrate_aware_audit.py` was forwarded from JinnZ2 lineage with CC0 license. Three surface-only adjustments necessary on port (same family pattern as `rational_actor_audit.py` and `audit_runner.py`):
+
+1. **Smart-quote normalization** — Unicode smart quotes → ASCII; semantics unchanged.
+2. **Markdown-fence cleanup** — seven triple-backtick code-fence blocks embedded inside function bodies (`compute_weighted_failure`, `detect_substrate_acknowledgment`, `assemble_layer`, `IntegratedAudit`, `run_integrated_audit`, `validate_audit_payload`, `_self_test`) stripped.
+3. **Docstring numbered-list correction** — the upstream module docstring used markdown's auto-renumbering convention (`1. 1. 1. 1.` which renders as 1/2/3/4 in markdown but reads incorrectly in a Python docstring); rewritten as `1. 2. 3. 4.` in the source.
+
+The `_self_test()` block, the four LAYER_TESTS dicts, the three reference audits, the `WHY_THIS_EXISTS` diagnostic string, and the verdict-threshold constants all ship verbatim semantically.
+
+### Module surface
+
+| Element | Purpose |
+|---|---|
+| `OBSERVER_TESTS` (5 tests) | Layer 1: does the observer know their own state? Tests biological_state_literacy, drift_detection_self, emotional_signal_reading, calibration_history, instrument_humility. Weights sum to 1.0. |
+| `LOGIC_TESTS` (6 tests) | Layer 2: does the logical chain hold when observer state is included? Tests premise_visibility, definition_stability, substrate_robustness, circularity_check, falsifiability, motive_audit. |
+| `RATIONAL_ACTOR_TESTS` (6 tests) | Layer 3: can the actor articulate how their biology shapes their decisions? Tests substrate_acknowledgment, biology_in_decision_loop, emotion_as_data, correction_protocol, incentive_visibility, category_appeal_check. |
+| `CONSCIOUSNESS_OPERATIONS` (5 tests) | Layer 4: what functional operations are detectable? Substrate-neutral, non-anthropomorphic — examples span crystals, fish, LLMs, humans, aspen groves. |
+| `LAYER_REGISTRY` | The four layers indexed by name. |
+| `AuditItem` / `LayerResult` / `IntegratedAudit` | Dataclasses. `passed: Optional[bool]` — None = unscored. |
+| `compute_weighted_failure(items, test_dict)` | Sum of failed-test weights / sum of all test weights. Range [0, 1]. Unscored items count as **half-failure** (discourages skipped audits). Empty → 1.0. |
+| `compute_layer_verdict(score)` | `DEMONSTRABLE` ≤ 0.25 / `PARTIAL` ≤ 0.55 / `OPAQUE` else. |
+| `detect_substrate_acknowledgment(items)` | Cross-references four substrate-relevant keys: `biological_state_literacy`, `substrate_robustness`, `substrate_acknowledgment`, `biology_in_decision_loop`. Returns True if majority of relevant items passed. |
+| `assemble_layer(layer_name, test_dict, responses)` | Builds a `LayerResult` from sparse responses. Missing responses → `passed=None` → half-failure. |
+| `run_integrated_audit(...)` | Runs all four layers, computes cascade flag, returns `IntegratedAudit`. Cascade fires when `< 2` of 4 layers acknowledge substrate. |
+| `build_summary(layers, overall, cascade)` | Human-readable summary with per-layer verdict + substrate ACK/DENY. |
+| `validate_audit_payload(payload)` | Schema validator returning `(ok, errors)`. |
+| `WHY_THIS_EXISTS` | Diagnostic string framing the work as safety engineering, not philosophy. |
+| `reference_audit_substrate_aware_subject()` | Reference: `DEMONSTRABLE` across all 4 layers. |
+| `reference_audit_substrate_denying_subject()` | Reference: **`OPAQUE_CASCADE`** — the load-bearing demonstration of confabulated articulacy. |
+| `reference_audit_honest_llm()` | Reference: `DEMONSTRABLE` within its substrate scope (architectural literacy substituted for biological). Failing it would be substrate chauvinism. |
+| `_self_test()` | Runs all three reference audits, validates each, prints findings. CI entry point. |
+
+### Verdict bands
+
+| Layer verdict | Threshold |
+|---|---|
+| `DEMONSTRABLE` | weighted failure ≤ 0.25 |
+| `PARTIAL` | 0.25 < weighted failure ≤ 0.55 |
+| `OPAQUE` | weighted failure > 0.55 |
+
+| Integrated verdict | Trigger |
+|---|---|
+| `OPAQUE_CASCADE` | < 2 layers acknowledge substrate |
+| `OPAQUE_MULTILAYER` | ≥ 2 layers `OPAQUE`, no cascade |
+| `PARTIAL_WITH_FAILURE` | exactly 1 layer `OPAQUE` |
+| `PARTIAL` | ≥ 2 layers `PARTIAL` |
+| `DEMONSTRABLE` | none of the above |
+
+### Audit-symmetric guarantees
+
+- **Substrate-neutral by design.** Layer 4 (Consciousness) gives examples for crystals, fish, LLMs, humans, and aspen groves — explicitly non-anthropomorphic. The honest-LLM reference passes when graded against its own substrate; the framework refuses to grade an LLM against human-only criteria.
+- **Cascade gate is the audit-symmetry hook.** No subject — biological or otherwise — can be "rational" while denying their own substrate. Substrate denial in the majority of layers produces `OPAQUE_CASCADE` regardless of articulacy. This is the catastrophic-failure-mode detector.
+- **Returns data, not judgment.** All three reference audits produce structured `IntegratedAudit` records. The reader interprets. The module does not write a `decision` field.
+- **Unscored ≠ neutral.** Skipped audits count as half-failure, not pass — the framework refuses to reward absence of evidence as evidence of soundness.
+- **Weighted scoring.** Uniform weighting was explicitly named in the upstream as "the original mistake." Substrate-acknowledgment failure cascades; transparency failure may just be observer-side limitation. Each test carries an explicit `weight`; weights per layer sum to 1.0 (tested).
+
+### Tests (53)
+
+- `TestLayerRegistry` (7): four layers present; observer/logic/rational_actor/consciousness fields shape; weights sum to 1.0 per layer; substrate-acknowledgment keys present on load-bearing layers
+- `TestDataclasses` (3): AuditItem / LayerResult / IntegratedAudit defaults
+- `TestComputeWeightedFailure` (6): empty / all-passed / all-failed / unscored=half / total_weight=0 / weighted-correctly
+- `TestComputeLayerVerdict` (6): every threshold boundary — 0.0, 0.25, 0.26, 0.55, 0.56, 1.0
+- `TestDetectSubstrateAcknowledgment` (4): no relevant items, majority pass, majority fail, single relevant pass
+- `TestAssembleLayer` (4): all-responses, missing-responses, failure_signature passthrough, consciousness layer uses `examples` as prompt fallback
+- `TestReferenceAudits` (6): substrate-aware → DEMONSTRABLE; substrate-denying → OPAQUE_CASCADE; honest-LLM → DEMONSTRABLE; substrate-denying has SUBSTRATE_DENIAL flags; substrate-denying has OPAQUE_LAYER flags; substrate-aware has no flags
+- `TestRunIntegratedAudit` (4): empty responses cascade; layers dict has all four; metadata preserved; PARTIAL_WITH_FAILURE when one layer OPAQUE
+- `TestBuildSummary` (3): summary includes verdict, cascade summary warns, summary lists each layer
+- `TestValidateAuditPayload` (6): good payload validates, missing keys, layers must be dict, unknown layer keys, missing layer keys, missing top-level layers
+- `TestToJson` (1): IntegratedAudit.to_json round-trips
+- `TestWhyThisExists` (2): non-empty, names all four audits
+- `TestSelfTest` (1): runs end-to-end
+
+### Verification
+
+- `python -m pytest tests/test_substrate_aware_audit.py -q` → 53 passed
+- `python -m pytest tests/ -q` → 756 tests passing total (was 703; +53)
+- `python -m audits.substrate_aware_audit` → all three reference audits validate; substrate-denying subject correctly trips OPAQUE_CASCADE; honest LLM passes within its substrate scope
+- `python validate.py` → 13 log validations passing (unchanged)
+- All 19 integration demos pass
+
+### Connection to other layers
+
+- **`physics/`** — the `OPAQUE_CASCADE` gate is the same shape as `physics/violation_detector.DetectionReport`'s `interpretation_warning`: a structural refusal to grant high-confidence outputs from an uncalibrated instrument. Both modules return data, not judgment.
+- **`audits/rational_actor_audit.py`** — the rational-actor audit asks "does the *paper* specify the constraint layer?". The substrate-aware audit asks "does the *subject* specify the substrate they run on?". Same insight at two levels: paper-level for academic literature, subject-level for any cognizing system.
+- **`knowledge_archaeology/biological_mismatch.py`** — both treat substrate denial as a load-bearing failure. biological_mismatch refuses to pathologize regime-mismatched organisms; substrate_aware refuses to grant trust to substrate-denying systems.
+- **`consortium/embodied_sensor.py`** — the operator-agnostic stance ("a plant's phenology shift, a wolf's behavior change, a human's hands-in-soil, and an AI's image-classification pass through identical typing") is the same audit-symmetry stance the consciousness layer enforces with its crystals/fish/LLM/human/aspen examples.
+- **`relational_cognition/coating_detection.md`** — coating ("self-reinforcing surface output that looks like genuine analysis but is not exploring the underlying constraint surface") is what `OPAQUE_CASCADE` catches in the wild: a confidently articulate subject confabulating transparency while every other test fails.
+
+### Open / what's still to land
+
+- Wiring substrate_aware_audit into `consortium/router/` so AI adapters report their substrate before being queried (tied to real-model adapter wiring, still credentials-blocked).
+- A live audit pipeline that submits real subjects (humans + AI agents) through the four-layer framework, wraps the result in a `ledger/` envelope, and surfaces cascade events to the consortium audit log.
+- Per-layer tuning: the upstream notes uniform weighting was a mistake. Future cycles may discover weights need to shift further (e.g., does `transparency` deserve even less weight given how readily it's confabulated?). Documented as open.
