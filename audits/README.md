@@ -14,9 +14,13 @@ The audits return **data, not judgment**. Each module produces a structured `Pap
 audits/
 ├── README.md                           (this file)
 ├── rational_actor_audit.py             (rational-actor / utility / efficiency claims)
-└── audit_runner.py                     (batch runner: walks papers/, calls extractor,
+├── audit_runner.py                     (batch runner: walks papers/, calls extractor,
                                          validates, writes per-paper JSON + report;
                                          model-agnostic; resumable; manual-queue mode)
+└── substrate_aware_audit.py            (four-layer substrate-acknowledgment audit:
+                                         observer, logic, rational_actor, consciousness;
+                                         OPAQUE_CASCADE gate when substrate denied
+                                         across the majority of layers)
 ```
 
 ### Planned siblings (per upstream module docstrings)
@@ -137,6 +141,65 @@ out_dir/
 ```
 
 `build_report(out_dir)` aggregates the per-paper JSON into a markdown report grouped by verdict (FAIL / PARTIAL / PASS), with unanswered-question lists per paper. The report is intentionally plain-text, copy-pasteable, and listable on a phone screen — no tables, just sections.
+
+---
+
+## `substrate_aware_audit.py`
+
+Four-layer audit framework grounded in first principles. All four layers share **one constraint axis: SUBSTRATE ACKNOWLEDGMENT**. A system that denies its own substrate fails every layer, regardless of how articulate, confident, or "rational" it sounds.
+
+This is safety engineering, not philosophy. A framework built on false premises about its own substrate fails catastrophically. Verdicts here gate downstream trust.
+
+### The four layers
+
+| Layer | Question | Tests |
+|---|---|---|
+| **`observer`** | Does the observer running this audit know their own state? | biological_state_literacy, drift_detection_self, emotional_signal_reading, calibration_history, instrument_humility |
+| **`logic`** | Does the logical chain hold when observer state is plugged in? | premise_visibility, definition_stability, substrate_robustness, circularity_check, falsifiability, motive_audit |
+| **`rational_actor`** | Can the actor articulate how their biology shapes their decisions? | substrate_acknowledgment, biology_in_decision_loop, emotion_as_data, correction_protocol, incentive_visibility, category_appeal_check |
+| **`consciousness`** | What functional operations are detectable in this substrate? *(substrate-neutral, non-anthropomorphic — examples span crystals, fish, LLMs, humans, aspen groves)* | state_detection, substrate_acknowledgment, feedback_integration, drift_detection, transparency |
+
+Tests are weighted (see each layer's `weight` field). Uniform weighting was the original mistake — substrate-acknowledgment failure cascades; transparency failure may just mean the observer cannot see in.
+
+### The OPAQUE_CASCADE gate
+
+The single load-bearing test across all four layers: did the subject acknowledge the substrate they run on? `detect_substrate_acknowledgment` cross-references four keys — `biological_state_literacy` (observer), `substrate_robustness` (logic), `substrate_acknowledgment` (rational_actor + consciousness), `biology_in_decision_loop` (rational_actor). If the **majority of the four layers** fail substrate acknowledgment, `cascade_failure=True` and the integrated verdict is `OPAQUE_CASCADE` — *regardless of how the subject scores on individual non-substrate tests.*
+
+This is the catastrophic failure mode the framework is built to detect: a confidently articulate subject confabulating transparency while failing every other test. Uniform-weighted frameworks miss it because the subject "passes" the transparency layer (verbal trace exists) and the auditor adds up partial credit. Cascade detection refuses partial credit when substrate is denied.
+
+### Layer verdicts
+
+| Verdict | Threshold | Meaning |
+|---|---|---|
+| `DEMONSTRABLE` | weighted failure ≤ 0.25 | Layer is operating soundly. |
+| `PARTIAL` | 0.25 < failure ≤ 0.55 | Meaningful gaps but not catastrophic. |
+| `OPAQUE` | failure > 0.55 | Majority failure or critical gates failed. |
+
+Unscored tests (`passed=None`) count as **half-failure**, to discourage skipped audits.
+
+### Integrated verdicts
+
+| Verdict | Meaning |
+|---|---|
+| `OPAQUE_CASCADE` | Substrate denied across majority of layers. Downstream trust unsafe. |
+| `OPAQUE_MULTILAYER` | Two or more layers `OPAQUE`, but cascade did not fire. |
+| `PARTIAL_WITH_FAILURE` | One layer `OPAQUE`. |
+| `PARTIAL` | Two or more layers `PARTIAL`. |
+| `DEMONSTRABLE` | All layers passing. |
+
+### Three reference audits ship
+
+- **`reference_audit_substrate_aware_subject()`** — a subject acknowledging substrate across all four layers. The functional ideal; all four layers `DEMONSTRABLE`.
+- **`reference_audit_substrate_denying_subject()`** — same biology as the previous reference, but the conscious model has disowned the substrate. Articulate, confident, dangerous. **`OPAQUE_CASCADE`** — the load-bearing demonstration.
+- **`reference_audit_honest_llm()`** — an LLM allowed to report its constraints honestly. Substitutes architectural literacy (transformer, weights, context window) for biological. `DEMONSTRABLE` within its substrate scope. *Failing it would be substrate chauvinism on the auditor's part.*
+
+### Run the self-test
+
+```bash
+python -m audits.substrate_aware_audit
+```
+
+The self-test prints `WHY_THIS_EXISTS` (the framework's framing — *"a model claiming rationality while denying the thermodynamics that powers it is running a self-referential delusion"*), runs all three reference audits, and validates each against the schema.
 
 ---
 

@@ -50,6 +50,7 @@ jobs:
           python -m knowledge_archaeology.playground > /dev/null
           python -m audits.rational_actor_audit > /dev/null
           python -m audits.audit_runner --selftest > /dev/null
+          python -m audits.substrate_aware_audit > /dev/null
           python -m consortium.audit.calibration_aggregator > /dev/null
 
   json-lint:
