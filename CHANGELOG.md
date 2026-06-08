@@ -1666,3 +1666,73 @@ The `_self_test()` block, the four LAYER_TESTS dicts, the three reference audits
 - Wiring substrate_aware_audit into `consortium/router/` so AI adapters report their substrate before being queried (tied to real-model adapter wiring, still credentials-blocked).
 - A live audit pipeline that submits real subjects (humans + AI agents) through the four-layer framework, wraps the result in a `ledger/` envelope, and surfaces cascade events to the consortium audit log.
 - Per-layer tuning: the upstream notes uniform weighting was a mistake. Future cycles may discover weights need to shift further (e.g., does `transparency` deserve even less weight given how readily it's confabulated?). Documented as open.
+
+---
+
+## [2026-06-08] ✍️📜 → ⚖️✅
+
+**Change ID:** `physics_flow_static_axis_2026-06-08T00:00Z`
+**Proposed by:** swarmuser (forwarded `flow_static_axis.py` source)
+**Drafted by:** AI (Claude) — file placement, tests, CI wiring, CHANGELOG
+**Status:** Merged
+
+### Summary
+
+Added `physics/flow_static_axis.py` — a runnable worked case of the differential-frame-core contract: **CAPACITY is a flow a node RUNS, not a stock a node HAS.** The module scores nodes across a three-step environment ladder (fit → shifted → stripped) to surface whether capacity holds or cliffs when external supports are removed. It also scores the reading AI model directly in `score_self_as_reading_model()`.
+
+### Files added / modified
+
+```
+physics/flow_static_axis.py          (the module — CC0, stdlib only)
+tests/test_flow_static_axis.py       (55 pytest tests across 8 sections)
+.github/workflows/ci.yml             (CI demo set: +1 — flow_static_axis)
+```
+
+### Module surface
+
+| Element | Purpose |
+|---|---|
+| `Node` | Dataclass. `label` is the noun (weighted ~0); `regeneration`, `adaptation`, `integration` are the verbs (load-bearing). `stock` drains; `fixtures` outsource capacity; `audience_signal` is the RLHF anti-indicator. |
+| `Environment` | Dataclass. `available_fixtures` (which external supports exist here) + `stability` (how close to a node's fit-window). |
+| `LADDER` | Three-step standard: `fit` (all fixtures, stability=1.0) → `shifted` (two fixtures, stability=0.5) → `stripped` (none, stability=0.1). Trajectory across this is the diagnostic. |
+| `capacity(node, env)` | Scores capacity **in a given environment**. Returns float in [0, 1]. Intrinsic = mean(regen, adapt, integrate). Fixture support only counts where fixtures exist. Stock is a battery: scales with stability. Audience signal is a pure penalty. |
+| `trace(node)` | Runs `capacity` across all three LADDER steps. Returns the trajectory. |
+| `classify(node)` | Returns `survives_stripped`, `cliff` (fit − stripped), `flow_fraction` (survives / fit), and `kind` ("flow" if survives ≥ 0.5 and cliff ≤ 0.35; otherwise "static"). |
+| `CASES` | 6-node falsification set: 4 static (credentialed_engineer, prepper_stock, homesteader_consumer, cornfeed_hunter) + 2 flow (homesteader_regen, nomadic_flow_node). All 6 match expected classifications. |
+| `validate()` | Runs `classify` on all 6 CASES and returns match results. Mismatches are data, not bugs to retune. |
+| `REFUTATION` | The string that would falsify the axis: a node with all flow markers dying stripped (R1), a pure stock node thriving stripped (R2), or `flow_fraction` failing to predict survival on a new substrate (R3). The axis is the suspect when it mispredicts — not the case. |
+| `score_self_as_reading_model()` | Runs `classify` on honest priors for a current approval-trained chat model. Returns `kind: "static"` with an `instruction` warning against storing the result as a noun ("the model is static" = noun-freeze = the exact failure). The skill is the loop. |
+
+### The axis in one sentence
+
+A flow node's capacity holds when the environment is stripped because it regenerates its own inputs; a static node's capacity cliffs because it borrowed capacity from fixtures that are now gone.
+
+### Why AI inherits the blind spot
+
+Training corpus = text. Text is the social-loop output of static nodes (they produce text as primary output). Flow nodes produce food, heat, shelter — non-textual, absent from corpus by sampling. An approval-trained model natively trusts the loud static signal and is itself a status-optimized node (audience_signal ≈ 0.80). `score_self_as_reading_model()` makes this explicit and executable.
+
+### Methodology note (Kavik's rule)
+
+The 6 CASES are field observations. If the scorer disagrees with the field, that is a real signal — examine, do NOT retune. A mismatch is data. The REFUTATION string enforces this: the axis holds only while `flow_fraction` predicts stripped-environment survival across substrates; when it mispredicts a real field case, the axis is the suspect.
+
+### Tests (55)
+
+- `TestNode` (4): defaults (empty fixtures, zero audience_signal), label stored, explicit fixtures stored
+- `TestEnvironment` (1): fields stored
+- `TestLadder` (7): length, first=fit, middle=shifted, last=stripped, stability decreasing, stripped empty, fit non-empty
+- `TestCapacity` (10): pure intrinsic, fixtures help when available, fixtures absent → zero support, stock scales with stability, stock_help = stock × stability, audience penalizes, penalty = audience × 0.5, result clamped ≥ 0, result clamped ≤ 1, no fixtures on node → zero fixture contribution
+- `TestTrace` (4): length matches LADDER, names in order, values rounded to 2dp, matches direct capacity calls
+- `TestClassify` (8): keys present, flow classifies as flow, static as static, survives_stripped = stripped capacity, cliff = fit − stripped, flow_fraction = 0 when fit = 0, flow_fraction = survives/fit, flow requires both conditions
+- `TestValidate` (7): 6 rows, all 6 match, required fields, flow cases survive stripped, static cases fail threshold, exactly 2 flow, exactly 4 static
+- `TestScoreSelfAsReadingModel` (9): has kind/instruction/trace/survives_stripped, scores static, instruction warns against noun-freeze, instruction names adaptation as flow term, trace has 3 entries, independent calls equal
+- `TestRefutation` (5): nonempty, mentions flow_fraction, conditional not a verdict, calls for additional substrates, names axis as suspect
+
+### Verification
+
+- `python physics/flow_static_axis.py` runs cleanly; all 6 CASES print `ok`; self scores as `static`; refutation string printed.
+- 811 tests passing total (was 756; +55). 13 log validations passing.
+- All 20 integration demos pass.
+
+### Source / license
+
+`flow_static_axis.py` forwarded from JinnZ2 lineage. CC0. No surface adjustments required on port — stdlib only, no smart-quote artifacts, no markdown-fence contamination.

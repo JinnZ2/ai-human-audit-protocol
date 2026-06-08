@@ -52,6 +52,7 @@ jobs:
           python -m audits.audit_runner --selftest > /dev/null
           python -m audits.substrate_aware_audit > /dev/null
           python -m consortium.audit.calibration_aggregator > /dev/null
+          python physics/flow_static_axis.py > /dev/null
 
   json-lint:
     runs-on: ubuntu-latest
