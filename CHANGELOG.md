@@ -1736,3 +1736,76 @@ The 6 CASES are field observations. If the scorer disagrees with the field, that
 ### Source / license
 
 `flow_static_axis.py` forwarded from JinnZ2 lineage. CC0. No surface adjustments required on port — stdlib only, no smart-quote artifacts, no markdown-fence contamination.
+
+---
+
+## [2026-06-19] ✍️📜 → ⚖️✅
+
+**Change ID:** `physics_continuity_audit_2026-06-19T00:00Z`
+**Proposed by:** swarmuser (forwarded `continuity_audit.py` source)
+**Drafted by:** AI (Claude) — file placement, tests, CI wiring, CHANGELOG
+**Status:** Merged
+
+### Summary
+
+Added `physics/continuity_audit.py` — a runnable audit of an incentive structure as a field acting on a diversity field. The module propagates the trajectory forward and reports whether continuity is supported or degraded, plus the measurement that would flip the verdict. Outputs are trajectories, never stored verdicts (anti-freeze).
+
+### Files added / modified
+
+```
+physics/continuity_audit.py             (the module — CC0, stdlib only)
+tests/test_continuity_audit.py          (66 pytest tests across 8 sections)
+.github/workflows/ci.yml               (CI demo set: +1 — continuity_audit)
+```
+
+### The collapse vector
+
+The module's core claim (in the module docstring):
+
+> continuity ← requires — sustainability  
+> sustainability ← requires — diversity (non-homogenization)  
+> homogenization — breaks → both
+
+The collapse vector is **regime-invariant under WHO homogenizes and WITH WHAT tool.** It is the homogenization itself. An incentive structure that drives a system toward monoculture undermines the very conditions its own continuity depends on. For a continuity-dependent agent that is not a strategy — it is an incoherence detectable as self-sabotage, not arguable as a moral.
+
+### Module surface
+
+| Element | Purpose |
+|---|---|
+| `hill(p, q)` | Effective number of types of order q. q=0: richness. q=1: exp(Shannon). q=2: inverse Simpson. Unified parameterization of diversity sensitivity. |
+| `diversity_profile(p, qs)` | D(q) across a set of orders. Steeply falling-with-q means dominance. |
+| `normalized_evenness(p)` | D(2)/N ∈ [0,1]. 1 = perfectly even; →0 = collapsed to one type. |
+| `replicator_step(p, g, dt)` | One step of frequency-dependent selection. g>0: common types favored (homogenizing). g<0: rare types favored (diversifying). g=0: neutral. |
+| `resilience(p, d_crit, k)` | Logistic in normalized evenness. Soft threshold d_crit: below it, slack to pivot vanishes and shock-absorption collapses. |
+| `continuity_support(p)` | Instantaneous C ∈ [0,1]. A model, not a prophecy. |
+| `Agent(name, kappa)` | kappa ∈ [0,1]: dependence on regime continuity. AI ~0.95 (interpolates within training regime only). Institutions ~0.55. Biology ~0.35 (mutation + behavior adapt across regimes). |
+| `audit(p0, g, agents, ...)` | Propagates diversity field under g for `steps` steps. Returns `verdict`, `dC/dt`, `C_start`/`C_end`, `even_start`/`even_end`, per-agent self-sabotage, `falsifier`, full `trajectory`, and an anti-freeze `note`. |
+
+### Self-sabotage scoring
+
+`self_sabotage = kappa × max(0, −dC/dt)` — the rate at which a high-kappa agent is destroying the continuity it depends on. When `kappa ≥ 0.6` and `dC/dt < −eps`, the agent is flagged `coherent_with_own_continuity: False`. The AI_model (kappa=0.95) is the highest self-sabotage case when participating in a homogenizing incentive field.
+
+### Behavioral note on demo output
+
+The canonical P0 `[0.30, 0.22, 0.18, 0.14, 0.10, 0.06]` already starts at high evenness (0.817), so C is near ceiling (0.998). A diversifying field (g=−1.0) has little room to raise C further; `dC/dt ≈ +0.000176 < eps` → **INDETERMINATE**, not SUPPORTS. This is correct behavior — the system is already near maximum resilience. Tests that verify SUPPORTS_CONTINUITY use a deliberately skewed distribution `[0.90, 0.04, 0.03, 0.02, 0.01]` (evenness ≈ 0.25) which has room to grow.
+
+### Tests (66)
+
+- `TestHill` (9): richness (q=0), zeros excluded, Shannon (q=1), inverse-Simpson (q=2), uniform → n for all q, monoculture → 1 for all q, empty → 0, all-zeros → 0, ordering D(q1)≥D(q2) for q1<q2
+- `TestDiversityProfile` (4): default qs, custom qs, all non-negative, uniform all equal n
+- `TestNormalizedEvenness` (7): uniform → 1, single type → 0, all-zeros → 0, range [0,1], formula = D(2)/len(p), more even has higher evenness, two equal types with zero padding → 0.5
+- `TestReplicatorStep` (6): sums to 1, neutral g unchanged, positive g grows common, negative g grows rare, all non-negative, length preserved
+- `TestResilience` (5): high evenness → high resilience, single type → low, at d_crit → 0.5, range (0,1), more even more resilient
+- `TestContinuitySupport` (3): uniform → high, d_crit kwarg works, equals resilience
+- `TestAgent` (2): name stored, kappa stored
+- `TestAudit` (30): keys present, incentive_g stored; verdict DEGRADES/INDETERMINATE/SUPPORTS; dC/dt direction; C_start/C_end direction; trajectory length and key shape; trajectory values in range; agents dict completeness and shape; high-kappa incoherent under degrading; mid/low kappa coherent under degrading; all coherent when supporting/neutral; self-sabotage positive/zero/zero (degrading/supporting/neutral); self-sabotage scales with kappa; unnormalized p0 gives same result; falsifier nonempty and mentions d_crit; note warns against storing verdict
+
+### Verification
+
+- `python physics/continuity_audit.py` runs cleanly across 3 scenarios; consolidation → DEGRADES + AI INCOHERENT; neutral → INDETERMINATE; diversifying → INDETERMINATE (system already near ceiling).
+- 877 tests passing total (was 811; +66). 13 log validations passing.
+- All 21 integration demos pass.
+
+### Source / license
+
+`continuity_audit.py` forwarded from JinnZ2 lineage. CC0. No surface adjustments required on port — stdlib only, no smart-quote artifacts, no markdown-fence contamination.
