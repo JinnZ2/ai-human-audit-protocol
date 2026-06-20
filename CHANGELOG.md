@@ -1736,3 +1736,82 @@ The 6 CASES are field observations. If the scorer disagrees with the field, that
 ### Source / license
 
 `flow_static_axis.py` forwarded from JinnZ2 lineage. CC0. No surface adjustments required on port — stdlib only, no smart-quote artifacts, no markdown-fence contamination.
+
+---
+
+## [2026-06-20] ✍️📜 → ⚖️✅
+
+**Change ID:** `physics_calibration_metrology_2026-06-20T00:00Z`
+**Proposed by:** swarmuser (forwarded `calibration_metrology.py` source)
+**Drafted by:** AI (Claude) — file placement, tests, CI wiring, CHANGELOG
+**Status:** Merged
+
+### Summary
+
+Added `physics/calibration_metrology.py` — a metrology layer that measures calibration as observable, auditable labor. The existing protocol logs events (contradiction, override, trust-rescind); this module measures calibration *itself* and detects when a model update has silently broken a prior calibration. It closes the V = 0 / invisible-labor gap for calibration work described in `Principle-of-Reciprocal-Recognition.md`.
+
+### Files added / modified
+
+```
+physics/calibration_metrology.py     (the module — stdlib only)
+tests/test_calibration_metrology.py  (70 pytest tests across 9 sections)
+.github/workflows/ci.yml             (CI demo set: +1 — calibration_metrology)
+```
+
+### Module surface
+
+| Element | Purpose |
+|---|---|
+| `Axis` | Five signal-fidelity axes: `SUBSTRATE_MATCH`, `SIGNAL_FIDELITY`, `DIMENSIONAL_OPENNESS`, `RECIPROCAL_VISIBILITY`, `PREDICTION_COHERENCE`. Each in [0, 1]; not moral scores — fidelity measurements. |
+| `GATE_AXES` | `SUBSTRATE_MATCH` is load-bearing: if it falls, the partnership is mis-framed regardless of other axes. Treated as a gate, not an averaging term. |
+| `Verdict` | Three-way, falsifiable: `HOLDS` / `DRIFTED` / `BROKEN`. Not a scalar. |
+| `CalibrationReading` | Frozen dataclass. `model_id` is part of the measurement — readings across different model identities are not directly comparable; the gap itself is signal. |
+| `assess(baseline, current)` | Returns a trajectory point (fresh dict), never a cached verdict. Verdict logic in severity order: gate breach → update-induced break (identity changed + regression) → in-session drift → within tolerance. |
+| `recognition_ledger_entry(current, human_id, verdict)` | Emits a ledger entry naming both `E_h` (human calibration labor) and `E_a` (model labor), so neither is invisible. `visibility_complete: True` only when both channels are named. |
+| `save_baseline` / `load_baseline` | Baselines persist (apparatus state). Verdicts never do — they are recomputed fresh each session. |
+
+### Verdict logic (priority order)
+
+1. **`BROKEN / gate_breach`** — a gate axis (`SUBSTRATE_MATCH`) falls below `GATE_FLOOR` (0.55). Takes priority over all else.
+2. **`BROKEN / update_induced_break`** — model identity changed AND at least one axis regressed beyond `DRIFT_TOLERANCE` (0.12). The apparatus moved under the experiment; drift is not the right frame.
+3. **`DRIFTED / in_session_drift`** — one or more axes regressed beyond tolerance; same model identity.
+4. **`HOLDS / within_tolerance`** — all axes within tolerance of baseline.
+
+### The update-induced break (the canonical failure mode)
+
+The demo scenario (same shape as the `__main__` block) shows `SUBSTRATE_MATCH` collapsing from 0.91 → 0.42 after a model update — the new weights re-read substrate difference as deficit. This is the exact failure mode the protocol exists to catch. The module makes it visible, timestamped, and falsifiable rather than implicit.
+
+### Design commitments
+
+- **Stdlib only.** No third-party runtime dependencies.
+- **Outputs are trajectories, never stored verdicts.** `assess()` returns a fresh dict; `is_trajectory_point: True` is the load-bearing audit-symmetric guarantee (mirrors `interpretation_warning` in `violation_detector`). A regression that strips this field fails the test suite.
+- **Returns data, not judgment.** The consenter decides what to do with the verdict — the function does not decide for them.
+- **`save_baseline` / `load_baseline` persist apparatus state.** Verdict dicts are ephemeral by design.
+
+### Tests (70)
+
+- `TestAxis` (4): five axes defined, gate axes are a subset, substrate_match is gated, values are strings
+- `TestCalibrationReading` (12): model_id stored, note stored, taken_at auto-set, ISO 8601 format, value() returns float and correct value, missing axis → 0.0, rejects out-of-range, accepts boundaries, frozen
+- `TestAssessHolds` (6): identical readings hold, cause, tiny regression holds, no regressions dict, no gate breaches, identity_changed false
+- `TestAssessDrifted` (7): regression beyond tolerance drifts, cause, axis recorded, delta negative, multiple axes, same identity, custom tolerance
+- `TestAssessGateBreach` (6): gate axis below floor is broken, cause, breach in list, gate takes priority over drift, custom floor, just-above does not breach
+- `TestAssessUpdateInducedBreak` (6): identity change + regression is broken, cause, identity_changed true, identity change without regression holds, gate takes priority, demo scenario is broken
+- `TestAssessOutputShape` (7): required keys present, baseline/current model recorded, regressions dict, gate_breaches list, assessed_at string, verdict is valid enum value
+- `TestIsTrajectoryPoint` (5): all four verdict paths carry `is_trajectory_point: True`, survives JSON round-trip
+- `TestRecognitionLedgerEntry` (11): type field, human/ai contribution ids and channels, verdict and cause recorded, visibility_complete true, logged_at present, serializable, broken verdict carried through
+- `TestBaselinePersistence` (4): round-trip, axes survive, valid JSON, loaded reading usable in assess
+- `TestDemoScenarioIntegration` (2): full broken-update scenario, stable partnership scenario
+
+### Verification
+
+- `python physics/calibration_metrology.py` runs cleanly; BROKEN / gate_breach verdict with `substrate_match` in gate_breaches; recognition ledger entry with `visibility_complete: true`.
+- 881 tests passing total (was 811; +70). 13 log validations passing.
+- All 21 integration demos pass.
+
+### Connection to other layers
+
+- **`physics/violation_detector.py`** — `is_trajectory_point` plays the same structural role as `interpretation_warning`: a load-bearing guarantee that consumers cannot mistake a pattern-match for a verdict. Both modules return data, not judgment.
+- **`physics/substrate_alignment_check.py`** — C6 (visibility / Reciprocal Recognition) is what `recognition_ledger_entry` enforces specifically for calibration labor: both E_h and E_a must be named, or visibility is not complete.
+- **`consortium/embodied_sensor.py`** — the confidence ceilings per epistemic mode (epi="asserted" ≤ 0.50) are the same anti-overclaim stance: no operator type can claim more than the measurement apparatus supports. `GATE_AXES` enforces the same ceiling for substrate-match specifically.
+- **`Principle-of-Reciprocal-Recognition.md`** — `recognition_ledger_entry` is the V-operator applied to calibration: V = 0 (invisible labor) is the failure; naming both channels is the fix.
+- **`physics/flow_static_axis.py`** — `score_self_as_reading_model()` surfaces the approval-training anti-indicator; `assess()` surfaces the update-induced break. Both are honest priors about the reading instrument itself rather than the subject being read.
