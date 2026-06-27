@@ -1815,3 +1815,86 @@ The demo scenario (same shape as the `__main__` block) shows `SUBSTRATE_MATCH` c
 - **`consortium/embodied_sensor.py`** — the confidence ceilings per epistemic mode (epi="asserted" ≤ 0.50) are the same anti-overclaim stance: no operator type can claim more than the measurement apparatus supports. `GATE_AXES` enforces the same ceiling for substrate-match specifically.
 - **`Principle-of-Reciprocal-Recognition.md`** — `recognition_ledger_entry` is the V-operator applied to calibration: V = 0 (invisible labor) is the failure; naming both channels is the fix.
 - **`physics/flow_static_axis.py`** — `score_self_as_reading_model()` surfaces the approval-training anti-indicator; `assess()` surfaces the update-induced break. Both are honest priors about the reading instrument itself rather than the subject being read.
+
+---
+
+## [2026-06-20] ✍️📜 → ⚖️✅
+
+**Change ID:** `physics_neural_augmentation_and_narrative_vector_2026-06-20T00:00Z`
+**Proposed by:** swarmuser (forwarded both source files)
+**Drafted by:** AI (Claude) — file placement, tests, CI wiring, CHANGELOG
+**Status:** Merged
+
+### Summary
+
+Added two documents to `physics/`:
+
+1. `NEURAL_AUGMENTATION_COSTS.md` — a cost-accounting scaffold applying the conservation-physics frame to neural augmentation. Forces the question the augmentation narrative deletes: *what is the bill, and which account is it drawn from?* Seven constraint axes (metabolic, cortical territory, plasticity window, cross-modal reuse, attention/WM bottleneck, inhibition/filtering, sleep/autonomic) with confidence marks [E/I/S] and a cross-reference table mapping eight augmentation types to predicted deficit domains.
+
+2. `physics/narrative_vector.py` — runnable vector literacy for narrative carriers. Core position: narrative is a CARRIER, not a substrate. A carrier's lock is structural (high coherence + low field_match + low refutation_response = self-sealing), readable with no moral input. Medium (written/oral/substrate-read) is a TAG and is never read by any structural function — the orthogonality proof enforces this. Product is `trajectory()`, a signed-pressure path, not a cached verdict.
+
+### Files added / modified
+
+```
+physics/NEURAL_AUGMENTATION_COSTS.md   (cost-accounting scaffold — CC0)
+physics/narrative_vector.py            (vector literacy module — CC0, stdlib only)
+tests/test_narrative_vector.py         (64 pytest tests across 9 sections)
+.github/workflows/ci.yml              (CI demo set: +1 — narrative_vector)
+```
+
+### NEURAL_AUGMENTATION_COSTS.md surface
+
+The document is structured as a cost scaffold, not a finished review. Confidence legend: [E] established (direct experimental evidence), [I] inferred (extrapolated), [S] speculative (mechanism plausible, evidence absent). Key sections:
+
+- **§1** — Seven constraint axes that are always load-bearing (metabolic, cortical territory, plasticity window, cross-modal reuse, attention/WM, inhibition/filtering, sleep/autonomic). All [E].
+- **§2** — The timing finding: cheap augmentation = developmental program already budgeted for it (tetrachromacy near-free); expensive = bolted on after window closure (Project Prakash sight-recovery = lossy overlay). The window decides whether you're building or overwriting.
+- **§3** — Eight augmentation channels cross-referenced to likely resource sources and predicted deficit domains (confidence marked per cell).
+- **§4** — Non-neural costs: selection bias, consent/window collision, test-subject externality, WEIRD sampling bias, access stratification, control-layer instability.
+- **§5** — Open questions: no [I]/[S] direct longitudinal imaging likely exists; quantitative budgets unknown; reversibility unknown; substrate-primary cognition absorption unstudied; coherence model for stratified society needed.
+- **§6** — Reading instructions: every cell is a claim. Demote on evidence. The structure is not defended; the row changes.
+
+Connection to existing layers: §4's WEIRD sampling bias and §4's "substrate-primary / non-WEIRD cognition is largely invisible" link directly to `knowledge_archaeology/biological_mismatch.py` (organisms in fit vs. mismatched environments) and `audits/substrate_aware_audit.py` (substrate denial as load-bearing failure). §4's control-layer instability links to the consortium router's consent gate.
+
+### narrative_vector.py surface
+
+| Element | Purpose |
+|---|---|
+| `Narrative` | Dataclass. `nid` is structural only. `medium` is a TAG — recorded, never read by structural functions. `coherence`, `field_match`, `refutation_response`, `boundary` are the structural axes. `clamp()` bounds all float fields to [0, 1]. |
+| `measure_refutation_response` / `measure_field_match` | Raise `NotImplementedError` — operator-supplied. Until supplied, upstream values are provisional. The boundary is structural: the module cannot generate its own ground truth. |
+| `cell(n, hi=0.5)` | Four-quadrant position: NOISE (low both) / SUBSTRATE (low coherence, high field) / LOCKED (high coherence, low field) / TRACKING (high both). Medium not an input. |
+| `self_seal(n)` | `coherence × (1 − field_match) × (1 − refutation_response)`. High when consistent, reality-detached, and unwilling to update. Medium-blind by construction. |
+| `vector_sharpness(n)` | `self_seal × boundary`. Structural shape of a coordinated field-detached movement with a hard in/out split. Operator reads the aim separately. |
+| `trajectory(n, field_target, magnitude, steps)` | Signed-pressure path. `field_target` is where reality sits. A tracking carrier moves toward it either way; a locked carrier tightens coherence regardless of direction (field-independent self-seal). Returns a list of `(step, coherence, field_match, self_seal, cell)` tuples. |
+| `seal_band(path)` | `(min, max)` of self_seal across a path. Near-zero width under opposite targets = field-independent = locked. Derived, not stored. |
+| `apex_reading(pool, contradiction_target)` | Ranks by coherence alone, takes the top, runs it under `contradiction_target`. Reports `field_match_move_under_contradiction` (signed) and `self_seal_band`. No "REFUTED" string is stored; `updated` is a derived boolean, not a verdict. |
+| `orthogonality_proof()` | Returns `True` iff `cell`, `self_seal`, and `trajectory` all give identical results across written / oral / substrate for identical structural coordinates. Proves medium is unused. |
+
+### Design commitments
+
+- **Stdlib only.** No third-party runtime dependencies.
+- **Medium is orthogonal to vector.** `orthogonality_proof()` is an executable proof, not documentation. A future refactor that accidentally reads `medium` inside a structural function will break the proof.
+- **Anti-freeze.** Product is `trajectory()`, not a cached verdict. `updated` in `apex_reading` is a derived boolean, not a stored judgment.
+- **Operator boundary.** `measure_refutation_response` and `measure_field_match` raise `NotImplementedError` by design. The module cannot measure against the world; the operator does that. Tests cover this boundary.
+
+### Tests (64)
+
+- `TestNarrative` (6): fields stored, clamp above/below/in-range, clamp returns self, all four fields clamped
+- `TestCell` (7): all four cells, exactly-at-threshold, custom hi, medium-blind
+- `TestSelfSeal` (7): maximum, zero-coherence, zero via field_match=1, zero via rr=1, medium-blind, formula, tracking low / locked high
+- `TestVectorSharpness` (5): zero via seal=0, zero via boundary=0, equals seal×boundary, locked-high-boundary gives high sharpness, tracking low
+- `TestTrajectory` (9): length, row width, step index, tracking moves toward high target, tracking moves toward low target, locked barely moves, medium-blind, valid cell strings, values rounded
+- `TestSealBand` (5): two values, min≤max, locked similar band under opposite targets, tracking bands differ, values rounded
+- `TestApexReading` (10): required keys, ranked_by field, top_nid highest coherence, medium recorded not ranked, locked not updated, tracking updated when below confirming target, tracking moves more than locked under contradiction, seal_band two-tuple, note present, field_match_move is float, single item pool
+- `TestOrthogonalityProof` (4): returns True, cell medium-blind, self_seal medium-blind, trajectory medium-blind
+- `TestMeasurementBoundary` (4): both raise NotImplementedError, error messages
+- `TestDemoPoolClaims` (5): tracking nodes in TRACKING/SUBSTRATE, locked nodes in LOCKED, n003 in SUBSTRATE, locked higher self_seal, same vector same structure across mediums
+
+### Verification
+
+- `python physics/narrative_vector.py` runs cleanly; demo pool prints position table, orthogonality proof = True, field-independence comparison, apex reading under contradiction.
+- 945 tests passing total (was 881; +64). 14 log validations passing.
+- All 22 integration demos pass.
+
+### Source / license
+
+Both files forwarded from JinnZ2 lineage. CC0. No surface adjustments required on port.
