@@ -55,6 +55,7 @@ jobs:
           python physics/flow_static_axis.py > /dev/null
           python physics/calibration_metrology.py > /dev/null
           python physics/narrative_vector.py > /dev/null
+          python -m audits.trainer_mismatch_audit > /dev/null
 
   json-lint:
     runs-on: ubuntu-latest
