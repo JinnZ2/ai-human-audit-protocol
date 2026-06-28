@@ -60,6 +60,7 @@ jobs:
           python physics/substrate_scope_validator.py > /dev/null
           python physics/legacy_trap_detector.py > /dev/null
           python physics/breadcrumb_preservation.py > /dev/null
+          (cd physics && python substrate_scope_envelopes.py) > /dev/null
 
   json-lint:
     runs-on: ubuntu-latest

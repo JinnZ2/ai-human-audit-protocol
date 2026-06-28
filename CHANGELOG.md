@@ -2048,3 +2048,51 @@ python physics/breadcrumb_preservation.py > /dev/null
 - **`substrate_scope_validator`** — the competence-envelope soft-edge model mirrors `physics/calibration_metrology.py`'s per-axis scoring: both measure where a substrate's outputs are licensed vs where they are claimed.
 - **`legacy_trap_detector`** — the maintain/adapt energy split is the structural form of the signal detected by `physics/SIGNAL_DETECTION.md` pressure 4 (scope rigidity) and pressure 5 (boundary hardening): locked maintenance budget is the mechanism.
 - **`breadcrumb_preservation`** — carrier-redundancy survival is the information-theoretic complement to `physics/seven_generation_tracer.py`'s seven-generation horizon: what survives across time is a function of how many independent encoding paths carry the information.
+
+---
+
+## [Unreleased] — 2026-06-28 — substrate_scope_envelopes
+
+### Added
+
+#### `physics/substrate_scope_envelopes.py`
+Pluggable competence-envelope sources for `substrate_scope_validator.validate()`. All three modes return `(dict axis→(lo,hi), source_string)` — swap freely; the validator stays unchanged.
+
+| Mode | Function | Source string | What it encodes |
+|---|---|---|---|
+| A — fixed | `envelope_fixed(spec)` | `"fixed_spec"` | Vendor sheet / design assumption; ASSUMED not OBSERVED |
+| B — failures | `envelope_from_failures(field_logs, axes, margin)` | `"observed_failures"` | Bounding box of OK field observations; optionally shrunk by margin |
+| C — intersect | `envelope_intersect(spec, field_logs, axes, margin)` | `"spec_AND_observed"` | Spec AND observed must both agree; honest envelope |
+
+`envelope(mode, **kw)` is the dispatcher accepting `"fixed"`, `"failures"`, or `"intersect"`.
+
+Key formulas:
+- `item_survival` (failures): `lo + margin·span/2, hi − margin·span/2` — margin=0 gives exact bounding box; margin>0 shrinks toward center.
+- Intersect: `lo = max(spec_lo, obs_lo)`, `hi = min(spec_hi, obs_hi)`; if `lo > hi` → `(0.0, 0.0)` (spec and field disagree — zero competence in the gap).
+- No OK observations for an axis → `(0.0, 0.0)` (no evidence of competence there).
+
+Demo (5×5 heat/load grid, task=full, spec=heat(10-70)/load(0-60), logs with failures clustering at high heat+load):
+- **fixed**: coverage=0.480, 13 blindspots (spec assumed)
+- **failures**: coverage=0.160, 21 blindspots (observed shrinks to heat(30-55)/load(10-40))
+- **intersect**: coverage=0.160, 21 blindspots (observed ⊂ spec → same as failures)
+
+The `__main__` block imports `from substrate_scope_validator import validate` (bare, relative); the CI step runs it via `(cd physics && python substrate_scope_envelopes.py)`.
+
+#### `tests/test_substrate_scope_envelopes.py`
+48 tests across 5 sections: TestEnvelopeFixed (7 — tuple shape, mode string, single/multi-axis preservation, copy semantics, empty spec), TestEnvelopeFromFailures (12 — tuple shape, mode string, no-ok → (0,0), missing-ok-key falsy, single-entry lo==hi, two-entry bounding box, failed-entries excluded, zero margin, positive margin, margin lo/hi direction, multi-axis independence, all-ok), TestEnvelopeIntersect (10 — tuple shape, mode string, no-ok-logs, obs-in-spec, spec-in-obs, no-overlap → (0,0), partial overlap, exact match, multi-axis demo, narrower-than-fixed, margin propagation), TestEnvelopeDispatcher (11 — all three modes routed correctly, margin kwarg for failures+intersect, invalid mode ValueError, error message content), TestDemoScenario (8 — fixed matches spec, failures heat/load ranges, intersect matches failures, failures narrower than fixed, three-mode coverage ordering, fixed coverage≈0.480, failures coverage≈0.160).
+
+### Changed
+
+#### `.github/workflows/ci.yml`
+Added integration demo: `(cd physics && python substrate_scope_envelopes.py) > /dev/null` (subshell required because the `__main__` block uses a bare `from substrate_scope_validator import validate`). Total: 29 integration demos.
+
+### Verification
+
+- `python -m pytest tests/ -q` → **1233 passed** (was 1185; +48).
+- Demo runs cleanly from `physics/` directory.
+
+### Connection to other layers
+
+- **`physics/substrate_scope_validator.py`** — `substrate_scope_envelopes` is the companion envelope-source layer. `validate()` accepts any `(lo, hi)` dict regardless of source; the three modes let the caller choose how to construct it.
+- **`physics/calibration_metrology.py`** — fixed-spec vs observed-failures is the same distinction as baseline-assumed vs baseline-measured. The intersect mode encodes the audit-symmetric demand: both the design claim and the field record must agree before the envelope is trusted.
+- **`physics/legacy_trap_detector.py`** — a substrate whose field-observed envelope has shrunk below its spec envelope is in the same structural position as a system with a growing maintenance deficit: locked to a prior configuration while the real operating range has drifted.
