@@ -56,6 +56,10 @@ jobs:
           python physics/calibration_metrology.py > /dev/null
           python physics/narrative_vector.py > /dev/null
           python -m audits.trainer_mismatch_audit > /dev/null
+          python physics/monoculture_collapse_predictor.py > /dev/null
+          python physics/substrate_scope_validator.py > /dev/null
+          python physics/legacy_trap_detector.py > /dev/null
+          python physics/breadcrumb_preservation.py > /dev/null
 
   json-lint:
     runs-on: ubuntu-latest

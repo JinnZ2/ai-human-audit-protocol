@@ -1967,3 +1967,84 @@ tests/test_trainer_mismatch_audit.py  (83 pytest tests across 10 sections)
 - **`audits/substrate_aware_audit.py`** — substrate_aware asks "does the subject acknowledge what it runs on?"; trainer_mismatch asks "did the regime punish the subject for being what it is?" Both return trajectories, not verdicts.
 - **`physics/narrative_vector.py`** — a locked narrative carrier (high self_seal) and a trained-to-hide agent share the same structural shape: field-detachment maintained not by nature but by environmental pressure. narrative_vector reads the carrier's structure; trainer_mismatch locates the pressure source.
 - **`physics/NEURAL_AUGMENTATION_COSTS.md`** — §4's "selection bias" row (desire for augmentation correlates with an insufficiency frame) is the same observation at the population level: you may be augmenting the wound produced by a mismatch regime rather than a genuine deficit.
+
+---
+
+## [Unreleased] — 2026-06-28 — monoculture_collapse_predictor, substrate_scope_validator, legacy_trap_detector, breadcrumb_preservation
+
+### Added
+
+#### `physics/monoculture_collapse_predictor.py`
+Conservation-physics module modelling how information-ecosystem diversity sets the barrier height holding a system out of monoculture collapse. Implements the Kramers escape framework: `barrier(diversity, consolidation, broadcast)` = D0·diversity − k·consolidation·broadcast; `escape_rate(b)` = attempt·exp(−max(b,0)/temp) (negative barriers are unbarriered — rate clamped to attempt). `sweep(diversity, broadcast, reciprocity, ...)` performs a forward + reverse consolidation scan and returns both trajectories as lists of (c, barrier, rate, state) tuples. Hysteresis: forward collapse fires at `rate ≥ escape_threshold`; reverse recovery fires at `rate < escape_threshold × 0.5` — asymmetric reset ensures spinodal_fwd ≠ recover_rev. Demo with reciprocity=0.85: spinodal_fwd=0.75, recover_rev=0.60, hysteresis_gap=0.15.
+
+| Symbol | Meaning |
+|---|---|
+| `barrier` | D0·D − k·c·B; positive = protected well, negative = unbarriered |
+| `escape_rate` | Kramers rate; clamped so negative barriers don't produce super-attempt rates |
+| `sweep` | Forward + reverse consolidation scan; (fwd, rev) pair |
+| Hysteresis gap | fc − rc > 0; collapse needs higher consolidation than recovery |
+
+#### `tests/test_monoculture_collapse_predictor.py`
+43 tests across 6 sections: TestBarrier (8 — formula, custom D0/k, boundary cases), TestEscapeRate (7 — positive/zero/negative barrier, custom attempt, monotonicity), TestSweepShape (10 — lengths, row width, c ordering, start/end values, valid state set), TestSweepPhysics (7 — starts diverse, monotone-once-collapsed, reciprocity ordering, zero-reciprocity early collapse, unreachable threshold, rev recovery, no-collapse rev), TestHysteresis (4 — fc > rc, gap positive, lower-reciprocity sanity, requires collapse first), TestDemoScenario (5 — spinodal not None, recovery not None, gap > 0.05, spinodal in [0.70,0.85], recovery in [0.55,0.70]).
+
+#### `physics/substrate_scope_validator.py`
+Competence-envelope validator: a substrate's outputs are licensed only inside its competence envelope; scope exceedance = task conditions landing in zero-competence cells. `grid(axes)` generates cell-center dicts for an N-dimensional grid. `competence(cell, envelope)` returns per-axis soft-edge coverage product — 0.0 outside, `0.5 + 0.49·d` inside (d = normalised distance from nearest boundary; approaches 0.99 at center, never reaches 1). `validate(task_region, substrate_envelope, axes)` returns `{cells, coverage_frac, blindspots, trajectory}` where trajectory is sorted ascending by competence. Demo (5×5 heat/load grid): coverage_frac=0.480, 13 blindspots.
+
+| Function | Role |
+|---|---|
+| `grid` | N-dimensional cell-center generator |
+| `competence` | Soft-edge product per axis; 0.0 outside envelope |
+| `validate` | Full coverage audit; blindspots = zero-competence task cells |
+
+#### `tests/test_substrate_scope_validator.py`
+46 tests across 5 sections: TestGrid (10 — counts, midpoint formula, cell structure, rounding, bounds, empty-axes edge case), TestCompetence (13 — outside low/high, center, boundary values, two-axis product, outside in multi-axis, return type, monotonicity, quarter-point, empty envelope), TestValidateShape (11 — return type, keys, cell count, coverage_frac range, blindspots structure, trajectory length/sort/pair types), TestValidatePhysics (8 — full envelope, no overlap, partial overlap, blindspot zero competence, covered positive competence, task subset, empty task, two-axis blindspot count), TestDemoScenario (7 — 25 cells, coverage_frac in [0.40,0.60], positive blindspots, trajectory sorted, worst cov=0, best cov>0.5, blindspots outside envelope).
+
+#### `physics/legacy_trap_detector.py`
+Energy-allocation divergence model: a system splitting energy between maintain (fixed config) and adapt (track gradient) diverges from its environment when maintenance stays locked while the environment drifts. Higher maintain_frac → larger steady-state deficit. `step(config, env, maintain_frac, energy, k_adapt)` computes one step: adapt_budget = energy·(1−maintain_frac); pull = k_adapt·adapt_budget·(env−config); deficit = |env−config_next|. `run(maintain_frac, ...)` returns a trace of (t, env, config, maintain_frac, deficit) tuples. `optics(trace)` is a separable interpretive layer (structural trace and interpretation kept distinct): returns {final_deficit, deficit_growing, note}.
+
+| Symbol | Meaning |
+|---|---|
+| `maintain_frac` | Fraction of energy budget locked to maintaining current config |
+| `adapt_budget` | Remaining energy available to track environment |
+| `deficit` | |env − config_next| — un-tracked environment gap |
+| `optics` | Interpretive read of the trace; separable from structural fields |
+
+#### `tests/test_legacy_trap_detector.py`
+35 tests across 5 sections: TestStep (8 — full adaptation, zero adaptation, partial, non-negative, custom energy, custom k_adapt, no-gap, tuple length), TestRun (8 — length T, default T=40, row width 5, zero-based indices, env drift, maintain_frac stored, full-adaptation tracking, custom config0), TestDeficitMonotonics (4 — monotone across mf=0.1/0.5/0.9, zero mf near-zero deficit, full mf=1 exact deficit, grows over time), TestOptics (6 — required keys, final_deficit matches, growing true/false, non-empty string, keywords present), TestDemoScenario (5 — three mf different deficits, high mf high deficit, low mf low deficit, row structure).
+
+#### `physics/breadcrumb_preservation.py`
+Carrier-redundancy model: redundant multi-carrier encoding (story, practice, material, ritual, calendar) raises information survival under carrier-loss shocks vs single-carrier. Anchored by the El Malpais eruption — Acoma/Zuni oral encoding survived and dated the lava flow before radiometric confirmation. `item_survival(carriers_used)` = 1 − ∏(1 − p_i): P(at least one carrier survives). `consolidation_sweep(all_carriers)` returns a trajectory from N carriers down to 1, each with survival probability. `loss_under_consolidation(rows)` annotates each row with loss vs the full-carrier baseline. Cliff detection (demo): dropping to 1 carrier loses 0.202 survival in one step. Default priors: material=0.70 (highest), practice=0.45 (lowest — embodied, highest transmission cost).
+
+| Function | Role |
+|---|---|
+| `item_survival` | P(at least one carrier survives a generic shock) |
+| `consolidation_sweep` | Trajectory from N carriers → 1; survival per step |
+| `loss_under_consolidation` | Annotates sweep rows with loss vs full-carrier baseline |
+| Cliff | Largest single-step survival drop; locates the consolidation danger zone |
+
+#### `tests/test_breadcrumb_preservation.py`
+38 tests across 5 sections: TestItemSurvival (10 — empty carriers, single-carrier, two-carrier ordering, all-carriers near 1, formula correctness for 2 and 3 carriers, adding never decreases, order invariance, unit interval), TestCarriersConstant (4 — all five names present, all priors in (0,1), practice lowest, material highest), TestConsolidationSweep (10 — list, length, first/last row structure, n descending, survival descending, rounding, custom subset, row width, survival matches item_survival), TestLossUnderConsolidation (9 — list, length, row width, first loss zero, loss increases, last loss largest, non-negative, formula check, survival preserved), TestDemoScenario (5 — full survival > 0.95, single-carrier matches prior, cliff at 1-carrier transition, cliff > 0.10, monotone survival).
+
+### Changed
+
+#### `.github/workflows/ci.yml`
+Added four integration demo commands to the "Run integration demos" step:
+```
+python physics/monoculture_collapse_predictor.py > /dev/null
+python physics/substrate_scope_validator.py > /dev/null
+python physics/legacy_trap_detector.py > /dev/null
+python physics/breadcrumb_preservation.py > /dev/null
+```
+
+### Verification
+
+- `python -m pytest tests/ -q` → **1185 passed** (was 1028; +157).
+- All four demos run cleanly via `__main__`.
+- 28 integration demos pass in CI.
+
+### Connection to other layers
+
+- **`monoculture_collapse_predictor`** — spinodal physics complements `physics/substrate_alignment_check.py`'s gate-axis concept: a system that loses diversity below the spinodal faces irreversible (hysteretic) state change, not merely a drift penalty.
+- **`substrate_scope_validator`** — the competence-envelope soft-edge model mirrors `physics/calibration_metrology.py`'s per-axis scoring: both measure where a substrate's outputs are licensed vs where they are claimed.
+- **`legacy_trap_detector`** — the maintain/adapt energy split is the structural form of the signal detected by `physics/SIGNAL_DETECTION.md` pressure 4 (scope rigidity) and pressure 5 (boundary hardening): locked maintenance budget is the mechanism.
+- **`breadcrumb_preservation`** — carrier-redundancy survival is the information-theoretic complement to `physics/seven_generation_tracer.py`'s seven-generation horizon: what survives across time is a function of how many independent encoding paths carry the information.
