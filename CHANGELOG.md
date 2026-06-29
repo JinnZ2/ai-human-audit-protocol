@@ -2151,3 +2151,46 @@ python physics/reference_frame.py > /dev/null
 - **`physics/calibration_metrology.py`** — the five location axes in `reference_frame` correspond to the calibration metrology axes: both measure where a system stands before trusting its outputs. `disposability_ratio` is the structural measurement of what `calibration_metrology` treats as an ethical obligation (recognising accumulated value before replacement).
 - **`physics/legacy_trap_detector.py`** — `reference_frame_drift` models the same failure at the frame level that `legacy_trap_detector` models at the energy-allocation level: stated capability held constant while the underlying reality drifts away. The runaway flag is the temporal derivative version of the maintenance-vs-adaptation deficit.
 - **`physics/narrative_vector.py`** — a narrative with high self_seal (high coherence × low field_match × low refutation_response) is structurally equivalent to a system with a large narrative_gap: both are telling more than they show. The `reference_frame` measures it as a ratio; `narrative_vector` measures it as a cell label.
+
+---
+
+## [Unreleased] — 2026-06-28 — reference_frame_bridge
+
+### Added
+
+#### `physics/reference_frame_bridge.py`
+Cross-layer wire: translates a `reference_frame.assess()` result into downstream carrier parameters consumed by `monoculture_collapse_predictor`, `legacy_trap_detector`, and `substrate_scope_validator`. Import-light design — `dispatch()` returns parameter dicts; the caller feeds them to the actual modules.
+
+`carrier_state(assessment)` reads `located`, `narrative_gap` (clamped to ≥ 0), and `disposability_ratio` from a single-mode or paired assessment, then computes:
+
+| Parameter | Formula | Meaning |
+|---|---|---|
+| `reciprocity` | `max(0, located × (1 − gap))` | Degrades as self-location drops and lie widens; feeds monoculture sweep |
+| `maintain_frac` | `min(1, (1−located)×0.5 + gap×0.5)` | High when unlocated + gap high; feeds legacy_trap run |
+| `broadcast` | `min(2, 0.5 + gap×1.5)` | Confident-but-unlocated carrier broadcasts outward harder; feeds monoculture sweep |
+| `envelope_width` | `max(0.05, located×(1−gap))` | Shrinks as claims exceed grounded ability; floor at 0.05; feeds substrate envelope |
+
+`dispatch(assessment, diversity=1.0)` wraps the carrier state into three ready-to-use param dicts: `monoculture_collapse_predictor.sweep` (diversity, broadcast, reciprocity), `legacy_trap_detector.run` (maintain_frac), `substrate_scope_validator.envelope` (symmetric heat/load envelope of width `envelope_width` centered at 0.5).
+
+Demo (told_high scenario, located=0.26, gap=0.55): reciprocity=0.117, maintain_frac=0.645, broadcast=1.325, envelope_width=0.117. Spinodal at consolidation=0.05 (system collapses almost immediately under any pressure — low reciprocity leaves almost no diversity barrier). Legacy deficit (final)=0.091 (high maintain_frac keeps configuration locked against drifting environment).
+
+#### `tests/test_reference_frame_bridge.py`
+59 tests across 7 sections: TestCarrierStateShape (8 — dict, keys, located/gap/disp stored, negative gap clamped, paired mode, rounding), TestReciprocity (7 — formula, zero located, zero gap, gap=1 gives zero, fully located zero gap gives 1, negative gap uses zero, nonnegative for all combos), TestMaintainFrac (6 — formula, fully located zero gap, zero located unit gap, clamped to 1.0, increases with gap, increases as location drops), TestBroadcast (6 — formula, zero gap gives 0.5, unit gap hits ceiling at 2.0, capped at 2.0, independent of located, increases with gap), TestEnvelopeWidth (6 — formula, floor at zero located, floor when product small, floor when gap=1, never below floor, shrinks with higher gap), TestDispatchShape (9 — dict, all four keys, sweep params, legacy param, envelope axes, carrier_state consistency), TestDispatchParams (8 — reciprocity/broadcast/maintain_frac match carrier state, symmetric around 0.5, envelope_width matches, heat=load, custom diversity, default diversity=1), TestDemoScenario (9 — reciprocity/maintain_frac/broadcast/envelope_width values, envelope bounds, three qualitative claims: low reciprocity when unlocated+gap, high maintain_frac, narrow envelope).
+
+### Changed
+
+#### `.github/workflows/ci.yml`
+Added integration demo: `(cd physics && python reference_frame_bridge.py) > /dev/null` (32 total).
+
+### Verification
+
+- `python -m pytest tests/ -q` → **1415 passed** (was 1356; +59).
+- Demo runs cleanly from `physics/` directory with both optional wire-throughs firing.
+
+### Connection to other layers
+
+- **`physics/reference_frame.py`** — the sensor feeding this bridge. All four carrier parameters are derived from `located` and `narrative_gap`, which `reference_frame.assess()` produces from raw observables and claims.
+- **`physics/monoculture_collapse_predictor.py`** — receives `(diversity, broadcast, reciprocity)`. A low-located high-gap carrier produces low reciprocity (≈0.12 in demo), which makes effective diversity ≈0.12 — the system is already near the spinodal before any consolidation pressure is applied.
+- **`physics/legacy_trap_detector.py`** — receives `maintain_frac`. High maintain_frac (0.645 in demo) means the system keeps its configuration locked even as its environment drifts — the quantitative form of the "told more than shown" failure.
+- **`physics/substrate_scope_validator.py`** — receives a symmetric envelope of width `envelope_width` (0.117 in demo). The narrow envelope exposes how a high-gap system claims broad capability while demonstrating only a thin slice of it in the field.
+- **`physics/reference_frame_drift.py`** — if located is falling over time (drift), `carrier_state` called on each timestep produces a widening `maintain_frac` and a narrowing `envelope_width` — the structural form of the broken-thermostat trajectory.
