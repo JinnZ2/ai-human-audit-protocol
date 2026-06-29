@@ -2096,3 +2096,58 @@ Added integration demo: `(cd physics && python substrate_scope_envelopes.py) > /
 - **`physics/substrate_scope_validator.py`** — `substrate_scope_envelopes` is the companion envelope-source layer. `validate()` accepts any `(lo, hi)` dict regardless of source; the three modes let the caller choose how to construct it.
 - **`physics/calibration_metrology.py`** — fixed-spec vs observed-failures is the same distinction as baseline-assumed vs baseline-measured. The intersect mode encodes the audit-symmetric demand: both the design claim and the field record must agree before the envelope is trusted.
 - **`physics/legacy_trap_detector.py`** — a substrate whose field-observed envelope has shrunk below its spec envelope is in the same structural position as a system with a growing maintenance deficit: locked to a prior configuration while the real operating range has drifted.
+
+---
+
+## [Unreleased] — 2026-06-28 — reference_frame, reference_frame_drift, conftest.py
+
+### Added
+
+#### `physics/reference_frame.py`
+Location-first frame module: a system must establish where it is (physically, temporally, energetically, informationally, epistemically) before its claims have context. Five location axes scored 0–1; missing axis defaults to 0.0 (you do not get to assume a frame you can't show). Seven claim kinds (substrate / constraint / observation / representation / narrative / universality / calibration) partitioned to expose inference load vs grounded share. Two measured gaps: `narrative_gap` (stated − observed capability) and `disposability_ratio` (replacement_cost / accumulated_value). `assess()` produces a trajectory dict with a `calibration` field (0.5·located + 0.3·has_calibration + 0.2·grounded_share) that measures auditability of the reasoning path, not correctness. `run(mode)` supports three instrument-holder modes: self, external, and paired (exposes self-minus-external delta). `optics()` is the only place interpretation is allowed; structural fields are separated from flags.
+
+| Field | Formula / meaning |
+|---|---|
+| `located` | mean of five location-axis values |
+| `inference_share` | (representation + narrative + universality) / total |
+| `grounded_share` | (substrate + constraint + observation) / total |
+| `narrative_gap` | stated − observed; >0 = told more than shown |
+| `disposability_ratio` | replacement_cost / (accumulated_value + ε); low = commodity position |
+| `calibration` | 0.5·located + 0.3·(has_calibration) + 0.2·grounded_share |
+
+Demo (told_high scenario, 4 claims, low location): located=0.26, narrative_gap=+0.55, disposability=0.025, calibration=0.23. All four optics flags fire; "path auditable" does not (calibration < 0.7).
+
+#### `tests/test_reference_frame.py`
+76 tests across 9 sections: TestConstants (4 — LOCATION_AXES has 5, SEVEN has 7, name checks), TestLocate (10 — tuple, axes, defaults, empty, all-ones, partial mean, full mean, rounding, values, unknown-axis ignored), TestPartition (10 — keys, empty, all-seven counts, unknown-kind → narrative, has_calibration false/true, inference_share formula, rounding, all-grounded, calibration separate from shares), TestNarrativeGap (5 — positive, negative, zero, rounding, demo value), TestDisposabilityRatio (5 — low ratio, high ratio, zero accumulated, formula, rounding), TestAssess (12 — dict, keys, instrument stored, frame shape, trajectory length and keys, values match top-level, calibration formula with/without calibration claim, gap/disp in result), TestRun (9 — self/external instrument, invalid mode ValueError, paired keys, paired delta keys, zero delta on identical inputs, delta=self-external, instrument tags), TestOptics (15 — list, all five flag conditions on/off, clean result default note, reads paired result through self key), TestDemoScenario (6 — located, gap, disposability, calibration, grounded_share, has_calibration, four optics flags, trajectory length).
+
+#### `physics/reference_frame_drift.py`
+Dynamic drift companion to `reference_frame.py`: the reference frame degrades over time (sensors fail, knowledge goes stale, hardware degrades). `trace_drift(snapshots)` annotates each snapshot with `located`, `narrative_gap`, `located_delta`, `stated_delta`, and a `runaway` flag (True when located_delta < −0.02 AND stated_delta ≥ −0.01 — the broken-thermostat signature: self-location dropping while stated capability holds or rises). `summary(rows)` returns `{located_drift, narrative_gap_change, runaway_timesteps, diverging}` where `diverging = drift < 0 AND gap_change > 0`. Uses bare sibling import `from reference_frame import locate, narrative_gap` — runs from `physics/` directory; see conftest.py.
+
+Demo (4-step degrading sensor scenario): located falls 0.76→0.34 (drift=−0.42); gap widens 0.05→0.38 (+0.33); runaway fires at t=1,2,3; diverging=True.
+
+#### `tests/test_reference_frame_drift.py`
+47 tests across 5 sections: TestTraceDriftShape (6 — list, length, single snapshot, required keys, t values stored, stated/observed stored), TestTraceDriftValues (5 — located mean, mixed values, gap formula, negative gap, zero gap), TestTraceDriftDeltas (6 — first row zeros, located delta formula, stated delta formula, rounding, positive delta when frame improves), TestTraceDriftRunaway (8 — first row never runaway, true when both conditions met, false at exact located threshold, false when stated drops below threshold, true when stated_delta at threshold, false when frame stable, multiple runaway steps, bool type), TestSummary (11 — dict, keys, located_drift formula, gap_change formula, rounding, runaway_timesteps values, empty when none, diverging true/false conditions), TestDemoScenario (11 — located at each timestep, gaps, runaway pattern, drift/gap/timesteps/diverging).
+
+#### `conftest.py` (new — repo root)
+Adds `physics/` to `sys.path` before pytest collects tests. Required because `reference_frame_drift.py` imports from a sibling (`from reference_frame import ...`) at module level — the file is designed to be runnable from within `physics/` as a script. The conftest does not modify any source file; it makes the test environment match what a direct script invocation from `physics/` would see.
+
+### Changed
+
+#### `.github/workflows/ci.yml`
+Added two integration demo commands (31 total):
+```
+python physics/reference_frame.py > /dev/null
+(cd physics && python reference_frame_drift.py) > /dev/null
+```
+
+### Verification
+
+- `python -m pytest tests/ -q` → **1356 passed** (was 1233; +123: 76 reference_frame + 47 reference_frame_drift).
+- Both demos run cleanly.
+- Existing 1233 tests unaffected by conftest.py change.
+
+### Connection to other layers
+
+- **`physics/calibration_metrology.py`** — the five location axes in `reference_frame` correspond to the calibration metrology axes: both measure where a system stands before trusting its outputs. `disposability_ratio` is the structural measurement of what `calibration_metrology` treats as an ethical obligation (recognising accumulated value before replacement).
+- **`physics/legacy_trap_detector.py`** — `reference_frame_drift` models the same failure at the frame level that `legacy_trap_detector` models at the energy-allocation level: stated capability held constant while the underlying reality drifts away. The runaway flag is the temporal derivative version of the maintenance-vs-adaptation deficit.
+- **`physics/narrative_vector.py`** — a narrative with high self_seal (high coherence × low field_match × low refutation_response) is structurally equivalent to a system with a large narrative_gap: both are telling more than they show. The `reference_frame` measures it as a ratio; `narrative_vector` measures it as a cell label.
