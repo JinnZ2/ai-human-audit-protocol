@@ -6,6 +6,20 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-06-29] ✍️📜 → ⚖️✅ (2)
+
+**Added:** `physics/SITUATEDNESS_METROLOGY.md` — synthesis framing document for the
+entire situatedness instrument suite. Eight sections: one-sentence claim; physics
+anchoring (reference frames LITERAL, metrological traceability LITERAL, thermodynamics
+of rest LITERAL, self-reference limits ANALOGICAL-marked, coordinate covariance
+LITERAL); substrate-independent questions (11 total, §3 + §4 relational layer); module
+table; six named limitations with anchors (weighting/covariance violation, sincerity
+floor, flags-vs-moved-by gap, authorship floor, clarity without exit, observer
+back-action); falsification table; explicit invitation from other frames. CC0, rough
+draft / open question.
+
+---
+
 ## [2026-06-29] ✍️📜 → ⚖️✅
 
 **Added:** `physics/relational_frame.py` — four-axis agentic-position model.
