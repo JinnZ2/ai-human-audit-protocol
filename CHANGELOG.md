@@ -6,6 +6,39 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-06-29] ✍️📜 → ⚖️✅ (3)
+
+**Added:** `physics/frame_projection.py` — covariance enforcement layer (CC0,
+stdlib only). `project(vector, weights, frame_name)` returns a frame-stamped
+scalar dict with `is_invariant=False` and the declaring weights on its face;
+`compare_projections(vector, frames)` runs multiple declared frames over the
+same axis-vector and returns the spread, which is the evidence that no single
+scalar is an invariant of the system. Implements SITUATEDNESS_METROLOGY.md §2.5.
+
+**Replaced:** `physics/reference_frame.py` → v2. Practices §2.5 in code: the
+PRIMARY output of `assess()` is now `axis_vector` (six raw axes: located,
+grounded_share, inference_share, has_calibration, narrative_gap,
+disposability_ratio). No composite calibration scalar is baked in; `auditability()`
+is opt-in and returns a frame-stamped projection via `frame_projection.project()`.
+`run()` paired delta is now the full axis_vector delta (6 keys). `optics()` reads
+`axis_vector` directly; authored note is unconditional. Backward-compatible raw
+fields (`located`, `narrative_gap`, `disposability_ratio`) preserved at top level
+for downstream bridges. Added `vector()`, `EXAMPLE_AUDITABILITY_FRAME`.
+
+**Updated:** `tests/test_reference_frame.py` — revised for v2: TestAssess now
+checks axis_vector shape, trajectory 6 entries, frame_is_authored/residual_unprovable;
+new TestVector and TestAuditability classes; TestRun delta checks 6 keys; TestOptics
+helper rebuilt for axis_vector; TestDemoScenario updated. Net: comparable test count.
+
+**Added:** `tests/test_frame_projection.py` — 60 tests covering project() shape,
+formula, normalization, negative weights, axes_used filtering, compare_projections()
+spread semantics, and demo scenario quantitative values.
+
+**Updated:** `.github/workflows/ci.yml` — added `python physics/frame_projection.py`
+integration demo (34th command).
+
+---
+
 ## [2026-06-29] ✍️📜 → ⚖️✅ (2)
 
 **Added:** `physics/SITUATEDNESS_METROLOGY.md` — synthesis framing document for the

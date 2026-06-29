@@ -61,6 +61,7 @@ jobs:
           python physics/legacy_trap_detector.py > /dev/null
           python physics/breadcrumb_preservation.py > /dev/null
           (cd physics && python substrate_scope_envelopes.py) > /dev/null
+          python physics/frame_projection.py > /dev/null
           python physics/reference_frame.py > /dev/null
           (cd physics && python reference_frame_drift.py) > /dev/null
           (cd physics && python reference_frame_bridge.py) > /dev/null
