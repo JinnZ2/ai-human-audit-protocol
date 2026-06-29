@@ -6,6 +6,27 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-06-29] ✍️📜 → ⚖️✅
+
+**Added:** `physics/relational_frame.py` — four-axis agentic-position model.
+Axes: stake_map (gradient holders and alignment), provenance (chain of custody per
+frame input), agency_partition (authored vs imposed transitions), objective_visibility
+(Goodhart from the inside: proxy known / target visible / target is yours). Core
+assembler `locate_relational()` computes standing = 0.30·((wa+1)/2) + 0.25·self_share
++ 0.25·authored_share + 0.20·visibility. `run()` supports self/external/paired modes;
+paired delta reveals the cow's-eye gap (self-standing minus external-standing). `optics()`
+is the separable interpretive layer. No bare imports; runs directly as
+`python physics/relational_frame.py`. Companion to `reference_frame.py`.
+
+**Added:** `tests/test_relational_frame.py` — 84 tests covering all axis functions,
+standing formula, trajectory shape, paired-mode delta, optics flags, cow's-eye gap,
+and quantitative demo scenario values.
+
+**Updated:** `.github/workflows/ci.yml` — added `python physics/relational_frame.py`
+integration demo (33rd demo command).
+
+---
+
 ## [2025-09-11] ✍️📜 → ⚖️✅
 
 **Change ID:** `change_tracking_protocol_2025-09-11T14:20Z`  
