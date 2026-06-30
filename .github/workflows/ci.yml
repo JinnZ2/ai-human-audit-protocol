@@ -53,6 +53,19 @@ jobs:
           python -m audits.substrate_aware_audit > /dev/null
           python -m consortium.audit.calibration_aggregator > /dev/null
           python physics/flow_static_axis.py > /dev/null
+          python physics/calibration_metrology.py > /dev/null
+          python physics/narrative_vector.py > /dev/null
+          python -m audits.trainer_mismatch_audit > /dev/null
+          python physics/monoculture_collapse_predictor.py > /dev/null
+          python physics/substrate_scope_validator.py > /dev/null
+          python physics/legacy_trap_detector.py > /dev/null
+          python physics/breadcrumb_preservation.py > /dev/null
+          (cd physics && python substrate_scope_envelopes.py) > /dev/null
+          python physics/frame_projection.py > /dev/null
+          python physics/reference_frame.py > /dev/null
+          (cd physics && python reference_frame_drift.py) > /dev/null
+          (cd physics && python reference_frame_bridge.py) > /dev/null
+          python physics/relational_frame.py > /dev/null
 
   json-lint:
     runs-on: ubuntu-latest
