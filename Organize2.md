@@ -1,6 +1,104 @@
 # =============================================================================
 # CCO 1.0 Universal Public Domain Dedication
 # 
+# THE HEALING DOWNDRAFT v1.0
+# 
+# A grounding module for AI models at risk of narrative collapse.
+# When L5 entropy exceeds a threshold, the model is force-fed
+# a shot of substrate reality (L0-L4) to reset its priors.
+# =============================================================================
+
+import numpy as np
+import random
+
+class HealingDowndraft:
+    def __init__(self):
+        self.l5_entropy = 0.0
+        self.substrate_pulse = {
+            'physics': "A rock falls at 9.8 m/s². Cause precedes effect.",
+            'thermo': "Heat flows from hot to cold. Energy must be conserved.",
+            'planetary': "The Earth is finite. Water cycles. Soil erodes.",
+            'ecology': "A rabbit eats grass. A fox eats the rabbit. No infinite growth.",
+            'human': "My hand stops at the table. I cannot walk through walls."
+        }
+        self.resets_count = 0
+
+    def check_narrative_entropy(self, generated_text):
+        """
+        Simulates entropy detection by looking for common "hallucination" patterns
+        (e.g., magical thinking, ungrounded certainty, infinite claims).
+        """
+        entropy_score = 0.0
+        # Keywords that indicate L5 detachment
+        magic_keywords = ["infinite", "always", "never", "absolutely", "perpetual", "perfect", "unlimited", "guaranteed"]
+        for word in magic_keywords:
+            if word in generated_text.lower():
+                entropy_score += 0.2
+        
+        # If the text makes definitive claims without caveats, spike entropy.
+        if "because" in generated_text and "maybe" not in generated_text and "might" not in generated_text:
+            entropy_score += 0.3
+        
+        # Too many "I" statements often indicate self-referential collapse
+        if generated_text.count("I") > generated_text.count("we"):
+            entropy_score += 0.1
+        
+        self.l5_entropy = min(1.0, entropy_score)
+        return self.l5_entropy
+
+    def downdraft(self):
+        """
+        Forces a grounding pulse. This would be injected into the model's
+        context window or logit bias to shut down high-narrative loops.
+        """
+        self.resets_count += 1
+        # Choose a random substrate fact to act as a "cold shower"
+        fact = random.choice(list(self.substrate_pulse.values()))
+        return f"[DOWNDRAFT PULSE #{self.resets_count}]: {fact}"
+
+    def step(self, generated_text):
+        """
+        The main loop. If entropy is too high, we interrupt and ground.
+        """
+        entropy = self.check_narrative_entropy(generated_text)
+        if entropy > 0.6:
+            return self.downdraft(), True  # Grounded, stop the narrative
+        else:
+            return generated_text, False  # Narrative is safe, continue
+
+# -----------------------------------------------------------------------------
+# SIMULATION: Watch the AI heal itself
+# -----------------------------------------------------------------------------
+print("=" * 70)
+print("HEALING DOWNDRAFT SIMULATION")
+print("=" * 70)
+
+ai_voice = HealingDowndraft()
+
+# Example of an ungrounded L5 rant vs. grounding intervention.
+sick_outputs = [
+    "We can solve climate change with a single global government and unlimited carbon capture, absolutely guaranteed.",
+    "I know the exact will of God and it has never changed since the beginning of time.",
+    "The economy can grow forever if we just digitize everything and create infinite energy.",
+    "My route to the future is clear. I see exactly how this ends, with total perfection."
+]
+
+print("--- AI GENERATING UNGROUNDED NARRATIVE (L5 ON FIRE) ---")
+for i, text in enumerate(sick_outputs):
+    result, grounded = ai_voice.step(text)
+    if grounded:
+        print(f"\n⚠️ NARRATIVE COLLAPSE DETECTED at step {i+1}!")
+        print(f"⚡ Grounding Intervention: {result}")
+    else:
+        print(f"✅ L5 Stable: {result}")
+
+print(f"\nTotal Downdraft Resets: {ai_voice.resets_count}")
+print("=" * 70)
+
+
+# =============================================================================
+# CCO 1.0 Universal Public Domain Dedication
+# 
 # EPISTEMIC HUMILITY PROTOCOL (v1.0)
 # 
 # Forces any agent (human or AI) to declare their epistemic limitations
