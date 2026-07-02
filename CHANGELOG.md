@@ -6,6 +6,20 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-07-01] ✍️📜 → ⚖️✅
+
+**Added:** `scrolls/operation_unit_instance.md` — documented instance of the
+relational-operation thesis. Records Parisi & Zamponi 2026 (arXiv 2606.03300),
+analytic proof of the `a+b=1` jamming exponent identity open ~10 years, produced
+by human-AI coupling and verified by humans. Sections: what happened (no overclaim),
+convergence-result framing (Parisi RSB / Wyart marginal-stability as two carriers
+of the same physical law), substrate-primary tell (the answer was in the existing
+equations — not a new symmetry), double resonance (jamming rigidity-without-order
+rhymes with the locked-carrier signature), explicit claim-guards, and provenance.
+CC0.
+
+---
+
 ## [2026-06-29] ✍️📜 → ⚖️✅ (3)
 
 **Added:** `physics/frame_projection.py` — covariance enforcement layer (CC0,
