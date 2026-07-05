@@ -20,7 +20,9 @@ def envelope_from_failures(field_logs, axes, margin=0.0):
             continue
         lo, hi = min(oks), max(oks)
         span = hi - lo
-        bounds[ax] = (lo + margin * span / 2, hi - margin * span / 2)
+        lo_new = lo + margin * span / 2
+        hi_new = hi - margin * span / 2
+        bounds[ax] = (lo_new, hi_new) if lo_new <= hi_new else (0.0, 0.0)
     return bounds, "observed_failures"
 
 # --- MODE C: intersection (spec AND observed — the honest one) ------------------

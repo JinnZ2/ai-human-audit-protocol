@@ -31,6 +31,9 @@ def trace_drift(snapshots):
     return out
 
 def summary(rows):
+    if not rows:
+        return {"located_drift": 0.0, "narrative_gap_change": 0.0,
+                "runaway_timesteps": [], "diverging": False}
     runaway_spans = [r["t"] for r in rows if r["runaway"]]
     drift_total = round(rows[-1]["located"] - rows[0]["located"], 4)
     gap_total = round(rows[-1]["narrative_gap"] - rows[0]["narrative_gap"], 4)

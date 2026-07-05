@@ -301,6 +301,14 @@ class TestSummary:
                 {"t": 1, "located": 0.8, "narrative_gap": 0.1, "runaway": False}]
         assert summary(rows)["diverging"] is False
 
+    def test_empty_rows_returns_safe_defaults(self):
+        # empty list must not raise IndexError (rows[-1] guard)
+        out = summary([])
+        assert out["located_drift"] == pytest.approx(0.0)
+        assert out["narrative_gap_change"] == pytest.approx(0.0)
+        assert out["runaway_timesteps"] == []
+        assert out["diverging"] is False
+
 
 # ---------------------------------------------------------------------------
 # Demo scenario — quantitative predictions

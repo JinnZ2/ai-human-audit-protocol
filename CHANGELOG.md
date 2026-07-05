@@ -6,6 +6,30 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-07-05] ✍️📜 → ⚖️✅ — bug fixes
+
+**Fixed (3 confirmed crash/logic bugs from code review):**
+
+- `physics/substrate_scope_validator.py` `competence()`: added `span == 0` guard
+  before `d = min(...) / (span / 2)`. A degenerate single-point envelope
+  (`lo == hi`) caused `ZeroDivisionError`; guard sets `d = 1.0` (cell is exactly
+  at the valid point → maximum soft-edge score).
+
+- `physics/reference_frame_drift.py` `summary()`: added empty-list early-return
+  before `rows[-1]` / `rows[0]` access. Calling `summary([])` raised `IndexError`;
+  guard returns zero-drift sentinel dict with `diverging=False`.
+
+- `physics/substrate_scope_envelopes.py` `envelope_from_failures()`: added
+  inversion guard matching `envelope_intersect()`. For `margin > 1.0`, the formula
+  `lo + margin*span/2, hi - margin*span/2` produces an inverted tuple (`lo_new >
+  hi_new`); guard maps this to `(0.0, 0.0)` (zero competence), consistent with
+  the "no successful observation" and no-overlap cases elsewhere.
+
+**Tests added:** 5 new regression tests across the three test files covering each
+fixed case and the boundary condition for the inversion guard.
+
+---
+
 ## [2026-07-01] ✍️📜 → ⚖️✅
 
 **Added:** `scrolls/operation_unit_instance.md` — documented instance of the
