@@ -140,6 +140,15 @@ class TestCompetence:
         val = competence({"x": 5.0}, {})
         assert val == pytest.approx(1.0, abs=1e-3)
 
+    def test_degenerate_single_point_envelope(self):
+        # lo == hi == x → span=0 → guard sets d=1.0 → 0.5+0.49 = 0.99 (no ZeroDivisionError)
+        val = competence({"x": 5.0}, {"x": (5.0, 5.0)})
+        assert val == pytest.approx(0.99, abs=1e-3)
+
+    def test_degenerate_outside_single_point(self):
+        # x != lo==hi → caught by x<lo or x>hi guard first → returns 0.0
+        assert competence({"x": 6.0}, {"x": (5.0, 5.0)}) == pytest.approx(0.0)
+
 
 # ---------------------------------------------------------------------------
 # validate() — output shape

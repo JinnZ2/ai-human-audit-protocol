@@ -26,7 +26,10 @@ def competence(cell, envelope):
             return 0.0
         # soft edge: full in center, taper toward bounds (asymptotic, never exactly 1)
         span = hi - lo
-        d = min(x - lo, hi - x) / (span / 2)
+        if span == 0:
+            d = 1.0  # degenerate single-point envelope; x is exactly the valid point
+        else:
+            d = min(x - lo, hi - x) / (span / 2)
         fit *= 0.5 + 0.49 * d
     return round(fit, 4)
 

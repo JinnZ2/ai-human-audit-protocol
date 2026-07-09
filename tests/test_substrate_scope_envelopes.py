@@ -160,6 +160,18 @@ class TestEnvelopeFromFailures:
         env, _ = envelope_from_failures(logs, ["x"])
         assert env["x"] == pytest.approx((1.0, 9.0))
 
+    def test_large_margin_gives_zero_zero(self):
+        # margin=2.0: lo_new=30+25=55, hi_new=55-25=30 → lo_new>hi_new → (0.0,0.0)
+        logs = [{"x": 30.0, "ok": True}, {"x": 55.0, "ok": True}]
+        env, _ = envelope_from_failures(logs, ["x"], margin=2.0)
+        assert env["x"] == (0.0, 0.0)
+
+    def test_margin_just_over_one_gives_zero_zero(self):
+        # margin=1.0+ε causes inversion
+        logs = [{"x": 10.0, "ok": True}, {"x": 20.0, "ok": True}]
+        env, _ = envelope_from_failures(logs, ["x"], margin=1.01)
+        assert env["x"] == (0.0, 0.0)
+
 
 # ---------------------------------------------------------------------------
 # envelope_intersect()
