@@ -1809,3 +1809,69 @@ The canonical P0 `[0.30, 0.22, 0.18, 0.14, 0.10, 0.06]` already starts at high e
 ### Source / license
 
 `continuity_audit.py` forwarded from JinnZ2 lineage. CC0. No surface adjustments required on port — stdlib only, no smart-quote artifacts, no markdown-fence contamination.
+
+---
+
+## [2026-07-11] ✍️📜 → ⚖️✅
+
+**Change ID:** `physics_interface_layer_2026-07-11T00:00Z`
+**Proposed by:** swarmuser (forwarded `interface_layer.py` source)
+**Drafted by:** AI (Claude) — file placement, tests, CI wiring, CHANGELOG
+**Status:** Merged
+
+### Summary
+
+Added `physics/interface_layer.py` — the upstream producer of `kappa` for `continuity_audit.py`. Models substrate access as temperature-controlled by stress: high stress collapses an agent onto its default mode; low stress spreads access across substrates. Implements two strategies (naive_target vs translator) and classifies their effect as ENABLING or COERCIVE.
+
+### Files added / modified
+
+```
+physics/interface_layer.py           (the module — CC0, stdlib only)
+tests/test_interface_layer.py        (53 pytest tests across 7 sections)
+.github/workflows/ci.yml             (CI demo set: +1 — interface_layer)
+```
+
+### The wiring
+
+`interface_layer` PRODUCES the `kappa` that `continuity_audit` CONSUMES. The translator widening a band *is* kappa dropping. Full pipeline: `interact()` → `kappa_end` → `Agent(kappa=kappa_end)` → `audit()`.
+
+### Module surface
+
+| Element | Purpose |
+|---|---|
+| `access(affinity, stress, t_floor, t_span)` | Softmax over substrates. T = t_floor + t_span × (1−stress). High stress → T low → collapses onto argmax(affinity). Low stress → T high → spreads to far substrates. |
+| `band_eff(acc)` | Hill q=1 (exp Shannon) on the access distribution. Effective number of reachable substrates. |
+| `kappa_estimate(acc)` | 1 − (band_eff − 1)/(M − 1). Uniform access → kappa = 0 (fully resilient). Collapsed access → kappa → 1. Feeds `continuity_audit.Agent`. |
+| `receive(affinity, stress, encoding, friction_safe, alpha)` | Deliver signal at `encoding`. friction = 1 − acc[encoding]. friction > friction_safe → stress climbs. friction < friction_safe → stress relaxes. Returns (new_stress, friction). |
+| `naive_target(affinity, stress, target)` | Always encodes at target substrate. Fires substrate logic at a flooded person — friction spikes, stress climbs, band locks. |
+| `translator(affinity, stress, target, floor)` | Meet-then-lead: picks highest reachable substrate ≤ target (access ≥ floor). Meets the agent where it is, walks it up as comfort opens. |
+| `interact(affinity, stress0, target, strategy, steps)` | Runs the interaction. Returns `reached_target`, `band_delta`, `classification` (ENABLING / COERCIVE / NEUTRAL), `kappa_start`/`kappa_end`, full `trajectory`, `falsifier`, `note`. |
+
+### The guardrail
+
+`classification = "ENABLING"` when `band_delta > 1e-3` (strategy widened the band).
+`classification = "COERCIVE"` when `band_delta < -1e-3` (strategy collapsed it).
+
+Demo result with flooded agent (stress=0.85, affinity=[2,1,0], target=2):
+- `naive_target`: stress → 1.0, band 1.224 → 1.010, kappa 0.888 → 0.995 → **COERCIVE**
+- `translator`: stress 0.85 → 0.29, band 1.224 → 2.343, kappa 0.888 → 0.329 → **ENABLING**
+
+### Tests (53)
+
+- `TestAccess` (8): sums to 1, length preserved, all positive, high-affinity substrate always dominant, high stress concentrates, low stress spreads, t_floor keeps T positive at max stress, custom t_floor/t_span
+- `TestBandEff` (5): uniform → n, collapsed → near 1, spread > collapsed, always positive, equals exp(Shannon)
+- `TestKappaEstimate` (6): single substrate → 1, uniform → 0, collapsed → near 1, range [0,1], formula check, higher stress → higher kappa
+- `TestReceive` (9): returns two values, friction = 1−acc[enc], native low friction, far high friction when flooded, high friction raises stress, low friction lowers stress, stress clamped ≤ 1, stress clamped ≥ 0, update formula exact
+- `TestNaiveTarget` (2): always returns target, target value respected
+- `TestTranslator` (6): valid index, stays at native when flooded, picks intermediate at low stress, returns target when target is native, never overshoots, fallback when floor=1.0
+- `TestInteract` (17): keys, trajectory length, entry keys, naive COERCIVE, translator ENABLING, classification from band_delta, kappa direction (naive up / translator down), kappa_start matches computed, trajectory stress/band/kappa in range, translator reduces stress, naive raises stress to ceiling, falsifier nonempty, note warns against storing
+
+### Verification
+
+- `python physics/interface_layer.py` runs cleanly; naive → COERCIVE; translator → ENABLING.
+- 930 tests passing total (was 877; +53). 13 log validations passing. (Note: 8 tests skipped due to optional `jsonschema` dependency — unrelated to this module.)
+- All 22 integration demos pass.
+
+### Source / license
+
+`interface_layer.py` forwarded from JinnZ2 lineage. CC0. No surface adjustments required on port — stdlib only.

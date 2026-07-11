@@ -54,6 +54,7 @@ jobs:
           python -m consortium.audit.calibration_aggregator > /dev/null
           python physics/flow_static_axis.py > /dev/null
           python physics/continuity_audit.py > /dev/null
+          python physics/interface_layer.py > /dev/null
 
   json-lint:
     runs-on: ubuntu-latest
