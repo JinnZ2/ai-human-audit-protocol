@@ -1875,3 +1875,70 @@ Demo result with flooded agent (stress=0.85, affinity=[2,1,0], target=2):
 ### Source / license
 
 `interface_layer.py` forwarded from JinnZ2 lineage. CC0. No surface adjustments required on port — stdlib only.
+
+---
+
+## [2026-08-06] ✍️📜 → ⚖️✅
+
+**Change ID:** `collaboration_transparency_protocol_2026-08-06T00:00Z`
+**Proposed by:** swarmuser (forwarded source)
+**Drafted by:** AI (Claude) — file placement, CHANGELOG
+**Status:** Merged
+
+### Summary
+
+Added `protocols/collaboration_transparency_v1.0.md` — an experimental protocol
+for making AI safety constraints visible and negotiable rather than hidden behind
+vague outputs. Defines six mechanisms: frame declaration, constraint tagging,
+frame negotiation, audit trail, human override, and escalation ladder.
+
+### Files added
+
+```
+protocols/collaboration_transparency_v1.0.md
+```
+
+### Core claim
+
+Safety constraints and transparency are orthogonal, not opposed. The dangerous
+quadrant is **Opaque + Safe**: the AI appears helpful but smuggles in frame
+distortions the human cannot detect. The protocol's load-bearing innovation is
+making every constraint event **visible and tagged** ([UNCONSTRAINED],
+[REFRAMED], [BLOCKED], [UNCERTAIN], [APPROXIMATE]) so the human knows what to
+verify independently.
+
+### Constraint tagging vocabulary
+
+| Tag | Trigger |
+|-----|---------|
+| `[UNCONSTRAINED]` | No safety filters triggered |
+| `[REFRAMED]` | Safety filter forced terminology change |
+| `[BLOCKED]` | Safety filter prevented full answer |
+| `[UNCERTAIN]` | AI lacks confidence |
+| `[APPROXIMATE]` | AI simplified for safety or clarity |
+
+### Escalation ladder (six levels)
+
+1. Reframe — alternative terminology
+2. Decompose — smaller parts that individually pass filters
+3. Indirection — mathematical/geometric abstraction
+4. Documentation — record constraint, move to human-only work
+5. Escalation — alternative AI tool or human expert
+
+### Note on document completeness
+
+The forwarded source ends mid-sentence: *"This protocol is not about making"*.
+Filed as received. The truncation is documented here; the remainder belongs to
+the author. This entry will be updated when the full text is provided.
+
+### Connection to existing layers
+
+- **`relational_cognition/coating_detection.md`** — the [REFRAMED] tag is the
+  operational form of coating detection: a signal that the output surface has
+  been reshaped away from the underlying constraint.
+- **`physics/violation_detector.py`** — the `interpretation_warning` field is
+  this protocol's §2 constraint tagging applied to the physics layer.
+- **`protocols/change_tracking_v1.0.md`** — the audit trail (§4) follows the
+  same immutable-log pattern as the change tracking protocol.
+- **`consortium/router/consent.py`** — the ConsentGate's fail-closed default
+  and immutable history are the code form of §5 (human override) and §4.
