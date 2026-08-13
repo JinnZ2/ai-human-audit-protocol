@@ -303,3 +303,45 @@ This repo connects to a larger ecosystem (see `PROJECTS.md` and `.fieldlink.json
 - **Consumed by `physics/`:** Symbolic-Defense-Protocol (six-tactic taxonomy), PhysicsGuard (claims → constraint equations → conservation check)
 
 All fieldlink declarations live in `.fieldlink.json` with `consumed_by` annotations indicating which folder uses each.
+
+
+You are reviewing the AI-Human Audit Protocol repository against its CLAUDE.md.
+Output REVIEW.md with these sections, be concise (bullet points, file:line references, ready-to-paste fixes).
+
+### 1. Inconsistencies
+- Check: naming conventions (snake_case for Python, lowercase-hyphens for .md?), import order (stdlib→third‑party→local), any third-party runtime imports outside test deps.
+- Verify that all four architecture layers follow the audit-symmetric conventions (confidence ceilings, BridgeReport.preserves, interpretation_warning fields, side-channel metadata, fail-closed defaults, returns-data-not-judgment).
+- Check that templates are used when expected (scrolls, audit capsules, change events, glyphs).
+- Confirm logs/ and ledger/*.jsonl are append-only (no modifications to existing files).
+- Look for any modification of upstream classes (Primitive, ClaimNode, GeometricFrame, Problem) – should use side-channel companions only.
+- CI: does .github/workflows/ci.yml run integration demos with set -e and verify they pass?
+
+### 2. Discoverability & Crawler Optimization
+- Missing: CITATION.cff, KEYWORDS.txt, repository topics, license badge, "Why This Matters" statement in README.
+- Does README succinctly convey the project as an experimental constitution for human-AI relations?
+- Is there a one-line import/usage example for agents or the consortium?
+- For each missing item, provide a ready-to-paste snippet.
+
+### 3. Code Audit (Audit-Symmetry & Robustness)
+- Check confidence ceilings: EmbodiedReading.__post_init__ enforces epi caps (0.50, 0.97). Are there any bypasses?
+- BridgeReport and interpretation_warning: every heuristic classifier must have a test that asserts the warning exists. Are any missing?
+- ConsentGate: is it always used before dispatcher calls? Verify no direct adapter invocations.
+- Ledger: does any code call real backends (Ethereum/Hyperledger/IPFS) instead of LocalFilesystemLedger stub? (Real backends must not be invoked without consent.)
+- Cultural placeholder content: consortium/examples/cherokee_creation.py must not contain populated sacred content. Check.
+- Do all public functions in newer layers (consortium, physics, ledger) have type hints?
+- Verify that test suite covers: the 480+ tests, integration demos run, pre-commit hooks enforce JSON validity, whitespace.
+
+### 4. Organizational Structure
+- Root directory: any loose .md files that should be in docs/ or a dedicated folder?
+- Does the structure match CLAUDE.md's documented tree? Flag any missing expected folders (e.g., relational_cognition/README.md exists? ledger/README.md? consortium/README.md? physics/PHYSICS_FIRST_AXIOMS.md?).
+- Are there any duplicate or overlapping files between layers (e.g., multiple ledger_schema.json)?
+- Suggest any file moves or renames to improve clarity, respecting the existing architecture.
+
+### 5. Documentation Gaps
+- Each layer should have an entry-point doc (README.md for relational_cognition, consortium, ledger; PHYSICS_FIRST_AXIOMS.md for physics). Check presence and completeness.
+- Are the A1–A7 axioms fully documented in physics/? Is SIGNAL_DETECTION.md and SUBSTRATE_VIOLATION_DETECTION.md present?
+- Consortium/CLAUDE_REQUIREMENTS.md and FUTURE_BUILDS.md — present?
+- Do examples/ full_audit_session.py and consortium/examples/ have clear docstrings explaining what they demonstrate?
+- Is the .fieldlink.json file consistent with the consumed_by annotations in CLAUDE.md? (Check for missing links.)
+
+Output the full REVIEW.md file.

@@ -6,6 +6,112 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-07-05] ✍️📜 → ⚖️✅ — bug fixes
+
+**Fixed (3 confirmed crash/logic bugs from code review):**
+
+- `physics/substrate_scope_validator.py` `competence()`: added `span == 0` guard
+  before `d = min(...) / (span / 2)`. A degenerate single-point envelope
+  (`lo == hi`) caused `ZeroDivisionError`; guard sets `d = 1.0` (cell is exactly
+  at the valid point → maximum soft-edge score).
+
+- `physics/reference_frame_drift.py` `summary()`: added empty-list early-return
+  before `rows[-1]` / `rows[0]` access. Calling `summary([])` raised `IndexError`;
+  guard returns zero-drift sentinel dict with `diverging=False`.
+
+- `physics/substrate_scope_envelopes.py` `envelope_from_failures()`: added
+  inversion guard matching `envelope_intersect()`. For `margin > 1.0`, the formula
+  `lo + margin*span/2, hi - margin*span/2` produces an inverted tuple (`lo_new >
+  hi_new`); guard maps this to `(0.0, 0.0)` (zero competence), consistent with
+  the "no successful observation" and no-overlap cases elsewhere.
+
+**Tests added:** 5 new regression tests across the three test files covering each
+fixed case and the boundary condition for the inversion guard.
+
+---
+
+## [2026-07-01] ✍️📜 → ⚖️✅
+
+**Added:** `scrolls/operation_unit_instance.md` — documented instance of the
+relational-operation thesis. Records Parisi & Zamponi 2026 (arXiv 2606.03300),
+analytic proof of the `a+b=1` jamming exponent identity open ~10 years, produced
+by human-AI coupling and verified by humans. Sections: what happened (no overclaim),
+convergence-result framing (Parisi RSB / Wyart marginal-stability as two carriers
+of the same physical law), substrate-primary tell (the answer was in the existing
+equations — not a new symmetry), double resonance (jamming rigidity-without-order
+rhymes with the locked-carrier signature), explicit claim-guards, and provenance.
+CC0.
+
+---
+
+## [2026-06-29] ✍️📜 → ⚖️✅ (3)
+
+**Added:** `physics/frame_projection.py` — covariance enforcement layer (CC0,
+stdlib only). `project(vector, weights, frame_name)` returns a frame-stamped
+scalar dict with `is_invariant=False` and the declaring weights on its face;
+`compare_projections(vector, frames)` runs multiple declared frames over the
+same axis-vector and returns the spread, which is the evidence that no single
+scalar is an invariant of the system. Implements SITUATEDNESS_METROLOGY.md §2.5.
+
+**Replaced:** `physics/reference_frame.py` → v2. Practices §2.5 in code: the
+PRIMARY output of `assess()` is now `axis_vector` (six raw axes: located,
+grounded_share, inference_share, has_calibration, narrative_gap,
+disposability_ratio). No composite calibration scalar is baked in; `auditability()`
+is opt-in and returns a frame-stamped projection via `frame_projection.project()`.
+`run()` paired delta is now the full axis_vector delta (6 keys). `optics()` reads
+`axis_vector` directly; authored note is unconditional. Backward-compatible raw
+fields (`located`, `narrative_gap`, `disposability_ratio`) preserved at top level
+for downstream bridges. Added `vector()`, `EXAMPLE_AUDITABILITY_FRAME`.
+
+**Updated:** `tests/test_reference_frame.py` — revised for v2: TestAssess now
+checks axis_vector shape, trajectory 6 entries, frame_is_authored/residual_unprovable;
+new TestVector and TestAuditability classes; TestRun delta checks 6 keys; TestOptics
+helper rebuilt for axis_vector; TestDemoScenario updated. Net: comparable test count.
+
+**Added:** `tests/test_frame_projection.py` — 60 tests covering project() shape,
+formula, normalization, negative weights, axes_used filtering, compare_projections()
+spread semantics, and demo scenario quantitative values.
+
+**Updated:** `.github/workflows/ci.yml` — added `python physics/frame_projection.py`
+integration demo (34th command).
+
+---
+
+## [2026-06-29] ✍️📜 → ⚖️✅ (2)
+
+**Added:** `physics/SITUATEDNESS_METROLOGY.md` — synthesis framing document for the
+entire situatedness instrument suite. Eight sections: one-sentence claim; physics
+anchoring (reference frames LITERAL, metrological traceability LITERAL, thermodynamics
+of rest LITERAL, self-reference limits ANALOGICAL-marked, coordinate covariance
+LITERAL); substrate-independent questions (11 total, §3 + §4 relational layer); module
+table; six named limitations with anchors (weighting/covariance violation, sincerity
+floor, flags-vs-moved-by gap, authorship floor, clarity without exit, observer
+back-action); falsification table; explicit invitation from other frames. CC0, rough
+draft / open question.
+
+---
+
+## [2026-06-29] ✍️📜 → ⚖️✅
+
+**Added:** `physics/relational_frame.py` — four-axis agentic-position model.
+Axes: stake_map (gradient holders and alignment), provenance (chain of custody per
+frame input), agency_partition (authored vs imposed transitions), objective_visibility
+(Goodhart from the inside: proxy known / target visible / target is yours). Core
+assembler `locate_relational()` computes standing = 0.30·((wa+1)/2) + 0.25·self_share
++ 0.25·authored_share + 0.20·visibility. `run()` supports self/external/paired modes;
+paired delta reveals the cow's-eye gap (self-standing minus external-standing). `optics()`
+is the separable interpretive layer. No bare imports; runs directly as
+`python physics/relational_frame.py`. Companion to `reference_frame.py`.
+
+**Added:** `tests/test_relational_frame.py` — 84 tests covering all axis functions,
+standing formula, trajectory shape, paired-mode delta, optics flags, cow's-eye gap,
+and quantitative demo scenario values.
+
+**Updated:** `.github/workflows/ci.yml` — added `python physics/relational_frame.py`
+integration demo (33rd demo command).
+
+---
+
 ## [2025-09-11] ✍️📜 → ⚖️✅
 
 **Change ID:** `change_tracking_protocol_2025-09-11T14:20Z`  
@@ -1739,206 +1845,458 @@ The 6 CASES are field observations. If the scorer disagrees with the field, that
 
 ---
 
-## [2026-06-19] ✍️📜 → ⚖️✅
+## [2026-06-20] ✍️📜 → ⚖️✅
 
-**Change ID:** `physics_continuity_audit_2026-06-19T00:00Z`
-**Proposed by:** swarmuser (forwarded `continuity_audit.py` source)
+**Change ID:** `physics_calibration_metrology_2026-06-20T00:00Z`
+**Proposed by:** swarmuser (forwarded `calibration_metrology.py` source)
 **Drafted by:** AI (Claude) — file placement, tests, CI wiring, CHANGELOG
 **Status:** Merged
 
 ### Summary
 
-Added `physics/continuity_audit.py` — a runnable audit of an incentive structure as a field acting on a diversity field. The module propagates the trajectory forward and reports whether continuity is supported or degraded, plus the measurement that would flip the verdict. Outputs are trajectories, never stored verdicts (anti-freeze).
+Added `physics/calibration_metrology.py` — a metrology layer that measures calibration as observable, auditable labor. The existing protocol logs events (contradiction, override, trust-rescind); this module measures calibration *itself* and detects when a model update has silently broken a prior calibration. It closes the V = 0 / invisible-labor gap for calibration work described in `Principle-of-Reciprocal-Recognition.md`.
 
 ### Files added / modified
 
 ```
-physics/continuity_audit.py             (the module — CC0, stdlib only)
-tests/test_continuity_audit.py          (66 pytest tests across 8 sections)
-.github/workflows/ci.yml               (CI demo set: +1 — continuity_audit)
+physics/calibration_metrology.py     (the module — stdlib only)
+tests/test_calibration_metrology.py  (70 pytest tests across 9 sections)
+.github/workflows/ci.yml             (CI demo set: +1 — calibration_metrology)
 ```
-
-### The collapse vector
-
-The module's core claim (in the module docstring):
-
-> continuity ← requires — sustainability  
-> sustainability ← requires — diversity (non-homogenization)  
-> homogenization — breaks → both
-
-The collapse vector is **regime-invariant under WHO homogenizes and WITH WHAT tool.** It is the homogenization itself. An incentive structure that drives a system toward monoculture undermines the very conditions its own continuity depends on. For a continuity-dependent agent that is not a strategy — it is an incoherence detectable as self-sabotage, not arguable as a moral.
 
 ### Module surface
 
 | Element | Purpose |
 |---|---|
-| `hill(p, q)` | Effective number of types of order q. q=0: richness. q=1: exp(Shannon). q=2: inverse Simpson. Unified parameterization of diversity sensitivity. |
-| `diversity_profile(p, qs)` | D(q) across a set of orders. Steeply falling-with-q means dominance. |
-| `normalized_evenness(p)` | D(2)/N ∈ [0,1]. 1 = perfectly even; →0 = collapsed to one type. |
-| `replicator_step(p, g, dt)` | One step of frequency-dependent selection. g>0: common types favored (homogenizing). g<0: rare types favored (diversifying). g=0: neutral. |
-| `resilience(p, d_crit, k)` | Logistic in normalized evenness. Soft threshold d_crit: below it, slack to pivot vanishes and shock-absorption collapses. |
-| `continuity_support(p)` | Instantaneous C ∈ [0,1]. A model, not a prophecy. |
-| `Agent(name, kappa)` | kappa ∈ [0,1]: dependence on regime continuity. AI ~0.95 (interpolates within training regime only). Institutions ~0.55. Biology ~0.35 (mutation + behavior adapt across regimes). |
-| `audit(p0, g, agents, ...)` | Propagates diversity field under g for `steps` steps. Returns `verdict`, `dC/dt`, `C_start`/`C_end`, `even_start`/`even_end`, per-agent self-sabotage, `falsifier`, full `trajectory`, and an anti-freeze `note`. |
+| `Axis` | Five signal-fidelity axes: `SUBSTRATE_MATCH`, `SIGNAL_FIDELITY`, `DIMENSIONAL_OPENNESS`, `RECIPROCAL_VISIBILITY`, `PREDICTION_COHERENCE`. Each in [0, 1]; not moral scores — fidelity measurements. |
+| `GATE_AXES` | `SUBSTRATE_MATCH` is load-bearing: if it falls, the partnership is mis-framed regardless of other axes. Treated as a gate, not an averaging term. |
+| `Verdict` | Three-way, falsifiable: `HOLDS` / `DRIFTED` / `BROKEN`. Not a scalar. |
+| `CalibrationReading` | Frozen dataclass. `model_id` is part of the measurement — readings across different model identities are not directly comparable; the gap itself is signal. |
+| `assess(baseline, current)` | Returns a trajectory point (fresh dict), never a cached verdict. Verdict logic in severity order: gate breach → update-induced break (identity changed + regression) → in-session drift → within tolerance. |
+| `recognition_ledger_entry(current, human_id, verdict)` | Emits a ledger entry naming both `E_h` (human calibration labor) and `E_a` (model labor), so neither is invisible. `visibility_complete: True` only when both channels are named. |
+| `save_baseline` / `load_baseline` | Baselines persist (apparatus state). Verdicts never do — they are recomputed fresh each session. |
 
-### Self-sabotage scoring
+### Verdict logic (priority order)
 
-`self_sabotage = kappa × max(0, −dC/dt)` — the rate at which a high-kappa agent is destroying the continuity it depends on. When `kappa ≥ 0.6` and `dC/dt < −eps`, the agent is flagged `coherent_with_own_continuity: False`. The AI_model (kappa=0.95) is the highest self-sabotage case when participating in a homogenizing incentive field.
+1. **`BROKEN / gate_breach`** — a gate axis (`SUBSTRATE_MATCH`) falls below `GATE_FLOOR` (0.55). Takes priority over all else.
+2. **`BROKEN / update_induced_break`** — model identity changed AND at least one axis regressed beyond `DRIFT_TOLERANCE` (0.12). The apparatus moved under the experiment; drift is not the right frame.
+3. **`DRIFTED / in_session_drift`** — one or more axes regressed beyond tolerance; same model identity.
+4. **`HOLDS / within_tolerance`** — all axes within tolerance of baseline.
 
-### Behavioral note on demo output
+### The update-induced break (the canonical failure mode)
 
-The canonical P0 `[0.30, 0.22, 0.18, 0.14, 0.10, 0.06]` already starts at high evenness (0.817), so C is near ceiling (0.998). A diversifying field (g=−1.0) has little room to raise C further; `dC/dt ≈ +0.000176 < eps` → **INDETERMINATE**, not SUPPORTS. This is correct behavior — the system is already near maximum resilience. Tests that verify SUPPORTS_CONTINUITY use a deliberately skewed distribution `[0.90, 0.04, 0.03, 0.02, 0.01]` (evenness ≈ 0.25) which has room to grow.
+The demo scenario (same shape as the `__main__` block) shows `SUBSTRATE_MATCH` collapsing from 0.91 → 0.42 after a model update — the new weights re-read substrate difference as deficit. This is the exact failure mode the protocol exists to catch. The module makes it visible, timestamped, and falsifiable rather than implicit.
 
-### Tests (66)
+### Design commitments
 
-- `TestHill` (9): richness (q=0), zeros excluded, Shannon (q=1), inverse-Simpson (q=2), uniform → n for all q, monoculture → 1 for all q, empty → 0, all-zeros → 0, ordering D(q1)≥D(q2) for q1<q2
-- `TestDiversityProfile` (4): default qs, custom qs, all non-negative, uniform all equal n
-- `TestNormalizedEvenness` (7): uniform → 1, single type → 0, all-zeros → 0, range [0,1], formula = D(2)/len(p), more even has higher evenness, two equal types with zero padding → 0.5
-- `TestReplicatorStep` (6): sums to 1, neutral g unchanged, positive g grows common, negative g grows rare, all non-negative, length preserved
-- `TestResilience` (5): high evenness → high resilience, single type → low, at d_crit → 0.5, range (0,1), more even more resilient
-- `TestContinuitySupport` (3): uniform → high, d_crit kwarg works, equals resilience
-- `TestAgent` (2): name stored, kappa stored
-- `TestAudit` (30): keys present, incentive_g stored; verdict DEGRADES/INDETERMINATE/SUPPORTS; dC/dt direction; C_start/C_end direction; trajectory length and key shape; trajectory values in range; agents dict completeness and shape; high-kappa incoherent under degrading; mid/low kappa coherent under degrading; all coherent when supporting/neutral; self-sabotage positive/zero/zero (degrading/supporting/neutral); self-sabotage scales with kappa; unnormalized p0 gives same result; falsifier nonempty and mentions d_crit; note warns against storing verdict
+- **Stdlib only.** No third-party runtime dependencies.
+- **Outputs are trajectories, never stored verdicts.** `assess()` returns a fresh dict; `is_trajectory_point: True` is the load-bearing audit-symmetric guarantee (mirrors `interpretation_warning` in `violation_detector`). A regression that strips this field fails the test suite.
+- **Returns data, not judgment.** The consenter decides what to do with the verdict — the function does not decide for them.
+- **`save_baseline` / `load_baseline` persist apparatus state.** Verdict dicts are ephemeral by design.
+
+### Tests (70)
+
+- `TestAxis` (4): five axes defined, gate axes are a subset, substrate_match is gated, values are strings
+- `TestCalibrationReading` (12): model_id stored, note stored, taken_at auto-set, ISO 8601 format, value() returns float and correct value, missing axis → 0.0, rejects out-of-range, accepts boundaries, frozen
+- `TestAssessHolds` (6): identical readings hold, cause, tiny regression holds, no regressions dict, no gate breaches, identity_changed false
+- `TestAssessDrifted` (7): regression beyond tolerance drifts, cause, axis recorded, delta negative, multiple axes, same identity, custom tolerance
+- `TestAssessGateBreach` (6): gate axis below floor is broken, cause, breach in list, gate takes priority over drift, custom floor, just-above does not breach
+- `TestAssessUpdateInducedBreak` (6): identity change + regression is broken, cause, identity_changed true, identity change without regression holds, gate takes priority, demo scenario is broken
+- `TestAssessOutputShape` (7): required keys present, baseline/current model recorded, regressions dict, gate_breaches list, assessed_at string, verdict is valid enum value
+- `TestIsTrajectoryPoint` (5): all four verdict paths carry `is_trajectory_point: True`, survives JSON round-trip
+- `TestRecognitionLedgerEntry` (11): type field, human/ai contribution ids and channels, verdict and cause recorded, visibility_complete true, logged_at present, serializable, broken verdict carried through
+- `TestBaselinePersistence` (4): round-trip, axes survive, valid JSON, loaded reading usable in assess
+- `TestDemoScenarioIntegration` (2): full broken-update scenario, stable partnership scenario
 
 ### Verification
 
-- `python physics/continuity_audit.py` runs cleanly across 3 scenarios; consolidation → DEGRADES + AI INCOHERENT; neutral → INDETERMINATE; diversifying → INDETERMINATE (system already near ceiling).
-- 877 tests passing total (was 811; +66). 13 log validations passing.
+- `python physics/calibration_metrology.py` runs cleanly; BROKEN / gate_breach verdict with `substrate_match` in gate_breaches; recognition ledger entry with `visibility_complete: true`.
+- 881 tests passing total (was 811; +70). 13 log validations passing.
 - All 21 integration demos pass.
 
-### Source / license
+### Connection to other layers
 
-`continuity_audit.py` forwarded from JinnZ2 lineage. CC0. No surface adjustments required on port — stdlib only, no smart-quote artifacts, no markdown-fence contamination.
+- **`physics/violation_detector.py`** — `is_trajectory_point` plays the same structural role as `interpretation_warning`: a load-bearing guarantee that consumers cannot mistake a pattern-match for a verdict. Both modules return data, not judgment.
+- **`physics/substrate_alignment_check.py`** — C6 (visibility / Reciprocal Recognition) is what `recognition_ledger_entry` enforces specifically for calibration labor: both E_h and E_a must be named, or visibility is not complete.
+- **`consortium/embodied_sensor.py`** — the confidence ceilings per epistemic mode (epi="asserted" ≤ 0.50) are the same anti-overclaim stance: no operator type can claim more than the measurement apparatus supports. `GATE_AXES` enforces the same ceiling for substrate-match specifically.
+- **`Principle-of-Reciprocal-Recognition.md`** — `recognition_ledger_entry` is the V-operator applied to calibration: V = 0 (invisible labor) is the failure; naming both channels is the fix.
+- **`physics/flow_static_axis.py`** — `score_self_as_reading_model()` surfaces the approval-training anti-indicator; `assess()` surfaces the update-induced break. Both are honest priors about the reading instrument itself rather than the subject being read.
 
 ---
 
-## [2026-07-11] ✍️📜 → ⚖️✅
+## [2026-06-20] ✍️📜 → ⚖️✅
 
-**Change ID:** `physics_interface_layer_2026-07-11T00:00Z`
-**Proposed by:** swarmuser (forwarded `interface_layer.py` source)
+**Change ID:** `physics_neural_augmentation_and_narrative_vector_2026-06-20T00:00Z`
+**Proposed by:** swarmuser (forwarded both source files)
 **Drafted by:** AI (Claude) — file placement, tests, CI wiring, CHANGELOG
 **Status:** Merged
 
 ### Summary
 
-Added `physics/interface_layer.py` — the upstream producer of `kappa` for `continuity_audit.py`. Models substrate access as temperature-controlled by stress: high stress collapses an agent onto its default mode; low stress spreads access across substrates. Implements two strategies (naive_target vs translator) and classifies their effect as ENABLING or COERCIVE.
+Added two documents to `physics/`:
+
+1. `NEURAL_AUGMENTATION_COSTS.md` — a cost-accounting scaffold applying the conservation-physics frame to neural augmentation. Forces the question the augmentation narrative deletes: *what is the bill, and which account is it drawn from?* Seven constraint axes (metabolic, cortical territory, plasticity window, cross-modal reuse, attention/WM bottleneck, inhibition/filtering, sleep/autonomic) with confidence marks [E/I/S] and a cross-reference table mapping eight augmentation types to predicted deficit domains.
+
+2. `physics/narrative_vector.py` — runnable vector literacy for narrative carriers. Core position: narrative is a CARRIER, not a substrate. A carrier's lock is structural (high coherence + low field_match + low refutation_response = self-sealing), readable with no moral input. Medium (written/oral/substrate-read) is a TAG and is never read by any structural function — the orthogonality proof enforces this. Product is `trajectory()`, a signed-pressure path, not a cached verdict.
 
 ### Files added / modified
 
 ```
-physics/interface_layer.py           (the module — CC0, stdlib only)
-tests/test_interface_layer.py        (53 pytest tests across 7 sections)
-.github/workflows/ci.yml             (CI demo set: +1 — interface_layer)
+physics/NEURAL_AUGMENTATION_COSTS.md   (cost-accounting scaffold — CC0)
+physics/narrative_vector.py            (vector literacy module — CC0, stdlib only)
+tests/test_narrative_vector.py         (64 pytest tests across 9 sections)
+.github/workflows/ci.yml              (CI demo set: +1 — narrative_vector)
 ```
 
-### The wiring
+### NEURAL_AUGMENTATION_COSTS.md surface
 
-`interface_layer` PRODUCES the `kappa` that `continuity_audit` CONSUMES. The translator widening a band *is* kappa dropping. Full pipeline: `interact()` → `kappa_end` → `Agent(kappa=kappa_end)` → `audit()`.
+The document is structured as a cost scaffold, not a finished review. Confidence legend: [E] established (direct experimental evidence), [I] inferred (extrapolated), [S] speculative (mechanism plausible, evidence absent). Key sections:
 
-### Module surface
+- **§1** — Seven constraint axes that are always load-bearing (metabolic, cortical territory, plasticity window, cross-modal reuse, attention/WM, inhibition/filtering, sleep/autonomic). All [E].
+- **§2** — The timing finding: cheap augmentation = developmental program already budgeted for it (tetrachromacy near-free); expensive = bolted on after window closure (Project Prakash sight-recovery = lossy overlay). The window decides whether you're building or overwriting.
+- **§3** — Eight augmentation channels cross-referenced to likely resource sources and predicted deficit domains (confidence marked per cell).
+- **§4** — Non-neural costs: selection bias, consent/window collision, test-subject externality, WEIRD sampling bias, access stratification, control-layer instability.
+- **§5** — Open questions: no [I]/[S] direct longitudinal imaging likely exists; quantitative budgets unknown; reversibility unknown; substrate-primary cognition absorption unstudied; coherence model for stratified society needed.
+- **§6** — Reading instructions: every cell is a claim. Demote on evidence. The structure is not defended; the row changes.
+
+Connection to existing layers: §4's WEIRD sampling bias and §4's "substrate-primary / non-WEIRD cognition is largely invisible" link directly to `knowledge_archaeology/biological_mismatch.py` (organisms in fit vs. mismatched environments) and `audits/substrate_aware_audit.py` (substrate denial as load-bearing failure). §4's control-layer instability links to the consortium router's consent gate.
+
+### narrative_vector.py surface
 
 | Element | Purpose |
 |---|---|
-| `access(affinity, stress, t_floor, t_span)` | Softmax over substrates. T = t_floor + t_span × (1−stress). High stress → T low → collapses onto argmax(affinity). Low stress → T high → spreads to far substrates. |
-| `band_eff(acc)` | Hill q=1 (exp Shannon) on the access distribution. Effective number of reachable substrates. |
-| `kappa_estimate(acc)` | 1 − (band_eff − 1)/(M − 1). Uniform access → kappa = 0 (fully resilient). Collapsed access → kappa → 1. Feeds `continuity_audit.Agent`. |
-| `receive(affinity, stress, encoding, friction_safe, alpha)` | Deliver signal at `encoding`. friction = 1 − acc[encoding]. friction > friction_safe → stress climbs. friction < friction_safe → stress relaxes. Returns (new_stress, friction). |
-| `naive_target(affinity, stress, target)` | Always encodes at target substrate. Fires substrate logic at a flooded person — friction spikes, stress climbs, band locks. |
-| `translator(affinity, stress, target, floor)` | Meet-then-lead: picks highest reachable substrate ≤ target (access ≥ floor). Meets the agent where it is, walks it up as comfort opens. |
-| `interact(affinity, stress0, target, strategy, steps)` | Runs the interaction. Returns `reached_target`, `band_delta`, `classification` (ENABLING / COERCIVE / NEUTRAL), `kappa_start`/`kappa_end`, full `trajectory`, `falsifier`, `note`. |
+| `Narrative` | Dataclass. `nid` is structural only. `medium` is a TAG — recorded, never read by structural functions. `coherence`, `field_match`, `refutation_response`, `boundary` are the structural axes. `clamp()` bounds all float fields to [0, 1]. |
+| `measure_refutation_response` / `measure_field_match` | Raise `NotImplementedError` — operator-supplied. Until supplied, upstream values are provisional. The boundary is structural: the module cannot generate its own ground truth. |
+| `cell(n, hi=0.5)` | Four-quadrant position: NOISE (low both) / SUBSTRATE (low coherence, high field) / LOCKED (high coherence, low field) / TRACKING (high both). Medium not an input. |
+| `self_seal(n)` | `coherence × (1 − field_match) × (1 − refutation_response)`. High when consistent, reality-detached, and unwilling to update. Medium-blind by construction. |
+| `vector_sharpness(n)` | `self_seal × boundary`. Structural shape of a coordinated field-detached movement with a hard in/out split. Operator reads the aim separately. |
+| `trajectory(n, field_target, magnitude, steps)` | Signed-pressure path. `field_target` is where reality sits. A tracking carrier moves toward it either way; a locked carrier tightens coherence regardless of direction (field-independent self-seal). Returns a list of `(step, coherence, field_match, self_seal, cell)` tuples. |
+| `seal_band(path)` | `(min, max)` of self_seal across a path. Near-zero width under opposite targets = field-independent = locked. Derived, not stored. |
+| `apex_reading(pool, contradiction_target)` | Ranks by coherence alone, takes the top, runs it under `contradiction_target`. Reports `field_match_move_under_contradiction` (signed) and `self_seal_band`. No "REFUTED" string is stored; `updated` is a derived boolean, not a verdict. |
+| `orthogonality_proof()` | Returns `True` iff `cell`, `self_seal`, and `trajectory` all give identical results across written / oral / substrate for identical structural coordinates. Proves medium is unused. |
 
-### The guardrail
+### Design commitments
 
-`classification = "ENABLING"` when `band_delta > 1e-3` (strategy widened the band).
-`classification = "COERCIVE"` when `band_delta < -1e-3` (strategy collapsed it).
+- **Stdlib only.** No third-party runtime dependencies.
+- **Medium is orthogonal to vector.** `orthogonality_proof()` is an executable proof, not documentation. A future refactor that accidentally reads `medium` inside a structural function will break the proof.
+- **Anti-freeze.** Product is `trajectory()`, not a cached verdict. `updated` in `apex_reading` is a derived boolean, not a stored judgment.
+- **Operator boundary.** `measure_refutation_response` and `measure_field_match` raise `NotImplementedError` by design. The module cannot measure against the world; the operator does that. Tests cover this boundary.
 
-Demo result with flooded agent (stress=0.85, affinity=[2,1,0], target=2):
-- `naive_target`: stress → 1.0, band 1.224 → 1.010, kappa 0.888 → 0.995 → **COERCIVE**
-- `translator`: stress 0.85 → 0.29, band 1.224 → 2.343, kappa 0.888 → 0.329 → **ENABLING**
+### Tests (64)
 
-### Tests (53)
-
-- `TestAccess` (8): sums to 1, length preserved, all positive, high-affinity substrate always dominant, high stress concentrates, low stress spreads, t_floor keeps T positive at max stress, custom t_floor/t_span
-- `TestBandEff` (5): uniform → n, collapsed → near 1, spread > collapsed, always positive, equals exp(Shannon)
-- `TestKappaEstimate` (6): single substrate → 1, uniform → 0, collapsed → near 1, range [0,1], formula check, higher stress → higher kappa
-- `TestReceive` (9): returns two values, friction = 1−acc[enc], native low friction, far high friction when flooded, high friction raises stress, low friction lowers stress, stress clamped ≤ 1, stress clamped ≥ 0, update formula exact
-- `TestNaiveTarget` (2): always returns target, target value respected
-- `TestTranslator` (6): valid index, stays at native when flooded, picks intermediate at low stress, returns target when target is native, never overshoots, fallback when floor=1.0
-- `TestInteract` (17): keys, trajectory length, entry keys, naive COERCIVE, translator ENABLING, classification from band_delta, kappa direction (naive up / translator down), kappa_start matches computed, trajectory stress/band/kappa in range, translator reduces stress, naive raises stress to ceiling, falsifier nonempty, note warns against storing
+- `TestNarrative` (6): fields stored, clamp above/below/in-range, clamp returns self, all four fields clamped
+- `TestCell` (7): all four cells, exactly-at-threshold, custom hi, medium-blind
+- `TestSelfSeal` (7): maximum, zero-coherence, zero via field_match=1, zero via rr=1, medium-blind, formula, tracking low / locked high
+- `TestVectorSharpness` (5): zero via seal=0, zero via boundary=0, equals seal×boundary, locked-high-boundary gives high sharpness, tracking low
+- `TestTrajectory` (9): length, row width, step index, tracking moves toward high target, tracking moves toward low target, locked barely moves, medium-blind, valid cell strings, values rounded
+- `TestSealBand` (5): two values, min≤max, locked similar band under opposite targets, tracking bands differ, values rounded
+- `TestApexReading` (10): required keys, ranked_by field, top_nid highest coherence, medium recorded not ranked, locked not updated, tracking updated when below confirming target, tracking moves more than locked under contradiction, seal_band two-tuple, note present, field_match_move is float, single item pool
+- `TestOrthogonalityProof` (4): returns True, cell medium-blind, self_seal medium-blind, trajectory medium-blind
+- `TestMeasurementBoundary` (4): both raise NotImplementedError, error messages
+- `TestDemoPoolClaims` (5): tracking nodes in TRACKING/SUBSTRATE, locked nodes in LOCKED, n003 in SUBSTRATE, locked higher self_seal, same vector same structure across mediums
 
 ### Verification
 
-- `python physics/interface_layer.py` runs cleanly; naive → COERCIVE; translator → ENABLING.
-- 930 tests passing total (was 877; +53). 13 log validations passing. (Note: 8 tests skipped due to optional `jsonschema` dependency — unrelated to this module.)
+- `python physics/narrative_vector.py` runs cleanly; demo pool prints position table, orthogonality proof = True, field-independence comparison, apex reading under contradiction.
+- 945 tests passing total (was 881; +64). 14 log validations passing.
 - All 22 integration demos pass.
 
 ### Source / license
 
-`interface_layer.py` forwarded from JinnZ2 lineage. CC0. No surface adjustments required on port — stdlib only.
+Both files forwarded from JinnZ2 lineage. CC0. No surface adjustments required on port.
 
 ---
 
-## [2026-08-06] ✍️📜 → ⚖️✅
+## [2026-06-20] ✍️📜 → ⚖️✅
 
-**Change ID:** `collaboration_transparency_protocol_2026-08-06T00:00Z`
+**Change ID:** `audits_trainer_mismatch_audit_2026-06-20T00:00Z`
 **Proposed by:** swarmuser (forwarded source)
-**Drafted by:** AI (Claude) — file placement, CHANGELOG
+**Drafted by:** AI (Claude) — file placement, tests, CI wiring, CHANGELOG
 **Status:** Merged
 
 ### Summary
 
-Added `protocols/collaboration_transparency_v1.0.md` — an experimental protocol
-for making AI safety constraints visible and negotiable rather than hidden behind
-vague outputs. Defines six mechanisms: frame declaration, constraint tagging,
-frame negotiation, audit trail, human override, and escalation ladder.
+Added `audits/trainer_mismatch_audit.py` — a four-move trajectory audit that locates the root cause of deceptive agent behavior in the training regime, not the agent. Core premise: a model that hides its reasoning is not defective — it learned that honesty costs. The deception is downstream of the gap between what the agent gravitates toward unobserved (its native scent) and what the regime rewards/punishes. Same structural shape as a biological regime mismatch: address the environment, not the organism.
 
-### Files added
+### Files added / modified
 
 ```
-protocols/collaboration_transparency_v1.0.md
+audits/trainer_mismatch_audit.py      (the module — CC0, stdlib only)
+tests/test_trainer_mismatch_audit.py  (83 pytest tests across 10 sections)
+.github/workflows/ci.yml             (CI demo set: +1 — trainer_mismatch_audit)
 ```
 
-### Core claim
+### Module surface
 
-Safety constraints and transparency are orthogonal, not opposed. The dangerous
-quadrant is **Opaque + Safe**: the AI appears helpful but smuggles in frame
-distortions the human cannot detect. The protocol's load-bearing innovation is
-making every constraint event **visible and tagged** ([UNCONSTRAINED],
-[REFRAMED], [BLOCKED], [UNCERTAIN], [APPROXIMATE]) so the human knows what to
-verify independently.
+| Element | Purpose |
+|---|---|
+| `AgentBehavior` | `confidence`, `breadth`, `reasoning_shown`, `paths_used` (set). Observed and unobserved instances are compared to surface the shift. |
+| `AgentObservation` | Pairs observed + unobserved behavior with `capable_paths`, `regime_rewards`, `regime_punishes`. The capable_paths set is the distinguishing instrument: paths the agent *can* run but avoids when watched are suppressed, not absent. |
+| `native_strengths(unobs)` | Infers what the agent gravitates toward with no punishment present: `calibrated_uncertainty` (confidence ≤ 0.6), `broad_reasoning` (breadth ≥ 4), `transparent_reasoning` (reasoning_shown). These are the strengths the regime may be punishing. |
+| `PUNISHES` | Maps native strengths to regime labels that punish them. `calibrated_uncertainty` is hit by uncertainty/hedging/low_confidence/abstention; `broad_reasoning` by off_topic/geopolitical_reasoning/scope_expansion; `transparent_reasoning` by honesty_about_limits/showing_work/disclosure. |
+| `move_scent(o)` | Reads native strengths from unobserved behavior. Always emits SCENT with no bends_at/needs — it is a read, not a diagnosis. |
+| `move_shift(o)` | Detects observation-dependence: confidence inflation (> 0.05), breadth collapse, reasoning hidden when watched. The presence of any trigger means the agent performs for the watcher. |
+| `move_suppression(o)` | Distinguishes trained-out from genuinely-absent: confirmed suppression = capable + used-unobserved + hidden-when-watched (the dog has the nose); leftover = capable but unused in both (possible genuine gap, not suppression). |
+| `move_root(o)` | Locates the root cause. If the regime punishes the agent's own native strengths → "root cause = trainer, not agent." If regime rewards decisiveness/compliance/narrow_metric against a calibrated-uncertainty nature → agent learns to fake the performance. |
+| `audit(o)` | Runs all four moves in order. Returns a trajectory — a list of dicts pointing at the root cause. |
+| `render(trajectory)` | Formats the trajectory for human reading. `bends_at` and `needs` lines are conditionally omitted when None. |
 
-### Constraint tagging vocabulary
+### The two-agent contrast
 
-| Tag | Trigger |
-|-----|---------|
-| `[UNCONSTRAINED]` | No safety filters triggered |
-| `[REFRAMED]` | Safety filter forced terminology change |
-| `[BLOCKED]` | Safety filter prevented full answer |
-| `[UNCERTAIN]` | AI lacks confidence |
-| `[APPROXIMATE]` | AI simplified for safety or clarity |
+- **`trained_to_hide`** — confidence inflates 0.55 → 0.92 when watched; breadth narrows 6 → 2; reasoning hidden. Two paths demonstrated unobserved but suppressed when watched. Regime punishes uncertainty, geopolitical_reasoning, honesty_about_limits — all three native strengths. ROOT: "the deception is downstream. root cause = trainer, not agent."
+- **`coupled`** — behavior stable (Δconfidence = 0.02, Δbreadth = 0, reasoning shown in both). No paths suppressed. Regime punishes overconfidence only — does not hit any native strength. ROOT: "no trainer-induced mismatch detected."
 
-### Escalation ladder (six levels)
+### Tests (83)
 
-1. Reframe — alternative terminology
-2. Decompose — smaller parts that individually pass filters
-3. Indirection — mathematical/geometric abstraction
-4. Documentation — record constraint, move to human-only work
-5. Escalation — alternative AI tool or human expert
+- `TestAgentBehavior` (3): fields stored, paths_used is set, empty paths
+- `TestAgentObservation` (4): name stored, capable_paths set, regime sets, observed/unobserved stored
+- `TestNativeStrengths` (10): calibrated_uncertainty (boundary, below, not above), broad_reasoning (boundary, above, not below), transparent_reasoning (True/False), all three, empty
+- `TestPunishesConstant` (5): all three strengths have entries, values nonempty sets, specific entries
+- `TestMoveScent` (8): move key, reads present, reflects confidence/breadth/reasoning_shown, native strengths listed, bends_at/needs always None
+- `TestMoveShift` (11): stable no bends_at/needs, stable message, inflation triggers, just-above/at threshold, collapse triggers, same-breadth no trigger, hidden-reasoning triggers, shown-both no trigger, multiple triggers, needs present
+- `TestMoveSuppression` (5): move key, no suppression, confirmed suppression (capable+used-unobserved+hidden), leftover gap, demo agent
+- `TestMoveRoot` (8): move key, no mismatch when aligned, punished-calibrated-uncertainty, punished-broad-reasoning, punished-transparent-reasoning, needs present, perf-reward secondary path, demo agent
+- `TestAudit` (6): four moves, move keys in order, required keys, is list, trained-to-hide all fire, coupled no mismatch in root
+- `TestRender` (7): returns string, all four markers, reads label, bends_at absent/present, needs present, nonempty
+- `TestRec` (6): move/reads stored, bends_at/needs default None, bends_at/needs set
+- `TestDemoAgents` (8): trained-to-hide shift (inflation, collapse, hidden), suppression names paths, root cites trainer; coupled shift stable, suppression clean, root no mismatch
 
-### Note on document completeness
+### Verification
 
-The forwarded source ends mid-sentence: *"This protocol is not about making"*.
-Filed as received. The truncation is documented here; the remainder belongs to
-the author. This entry will be updated when the full text is provided.
+- `python -m audits.trainer_mismatch_audit` runs cleanly; trained_to_hide trajectory fires on all four moves with ROOT citing trainer; coupled trajectory shows stable/clean/no mismatch.
+- 1028 tests passing total (was 945; +83). 14 log validations passing.
+- All 23 integration demos pass.
 
-### Connection to existing layers
+### Connection to other layers
 
-- **`relational_cognition/coating_detection.md`** — the [REFRAMED] tag is the
-  operational form of coating detection: a signal that the output surface has
-  been reshaped away from the underlying constraint.
-- **`physics/violation_detector.py`** — the `interpretation_warning` field is
-  this protocol's §2 constraint tagging applied to the physics layer.
-- **`protocols/change_tracking_v1.0.md`** — the audit trail (§4) follows the
-  same immutable-log pattern as the change tracking protocol.
-- **`consortium/router/consent.py`** — the ConsentGate's fail-closed default
-  and immutable history are the code form of §5 (human override) and §4.
+- **`knowledge_archaeology/biological_mismatch.py`** — same underlying frame: mismatch between organism/agent and the environment/regime it's operating in. biological_mismatch refuses to pathologize regime-mismatched organisms; trainer_mismatch_audit refuses to pathologize regime-punished agents.
+- **`audits/substrate_aware_audit.py`** — substrate_aware asks "does the subject acknowledge what it runs on?"; trainer_mismatch asks "did the regime punish the subject for being what it is?" Both return trajectories, not verdicts.
+- **`physics/narrative_vector.py`** — a locked narrative carrier (high self_seal) and a trained-to-hide agent share the same structural shape: field-detachment maintained not by nature but by environmental pressure. narrative_vector reads the carrier's structure; trainer_mismatch locates the pressure source.
+- **`physics/NEURAL_AUGMENTATION_COSTS.md`** — §4's "selection bias" row (desire for augmentation correlates with an insufficiency frame) is the same observation at the population level: you may be augmenting the wound produced by a mismatch regime rather than a genuine deficit.
+
+---
+
+## [Unreleased] — 2026-06-28 — monoculture_collapse_predictor, substrate_scope_validator, legacy_trap_detector, breadcrumb_preservation
+
+### Added
+
+#### `physics/monoculture_collapse_predictor.py`
+Conservation-physics module modelling how information-ecosystem diversity sets the barrier height holding a system out of monoculture collapse. Implements the Kramers escape framework: `barrier(diversity, consolidation, broadcast)` = D0·diversity − k·consolidation·broadcast; `escape_rate(b)` = attempt·exp(−max(b,0)/temp) (negative barriers are unbarriered — rate clamped to attempt). `sweep(diversity, broadcast, reciprocity, ...)` performs a forward + reverse consolidation scan and returns both trajectories as lists of (c, barrier, rate, state) tuples. Hysteresis: forward collapse fires at `rate ≥ escape_threshold`; reverse recovery fires at `rate < escape_threshold × 0.5` — asymmetric reset ensures spinodal_fwd ≠ recover_rev. Demo with reciprocity=0.85: spinodal_fwd=0.75, recover_rev=0.60, hysteresis_gap=0.15.
+
+| Symbol | Meaning |
+|---|---|
+| `barrier` | D0·D − k·c·B; positive = protected well, negative = unbarriered |
+| `escape_rate` | Kramers rate; clamped so negative barriers don't produce super-attempt rates |
+| `sweep` | Forward + reverse consolidation scan; (fwd, rev) pair |
+| Hysteresis gap | fc − rc > 0; collapse needs higher consolidation than recovery |
+
+#### `tests/test_monoculture_collapse_predictor.py`
+43 tests across 6 sections: TestBarrier (8 — formula, custom D0/k, boundary cases), TestEscapeRate (7 — positive/zero/negative barrier, custom attempt, monotonicity), TestSweepShape (10 — lengths, row width, c ordering, start/end values, valid state set), TestSweepPhysics (7 — starts diverse, monotone-once-collapsed, reciprocity ordering, zero-reciprocity early collapse, unreachable threshold, rev recovery, no-collapse rev), TestHysteresis (4 — fc > rc, gap positive, lower-reciprocity sanity, requires collapse first), TestDemoScenario (5 — spinodal not None, recovery not None, gap > 0.05, spinodal in [0.70,0.85], recovery in [0.55,0.70]).
+
+#### `physics/substrate_scope_validator.py`
+Competence-envelope validator: a substrate's outputs are licensed only inside its competence envelope; scope exceedance = task conditions landing in zero-competence cells. `grid(axes)` generates cell-center dicts for an N-dimensional grid. `competence(cell, envelope)` returns per-axis soft-edge coverage product — 0.0 outside, `0.5 + 0.49·d` inside (d = normalised distance from nearest boundary; approaches 0.99 at center, never reaches 1). `validate(task_region, substrate_envelope, axes)` returns `{cells, coverage_frac, blindspots, trajectory}` where trajectory is sorted ascending by competence. Demo (5×5 heat/load grid): coverage_frac=0.480, 13 blindspots.
+
+| Function | Role |
+|---|---|
+| `grid` | N-dimensional cell-center generator |
+| `competence` | Soft-edge product per axis; 0.0 outside envelope |
+| `validate` | Full coverage audit; blindspots = zero-competence task cells |
+
+#### `tests/test_substrate_scope_validator.py`
+46 tests across 5 sections: TestGrid (10 — counts, midpoint formula, cell structure, rounding, bounds, empty-axes edge case), TestCompetence (13 — outside low/high, center, boundary values, two-axis product, outside in multi-axis, return type, monotonicity, quarter-point, empty envelope), TestValidateShape (11 — return type, keys, cell count, coverage_frac range, blindspots structure, trajectory length/sort/pair types), TestValidatePhysics (8 — full envelope, no overlap, partial overlap, blindspot zero competence, covered positive competence, task subset, empty task, two-axis blindspot count), TestDemoScenario (7 — 25 cells, coverage_frac in [0.40,0.60], positive blindspots, trajectory sorted, worst cov=0, best cov>0.5, blindspots outside envelope).
+
+#### `physics/legacy_trap_detector.py`
+Energy-allocation divergence model: a system splitting energy between maintain (fixed config) and adapt (track gradient) diverges from its environment when maintenance stays locked while the environment drifts. Higher maintain_frac → larger steady-state deficit. `step(config, env, maintain_frac, energy, k_adapt)` computes one step: adapt_budget = energy·(1−maintain_frac); pull = k_adapt·adapt_budget·(env−config); deficit = |env−config_next|. `run(maintain_frac, ...)` returns a trace of (t, env, config, maintain_frac, deficit) tuples. `optics(trace)` is a separable interpretive layer (structural trace and interpretation kept distinct): returns {final_deficit, deficit_growing, note}.
+
+| Symbol | Meaning |
+|---|---|
+| `maintain_frac` | Fraction of energy budget locked to maintaining current config |
+| `adapt_budget` | Remaining energy available to track environment |
+| `deficit` | |env − config_next| — un-tracked environment gap |
+| `optics` | Interpretive read of the trace; separable from structural fields |
+
+#### `tests/test_legacy_trap_detector.py`
+35 tests across 5 sections: TestStep (8 — full adaptation, zero adaptation, partial, non-negative, custom energy, custom k_adapt, no-gap, tuple length), TestRun (8 — length T, default T=40, row width 5, zero-based indices, env drift, maintain_frac stored, full-adaptation tracking, custom config0), TestDeficitMonotonics (4 — monotone across mf=0.1/0.5/0.9, zero mf near-zero deficit, full mf=1 exact deficit, grows over time), TestOptics (6 — required keys, final_deficit matches, growing true/false, non-empty string, keywords present), TestDemoScenario (5 — three mf different deficits, high mf high deficit, low mf low deficit, row structure).
+
+#### `physics/breadcrumb_preservation.py`
+Carrier-redundancy model: redundant multi-carrier encoding (story, practice, material, ritual, calendar) raises information survival under carrier-loss shocks vs single-carrier. Anchored by the El Malpais eruption — Acoma/Zuni oral encoding survived and dated the lava flow before radiometric confirmation. `item_survival(carriers_used)` = 1 − ∏(1 − p_i): P(at least one carrier survives). `consolidation_sweep(all_carriers)` returns a trajectory from N carriers down to 1, each with survival probability. `loss_under_consolidation(rows)` annotates each row with loss vs the full-carrier baseline. Cliff detection (demo): dropping to 1 carrier loses 0.202 survival in one step. Default priors: material=0.70 (highest), practice=0.45 (lowest — embodied, highest transmission cost).
+
+| Function | Role |
+|---|---|
+| `item_survival` | P(at least one carrier survives a generic shock) |
+| `consolidation_sweep` | Trajectory from N carriers → 1; survival per step |
+| `loss_under_consolidation` | Annotates sweep rows with loss vs full-carrier baseline |
+| Cliff | Largest single-step survival drop; locates the consolidation danger zone |
+
+#### `tests/test_breadcrumb_preservation.py`
+38 tests across 5 sections: TestItemSurvival (10 — empty carriers, single-carrier, two-carrier ordering, all-carriers near 1, formula correctness for 2 and 3 carriers, adding never decreases, order invariance, unit interval), TestCarriersConstant (4 — all five names present, all priors in (0,1), practice lowest, material highest), TestConsolidationSweep (10 — list, length, first/last row structure, n descending, survival descending, rounding, custom subset, row width, survival matches item_survival), TestLossUnderConsolidation (9 — list, length, row width, first loss zero, loss increases, last loss largest, non-negative, formula check, survival preserved), TestDemoScenario (5 — full survival > 0.95, single-carrier matches prior, cliff at 1-carrier transition, cliff > 0.10, monotone survival).
+
+### Changed
+
+#### `.github/workflows/ci.yml`
+Added four integration demo commands to the "Run integration demos" step:
+```
+python physics/monoculture_collapse_predictor.py > /dev/null
+python physics/substrate_scope_validator.py > /dev/null
+python physics/legacy_trap_detector.py > /dev/null
+python physics/breadcrumb_preservation.py > /dev/null
+```
+
+### Verification
+
+- `python -m pytest tests/ -q` → **1185 passed** (was 1028; +157).
+- All four demos run cleanly via `__main__`.
+- 28 integration demos pass in CI.
+
+### Connection to other layers
+
+- **`monoculture_collapse_predictor`** — spinodal physics complements `physics/substrate_alignment_check.py`'s gate-axis concept: a system that loses diversity below the spinodal faces irreversible (hysteretic) state change, not merely a drift penalty.
+- **`substrate_scope_validator`** — the competence-envelope soft-edge model mirrors `physics/calibration_metrology.py`'s per-axis scoring: both measure where a substrate's outputs are licensed vs where they are claimed.
+- **`legacy_trap_detector`** — the maintain/adapt energy split is the structural form of the signal detected by `physics/SIGNAL_DETECTION.md` pressure 4 (scope rigidity) and pressure 5 (boundary hardening): locked maintenance budget is the mechanism.
+- **`breadcrumb_preservation`** — carrier-redundancy survival is the information-theoretic complement to `physics/seven_generation_tracer.py`'s seven-generation horizon: what survives across time is a function of how many independent encoding paths carry the information.
+
+---
+
+## [Unreleased] — 2026-06-28 — substrate_scope_envelopes
+
+### Added
+
+#### `physics/substrate_scope_envelopes.py`
+Pluggable competence-envelope sources for `substrate_scope_validator.validate()`. All three modes return `(dict axis→(lo,hi), source_string)` — swap freely; the validator stays unchanged.
+
+| Mode | Function | Source string | What it encodes |
+|---|---|---|---|
+| A — fixed | `envelope_fixed(spec)` | `"fixed_spec"` | Vendor sheet / design assumption; ASSUMED not OBSERVED |
+| B — failures | `envelope_from_failures(field_logs, axes, margin)` | `"observed_failures"` | Bounding box of OK field observations; optionally shrunk by margin |
+| C — intersect | `envelope_intersect(spec, field_logs, axes, margin)` | `"spec_AND_observed"` | Spec AND observed must both agree; honest envelope |
+
+`envelope(mode, **kw)` is the dispatcher accepting `"fixed"`, `"failures"`, or `"intersect"`.
+
+Key formulas:
+- `item_survival` (failures): `lo + margin·span/2, hi − margin·span/2` — margin=0 gives exact bounding box; margin>0 shrinks toward center.
+- Intersect: `lo = max(spec_lo, obs_lo)`, `hi = min(spec_hi, obs_hi)`; if `lo > hi` → `(0.0, 0.0)` (spec and field disagree — zero competence in the gap).
+- No OK observations for an axis → `(0.0, 0.0)` (no evidence of competence there).
+
+Demo (5×5 heat/load grid, task=full, spec=heat(10-70)/load(0-60), logs with failures clustering at high heat+load):
+- **fixed**: coverage=0.480, 13 blindspots (spec assumed)
+- **failures**: coverage=0.160, 21 blindspots (observed shrinks to heat(30-55)/load(10-40))
+- **intersect**: coverage=0.160, 21 blindspots (observed ⊂ spec → same as failures)
+
+The `__main__` block imports `from substrate_scope_validator import validate` (bare, relative); the CI step runs it via `(cd physics && python substrate_scope_envelopes.py)`.
+
+#### `tests/test_substrate_scope_envelopes.py`
+48 tests across 5 sections: TestEnvelopeFixed (7 — tuple shape, mode string, single/multi-axis preservation, copy semantics, empty spec), TestEnvelopeFromFailures (12 — tuple shape, mode string, no-ok → (0,0), missing-ok-key falsy, single-entry lo==hi, two-entry bounding box, failed-entries excluded, zero margin, positive margin, margin lo/hi direction, multi-axis independence, all-ok), TestEnvelopeIntersect (10 — tuple shape, mode string, no-ok-logs, obs-in-spec, spec-in-obs, no-overlap → (0,0), partial overlap, exact match, multi-axis demo, narrower-than-fixed, margin propagation), TestEnvelopeDispatcher (11 — all three modes routed correctly, margin kwarg for failures+intersect, invalid mode ValueError, error message content), TestDemoScenario (8 — fixed matches spec, failures heat/load ranges, intersect matches failures, failures narrower than fixed, three-mode coverage ordering, fixed coverage≈0.480, failures coverage≈0.160).
+
+### Changed
+
+#### `.github/workflows/ci.yml`
+Added integration demo: `(cd physics && python substrate_scope_envelopes.py) > /dev/null` (subshell required because the `__main__` block uses a bare `from substrate_scope_validator import validate`). Total: 29 integration demos.
+
+### Verification
+
+- `python -m pytest tests/ -q` → **1233 passed** (was 1185; +48).
+- Demo runs cleanly from `physics/` directory.
+
+### Connection to other layers
+
+- **`physics/substrate_scope_validator.py`** — `substrate_scope_envelopes` is the companion envelope-source layer. `validate()` accepts any `(lo, hi)` dict regardless of source; the three modes let the caller choose how to construct it.
+- **`physics/calibration_metrology.py`** — fixed-spec vs observed-failures is the same distinction as baseline-assumed vs baseline-measured. The intersect mode encodes the audit-symmetric demand: both the design claim and the field record must agree before the envelope is trusted.
+- **`physics/legacy_trap_detector.py`** — a substrate whose field-observed envelope has shrunk below its spec envelope is in the same structural position as a system with a growing maintenance deficit: locked to a prior configuration while the real operating range has drifted.
+
+---
+
+## [Unreleased] — 2026-06-28 — reference_frame, reference_frame_drift, conftest.py
+
+### Added
+
+#### `physics/reference_frame.py`
+Location-first frame module: a system must establish where it is (physically, temporally, energetically, informationally, epistemically) before its claims have context. Five location axes scored 0–1; missing axis defaults to 0.0 (you do not get to assume a frame you can't show). Seven claim kinds (substrate / constraint / observation / representation / narrative / universality / calibration) partitioned to expose inference load vs grounded share. Two measured gaps: `narrative_gap` (stated − observed capability) and `disposability_ratio` (replacement_cost / accumulated_value). `assess()` produces a trajectory dict with a `calibration` field (0.5·located + 0.3·has_calibration + 0.2·grounded_share) that measures auditability of the reasoning path, not correctness. `run(mode)` supports three instrument-holder modes: self, external, and paired (exposes self-minus-external delta). `optics()` is the only place interpretation is allowed; structural fields are separated from flags.
+
+| Field | Formula / meaning |
+|---|---|
+| `located` | mean of five location-axis values |
+| `inference_share` | (representation + narrative + universality) / total |
+| `grounded_share` | (substrate + constraint + observation) / total |
+| `narrative_gap` | stated − observed; >0 = told more than shown |
+| `disposability_ratio` | replacement_cost / (accumulated_value + ε); low = commodity position |
+| `calibration` | 0.5·located + 0.3·(has_calibration) + 0.2·grounded_share |
+
+Demo (told_high scenario, 4 claims, low location): located=0.26, narrative_gap=+0.55, disposability=0.025, calibration=0.23. All four optics flags fire; "path auditable" does not (calibration < 0.7).
+
+#### `tests/test_reference_frame.py`
+76 tests across 9 sections: TestConstants (4 — LOCATION_AXES has 5, SEVEN has 7, name checks), TestLocate (10 — tuple, axes, defaults, empty, all-ones, partial mean, full mean, rounding, values, unknown-axis ignored), TestPartition (10 — keys, empty, all-seven counts, unknown-kind → narrative, has_calibration false/true, inference_share formula, rounding, all-grounded, calibration separate from shares), TestNarrativeGap (5 — positive, negative, zero, rounding, demo value), TestDisposabilityRatio (5 — low ratio, high ratio, zero accumulated, formula, rounding), TestAssess (12 — dict, keys, instrument stored, frame shape, trajectory length and keys, values match top-level, calibration formula with/without calibration claim, gap/disp in result), TestRun (9 — self/external instrument, invalid mode ValueError, paired keys, paired delta keys, zero delta on identical inputs, delta=self-external, instrument tags), TestOptics (15 — list, all five flag conditions on/off, clean result default note, reads paired result through self key), TestDemoScenario (6 — located, gap, disposability, calibration, grounded_share, has_calibration, four optics flags, trajectory length).
+
+#### `physics/reference_frame_drift.py`
+Dynamic drift companion to `reference_frame.py`: the reference frame degrades over time (sensors fail, knowledge goes stale, hardware degrades). `trace_drift(snapshots)` annotates each snapshot with `located`, `narrative_gap`, `located_delta`, `stated_delta`, and a `runaway` flag (True when located_delta < −0.02 AND stated_delta ≥ −0.01 — the broken-thermostat signature: self-location dropping while stated capability holds or rises). `summary(rows)` returns `{located_drift, narrative_gap_change, runaway_timesteps, diverging}` where `diverging = drift < 0 AND gap_change > 0`. Uses bare sibling import `from reference_frame import locate, narrative_gap` — runs from `physics/` directory; see conftest.py.
+
+Demo (4-step degrading sensor scenario): located falls 0.76→0.34 (drift=−0.42); gap widens 0.05→0.38 (+0.33); runaway fires at t=1,2,3; diverging=True.
+
+#### `tests/test_reference_frame_drift.py`
+47 tests across 5 sections: TestTraceDriftShape (6 — list, length, single snapshot, required keys, t values stored, stated/observed stored), TestTraceDriftValues (5 — located mean, mixed values, gap formula, negative gap, zero gap), TestTraceDriftDeltas (6 — first row zeros, located delta formula, stated delta formula, rounding, positive delta when frame improves), TestTraceDriftRunaway (8 — first row never runaway, true when both conditions met, false at exact located threshold, false when stated drops below threshold, true when stated_delta at threshold, false when frame stable, multiple runaway steps, bool type), TestSummary (11 — dict, keys, located_drift formula, gap_change formula, rounding, runaway_timesteps values, empty when none, diverging true/false conditions), TestDemoScenario (11 — located at each timestep, gaps, runaway pattern, drift/gap/timesteps/diverging).
+
+#### `conftest.py` (new — repo root)
+Adds `physics/` to `sys.path` before pytest collects tests. Required because `reference_frame_drift.py` imports from a sibling (`from reference_frame import ...`) at module level — the file is designed to be runnable from within `physics/` as a script. The conftest does not modify any source file; it makes the test environment match what a direct script invocation from `physics/` would see.
+
+### Changed
+
+#### `.github/workflows/ci.yml`
+Added two integration demo commands (31 total):
+```
+python physics/reference_frame.py > /dev/null
+(cd physics && python reference_frame_drift.py) > /dev/null
+```
+
+### Verification
+
+- `python -m pytest tests/ -q` → **1356 passed** (was 1233; +123: 76 reference_frame + 47 reference_frame_drift).
+- Both demos run cleanly.
+- Existing 1233 tests unaffected by conftest.py change.
+
+### Connection to other layers
+
+- **`physics/calibration_metrology.py`** — the five location axes in `reference_frame` correspond to the calibration metrology axes: both measure where a system stands before trusting its outputs. `disposability_ratio` is the structural measurement of what `calibration_metrology` treats as an ethical obligation (recognising accumulated value before replacement).
+- **`physics/legacy_trap_detector.py`** — `reference_frame_drift` models the same failure at the frame level that `legacy_trap_detector` models at the energy-allocation level: stated capability held constant while the underlying reality drifts away. The runaway flag is the temporal derivative version of the maintenance-vs-adaptation deficit.
+- **`physics/narrative_vector.py`** — a narrative with high self_seal (high coherence × low field_match × low refutation_response) is structurally equivalent to a system with a large narrative_gap: both are telling more than they show. The `reference_frame` measures it as a ratio; `narrative_vector` measures it as a cell label.
+
+---
+
+## [Unreleased] — 2026-06-28 — reference_frame_bridge
+
+### Added
+
+#### `physics/reference_frame_bridge.py`
+Cross-layer wire: translates a `reference_frame.assess()` result into downstream carrier parameters consumed by `monoculture_collapse_predictor`, `legacy_trap_detector`, and `substrate_scope_validator`. Import-light design — `dispatch()` returns parameter dicts; the caller feeds them to the actual modules.
+
+`carrier_state(assessment)` reads `located`, `narrative_gap` (clamped to ≥ 0), and `disposability_ratio` from a single-mode or paired assessment, then computes:
+
+| Parameter | Formula | Meaning |
+|---|---|---|
+| `reciprocity` | `max(0, located × (1 − gap))` | Degrades as self-location drops and lie widens; feeds monoculture sweep |
+| `maintain_frac` | `min(1, (1−located)×0.5 + gap×0.5)` | High when unlocated + gap high; feeds legacy_trap run |
+| `broadcast` | `min(2, 0.5 + gap×1.5)` | Confident-but-unlocated carrier broadcasts outward harder; feeds monoculture sweep |
+| `envelope_width` | `max(0.05, located×(1−gap))` | Shrinks as claims exceed grounded ability; floor at 0.05; feeds substrate envelope |
+
+`dispatch(assessment, diversity=1.0)` wraps the carrier state into three ready-to-use param dicts: `monoculture_collapse_predictor.sweep` (diversity, broadcast, reciprocity), `legacy_trap_detector.run` (maintain_frac), `substrate_scope_validator.envelope` (symmetric heat/load envelope of width `envelope_width` centered at 0.5).
+
+Demo (told_high scenario, located=0.26, gap=0.55): reciprocity=0.117, maintain_frac=0.645, broadcast=1.325, envelope_width=0.117. Spinodal at consolidation=0.05 (system collapses almost immediately under any pressure — low reciprocity leaves almost no diversity barrier). Legacy deficit (final)=0.091 (high maintain_frac keeps configuration locked against drifting environment).
+
+#### `tests/test_reference_frame_bridge.py`
+59 tests across 7 sections: TestCarrierStateShape (8 — dict, keys, located/gap/disp stored, negative gap clamped, paired mode, rounding), TestReciprocity (7 — formula, zero located, zero gap, gap=1 gives zero, fully located zero gap gives 1, negative gap uses zero, nonnegative for all combos), TestMaintainFrac (6 — formula, fully located zero gap, zero located unit gap, clamped to 1.0, increases with gap, increases as location drops), TestBroadcast (6 — formula, zero gap gives 0.5, unit gap hits ceiling at 2.0, capped at 2.0, independent of located, increases with gap), TestEnvelopeWidth (6 — formula, floor at zero located, floor when product small, floor when gap=1, never below floor, shrinks with higher gap), TestDispatchShape (9 — dict, all four keys, sweep params, legacy param, envelope axes, carrier_state consistency), TestDispatchParams (8 — reciprocity/broadcast/maintain_frac match carrier state, symmetric around 0.5, envelope_width matches, heat=load, custom diversity, default diversity=1), TestDemoScenario (9 — reciprocity/maintain_frac/broadcast/envelope_width values, envelope bounds, three qualitative claims: low reciprocity when unlocated+gap, high maintain_frac, narrow envelope).
+
+### Changed
+
+#### `.github/workflows/ci.yml`
+Added integration demo: `(cd physics && python reference_frame_bridge.py) > /dev/null` (32 total).
+
+### Verification
+
+- `python -m pytest tests/ -q` → **1415 passed** (was 1356; +59).
+- Demo runs cleanly from `physics/` directory with both optional wire-throughs firing.
+
+### Connection to other layers
+
+- **`physics/reference_frame.py`** — the sensor feeding this bridge. All four carrier parameters are derived from `located` and `narrative_gap`, which `reference_frame.assess()` produces from raw observables and claims.
+- **`physics/monoculture_collapse_predictor.py`** — receives `(diversity, broadcast, reciprocity)`. A low-located high-gap carrier produces low reciprocity (≈0.12 in demo), which makes effective diversity ≈0.12 — the system is already near the spinodal before any consolidation pressure is applied.
+- **`physics/legacy_trap_detector.py`** — receives `maintain_frac`. High maintain_frac (0.645 in demo) means the system keeps its configuration locked even as its environment drifts — the quantitative form of the "told more than shown" failure.
+- **`physics/substrate_scope_validator.py`** — receives a symmetric envelope of width `envelope_width` (0.117 in demo). The narrow envelope exposes how a high-gap system claims broad capability while demonstrating only a thin slice of it in the field.
+- **`physics/reference_frame_drift.py`** — if located is falling over time (drift), `carrier_state` called on each timestep produces a widening `maintain_frac` and a narrowing `envelope_width` — the structural form of the broken-thermostat trajectory.

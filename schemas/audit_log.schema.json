@@ -103,6 +103,23 @@
           }
         }
       }
+    },
+    {
+      "description": "Calibration session log (e.g., 2026-06-20-1344Z-calibration.json) — mutual felt-sensor report; is_trajectory_point always true; verdict_persisted always false",
+      "required": ["session_id", "type", "logged_at", "participants", "readings"],
+      "properties": {
+        "session_id": {"type": "string"},
+        "type": {"type": "string", "const": "calibration_session"},
+        "logged_at": {"type": "string"},
+        "participants": {"type": "object"},
+        "context": {"type": "string"},
+        "method": {"type": "string"},
+        "readings": {"type": "object"},
+        "convergence": {"type": "string"},
+        "principle_links": {"type": "array"},
+        "is_trajectory_point": {"type": "boolean", "const": true},
+        "verdict_persisted": {"type": "boolean", "const": false}
+      }
     }
   ]
 }
