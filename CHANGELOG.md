@@ -6,6 +6,21 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-09-09] ✍️📜 → ⚖️✅ — run-block index re-keyed to path + anchor; hash guard left strict
+
+**Proposed by:** line-references / hash-guard note received 2026-09-09 · **Reviewed by:** swarmuser
+**Defect:** the run-block indexes keyed entries by path + line; line numbers drifted the moment the referenced files gained lines. Path is the stable key; an anchor string survives edits that a line number does not.
+**Change type:** addition (append; nothing edited) · **Section:** `logs/2026-09-09-0400Z-human-subject-run-blocks.json`, `tests/test_run_blocks.py`
+
+- New index, `key: path+anchor`, 31 entries — every entry of the 0100Z (22) and 0300Z (9) indexes restated with `source` = bare path, `anchor` = a string present in the file, `occurrence` where a heading repeats. Classes, run blocks, and `missing_fields` unchanged. The three CHARACTERIZATION entries carry `status: removed` with `removal_ref`. The two line-keyed indexes are `supersedes`-listed by sha256 and retained unmodified.
+- Tests: every present anchor must be found in its file at least `occurrence` times (the drift guard that replaces line numbers); superseded indexes must still hash-match; the anchor index must cover every line-keyed entry. +5 tests.
+- Hash guard on original logs (`tests/test_log_corrections.py`): unchanged, strict. If it fires, something tried to edit a log; the mechanism is append a superseding entry, never edit.
+- Not converted: `logs/2026-09-09-0000Z-case-provenance.json` keys cases by `case_id` (path or README anchor id) with `source` path:line as a secondary field; the stable key there is already the path. The correction entries (0201Z–0214Z) carry `source_ranges` as of commit b594b1d; they are immutable and the path inside `supersedes` is their stable key.
+
+**Correction to the entry below** ("code identifier: `consciousness` layer → `operator`"): the tree-wide count stated there (17) was wrong. Measured after that commit: 7 lines (8 occurrences) outside `CHANGELOG.md` — `audits/substrate_aware_audit.py` 3 lines, the repository name AI-Consciousness-Sensors in `CLAUDE.md` / `PROJECTS.md` / `REVIEW.md`, and one 2025 log — plus the occurrences inside `CHANGELOG.md` itself (immutable entries, including the ones describing the strip). The entry below is not edited.
+
+---
+
 ## [2026-09-09] ✍️📜 → ⚖️✅ — code identifier: `consciousness` layer → `operator` (separate event from the prose term strip)
 
 **Proposed by:** code-identifier note received 2026-09-09 ("identifiers have callers, term strip in prose has none") · **Reviewed by:** swarmuser
