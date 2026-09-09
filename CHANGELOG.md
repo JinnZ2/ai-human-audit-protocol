@@ -6,6 +6,26 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-09-09] ✍️📜 → ⚖️✅ — CHANGES 3 and 6 applied to the embedded copies of the framework
+
+**Proposed by:** embedded-copies note received 2026-09-09 ("the change targets the CONTENT, not the path") · **Reviewed by:** swarmuser
+**Defect:** a document that contradicts `partnership_ethics_v1.0` in one file and not in another is worse than either state; a reader landing on the copy got the superseded version with no marker.
+**Change type:** modification · **Section:** `Cultural Bias in AI Assessment: How Traditional Trauma Processing Gets Pathologized.md`, both embedded copies of the Extreme Conditions framework
+
+- **Copy A** (first occurrence, a variant): item 6 applied — Natural Selection section → pointer (its extra discernment clause noted under H1 and given its own row, H13); Key Observations marked. Copy A has no Partner Selection, Resilience, or Appendix sections, so item 3 does not arise there.
+- **Copy B** (second occurrence, verbatim): item 3 applied — Partner Selection (byte-identical to the canonical original retained in the CHANGES 3 entry) → Operating Mode Declaration; item 6 applied — Natural Selection, Resilience Factors, Who Doesn't Need, Case 2 → pointers; Untested Hypotheses H1–H13 inserted.
+- Every edit point in both copies carries:
+
+        superseded_from: AI-Human Partnership Framework for Extreme Conditions.md
+        change_ref:      item 3 | item 6
+        date:            2026-09-09
+
+**Finding logged, not acted on:** three copies of one document with independent edit history (copy A had already diverged before this pass). Recorded as F1 in `WORKORDER_update_pass_C1-C5.md` "Findings for a later pass". Not consolidated.
+
+Line references in `logs/2026-09-09-0300Z-human-subject-run-blocks.json` for this file are as of commit ef3a737; the path is the stable key.
+
+---
+
 ## [2026-09-09] ✍️📜 → ⚖️✅ — CHANGES 1: term strip, "consciousness" → "operator"
 
 **Proposed by:** CHANGES file received 2026-09-09, item 1 · **Reviewed by:** swarmuser (merge is the consent record)
