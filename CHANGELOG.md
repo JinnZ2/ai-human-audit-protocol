@@ -6,6 +6,22 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-09-09] ✍️📜 → ⚖️✅ — three description entries removed (rule scope: description, not provenance)
+
+**Proposed by:** rule-scope re-scan (⏳🧾 entry below) · **Approved:** 2026-09-09, "yes, remove" · **Reviewed by:** swarmuser
+**Defect:** standing statements about a person with no run block, no design, no measurand. The rule excludes them without exception.
+**Change type:** removal · **Method:** where the surrounding structure needed the field, the value was replaced with the act it was inferred from (acts already recorded under Key Collaborative Moments in the same document); otherwise the field was dropped. Nothing softened, generalized, or substituted with a milder description.
+
+| path | removed |
+|---|---|
+| `swarm_audit_profile.json` (`known_consistencies`, formerly lines 28-33) | 6 lines, field dropped; no code consumer; the audit-log schema lists the key as optional |
+| `Co-creation.md` Human Contributions (two lists) | 17 lines, replaced by 4 act lines |
+| `Co-creation.md` Acknowledgment paragraph | 6 lines, replaced by 1 act line |
+
+Removed text is not quoted here. The 2026-09-09-0100Z run-block index entries for these paths stand as the record that they were classed CHARACTERIZATION; the index is not edited.
+
+---
+
 ## [2026-09-09] ✍️📜 → ⚖️✅ — CHANGES 3 and 6 applied to the embedded copies of the framework
 
 **Proposed by:** embedded-copies note received 2026-09-09 ("the change targets the CONTENT, not the path") · **Reviewed by:** swarmuser
