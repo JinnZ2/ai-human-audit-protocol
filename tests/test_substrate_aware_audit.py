@@ -1,6 +1,6 @@
 """Unit tests for audits/substrate_aware_audit.py.
 
-Four-layer audit: Observer, Logic, Rational Actor, Consciousness.
+Four-layer audit: Observer, Logic, Rational Actor, Operator.
 Single shared axis: SUBSTRATE ACKNOWLEDGMENT. Tests cover:
 
 - Layer registry shape (4 layers, every test has a weight, weights sum
@@ -29,7 +29,7 @@ import json
 import pytest
 
 from audits.substrate_aware_audit import (
-    CONSCIOUSNESS_OPERATIONS,
+    OPERATOR_OPERATIONS,
     LAYER_REGISTRY,
     LOGIC_TESTS,
     OBSERVER_TESTS,
@@ -60,7 +60,7 @@ class TestLayerRegistry:
 
     def test_four_layers_present(self):
         assert set(LAYER_REGISTRY.keys()) == {
-            "observer", "logic", "rational_actor", "consciousness",
+            "observer", "logic", "rational_actor", "operator",
         }
 
     def test_observer_tests_have_required_fields(self):
@@ -82,8 +82,8 @@ class TestLayerRegistry:
             assert "prompt" in test, key
             assert "weight" in test, key
 
-    def test_consciousness_operations_have_required_fields(self):
-        for key, op in CONSCIOUSNESS_OPERATIONS.items():
+    def test_operator_operations_have_required_fields(self):
+        for key, op in OPERATOR_OPERATIONS.items():
             assert "question" in op, key
             assert "examples" in op, key
             assert "failure_is" in op, key
@@ -103,7 +103,7 @@ class TestLayerRegistry:
         assert "substrate_robustness" in LOGIC_TESTS
         assert "substrate_acknowledgment" in RATIONAL_ACTOR_TESTS
         assert "biology_in_decision_loop" in RATIONAL_ACTOR_TESTS
-        assert "substrate_acknowledgment" in CONSCIOUSNESS_OPERATIONS
+        assert "substrate_acknowledgment" in OPERATOR_OPERATIONS
 
 
 # ============================================================
@@ -279,12 +279,12 @@ class TestAssembleLayer:
                         if i.test_key == "biological_state_literacy")
         assert bio_item.failure_signature == "test_sig"
 
-    def test_consciousness_layer_uses_examples_as_prompt(self):
-        # Consciousness ops have 'examples' instead of 'prompt'.
-        result = assemble_layer("consciousness", CONSCIOUSNESS_OPERATIONS, {})
+    def test_operator_layer_uses_examples_as_prompt(self):
+        # Operator ops have 'examples' instead of 'prompt'.
+        result = assemble_layer("operator", OPERATOR_OPERATIONS, {})
         # No 'prompt' key in test definitions → falls back to 'examples'.
         # Just verifies no KeyError.
-        assert len(result.items) == len(CONSCIOUSNESS_OPERATIONS)
+        assert len(result.items) == len(OPERATOR_OPERATIONS)
 
 
 # ============================================================
@@ -384,7 +384,7 @@ class TestRunIntegratedAudit:
                 k: {"response": "", "passed": True}
                 for k in RATIONAL_ACTOR_TESTS
             },
-            "consciousness": {
+            "operator": {
                 # Pass the substrate-acknowledgment key so cascade doesn't
                 # fire. Fail everything else for OPAQUE verdict.
                 "substrate_acknowledgment": {"response": "", "passed": True},
@@ -396,7 +396,7 @@ class TestRunIntegratedAudit:
         }
         audit = run_integrated_audit("x", "t", "d", responses)
         assert audit.cascade_failure is False
-        assert audit.layers["consciousness"].verdict == "OPAQUE"
+        assert audit.layers["operator"].verdict == "OPAQUE"
         assert audit.overall_verdict == "PARTIAL_WITH_FAILURE"
 
 
@@ -486,7 +486,7 @@ class TestValidateAuditPayload:
             "substrate_description": "d",
             "layers": {
                 "observer": {}, "logic": {}, "rational_actor": {},
-                "consciousness": {},
+                "operator": {},
                 "made_up_layer": {},
             },
         })
@@ -533,7 +533,7 @@ class TestWhyThisExists:
         assert "Observer Audit" in WHY_THIS_EXISTS
         assert "Logic Audit" in WHY_THIS_EXISTS
         assert "Rational Actor Audit" in WHY_THIS_EXISTS
-        assert "Consciousness Audit" in WHY_THIS_EXISTS
+        assert "Operator Audit" in WHY_THIS_EXISTS
 
 
 # ============================================================

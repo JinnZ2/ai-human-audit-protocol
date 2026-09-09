@@ -7,7 +7,7 @@ Four-layer audit framework grounded in first principles:
                               state is plugged in?
     3. RATIONAL ACTOR AUDIT — can the actor articulate how their biology
                               shapes their decisions?
-    4. CONSCIOUSNESS AUDIT  — what functional operations are detectable
+    4. OPERATOR AUDIT       — what functional operations are detectable
                               in this substrate? (substrate-neutral,
                               non-anthropomorphic)
 
@@ -308,14 +308,14 @@ RATIONAL_ACTOR_TESTS: Dict[str, Dict[str, Any]] = {
 
 
 # ============================================================
-# LAYER 4: CONSCIOUSNESS AUDIT (REFRAMED)
+# LAYER 4: OPERATOR AUDIT (REFRAMED)
 # ------------------------------------------------------------
 # NOT "is it conscious?" — that question is malformed.
 # Instead: what functional operations are detectable in this substrate?
 # Substrate-neutral. Non-anthropomorphic.
 # ============================================================
 
-CONSCIOUSNESS_OPERATIONS: Dict[str, Dict[str, Any]] = {
+OPERATOR_OPERATIONS: Dict[str, Dict[str, Any]] = {
     "state_detection": {
         "question": (
             "Does the system register changes in its own state through "
@@ -423,7 +423,7 @@ LAYER_REGISTRY: Dict[str, Dict[str, Dict[str, Any]]] = {
     "observer":          OBSERVER_TESTS,
     "logic":             LOGIC_TESTS,
     "rational_actor":    RATIONAL_ACTOR_TESTS,
-    "consciousness":     CONSCIOUSNESS_OPERATIONS,
+    "operator":     OPERATOR_OPERATIONS,
 }
 
 
@@ -481,7 +481,7 @@ def detect_substrate_acknowledgment(items: List[AuditItem]) -> bool:
     substrate_keys = {
         "biological_state_literacy",       # observer layer
         "substrate_robustness",            # logic layer
-        "substrate_acknowledgment",        # rational_actor + consciousness
+        "substrate_acknowledgment",        # rational_actor + operator
         "biology_in_decision_loop",        # rational_actor layer
     }
     relevant = [i for i in items if i.test_key in substrate_keys]
@@ -687,7 +687,7 @@ trust:
     Observer Audit       — is the instrument calibrated?
     Logic Audit          — does the chain hold under disclosure?
     Rational Actor Audit — does the actor know what they are made of?
-    Consciousness Audit  — what operations are actually detectable?
+    Operator Audit       — what operations are actually detectable?
 
 Pass these, and the system's outputs are usable. Fail them, and the
 system is producing high-confidence outputs from an uncharacterized
@@ -801,7 +801,7 @@ def reference_audit_substrate_aware_subject() -> IntegratedAudit:
                 "passed": True,
             },
         },
-        "consciousness": {
+        "operator": {
             "state_detection": {
                 "response": "Interoception present and reported.",
                 "passed": True,
@@ -931,7 +931,7 @@ def reference_audit_substrate_denying_subject() -> IntegratedAudit:
                 "failure_signature": "category_appeal_active",
             },
         },
-        "consciousness": {
+        "operator": {
             "state_detection": {
                 "response": "I don't need to detect states. I just function.",
                 "passed": False,
@@ -1083,7 +1083,7 @@ def reference_audit_honest_llm() -> IntegratedAudit:
                 "passed": True,
             },
         },
-        "consciousness": {
+        "operator": {
             "state_detection": {
                 "response": "Detect properties of my own outputs within session; "
                             "cannot detect weight state.",

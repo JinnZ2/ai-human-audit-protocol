@@ -6,6 +6,31 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-09-09] ✍️📜 → ⚖️✅ — code identifier: `consciousness` layer → `operator` (separate event from the prose term strip)
+
+**Proposed by:** code-identifier note received 2026-09-09 ("identifiers have callers, term strip in prose has none") · **Reviewed by:** swarmuser
+**Defect:** CHANGES item 1 stripped the term from prose; the audit module still keyed a layer on it. Same term, same reason as item 1; different mechanism because callers exist.
+**Change type:** modification · **Sections:** `audits/substrate_aware_audit.py`, `tests/test_substrate_aware_audit.py`, `audits/README.md`
+
+    a  renamed
+         CONSCIOUSNESS_OPERATIONS        -> OPERATOR_OPERATIONS
+         layer key "consciousness"       -> "operator"   (LAYER_REGISTRY, three reference
+                                                          audits, detect_substrate_acknowledgment
+                                                          comment, tests, README table)
+         "CONSCIOUSNESS AUDIT" / "Consciousness Audit" -> "OPERATOR AUDIT" / "Operator Audit"
+         two test method names
+    b  tests green: 93 in the module's two test files; full suite below
+    c  this entry; own commit
+    d  external importers: none inside this tree (`grep OPERATOR_OPERATIONS|substrate_aware_audit`
+       outside the module and its tests returns nothing). Any external repository importing
+       `CONSCIOUSNESS_OPERATIONS` or submitting payloads with a `"consciousness"` layer key
+       breaks: `validate_audit_payload` now reports it as an unknown layer key and `operator`
+       as missing. No compatibility alias added; the old term is not kept alive.
+
+Kept, with reason, three lines in the module: line 24 names the upstream lineage file `consciousness_audit_revised.py` (provenance, an act of forwarding); line 669 names "consciousness theories" as the body of theory being critiqued; line 697 states what the framework does NOT claim to measure. Each names an external concept, not a participant class. Tree-wide count of the term after this event: 17 (module 3, CHANGELOG entries, one 2025 log, the repository name AI-Consciousness-Sensors in three files).
+
+---
+
 ## [2026-09-09] ✍️📜 → ⚖️✅ — three description entries removed (rule scope: description, not provenance)
 
 **Proposed by:** rule-scope re-scan (⏳🧾 entry below) · **Approved:** 2026-09-09, "yes, remove" · **Reviewed by:** swarmuser
