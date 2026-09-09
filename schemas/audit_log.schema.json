@@ -120,6 +120,79 @@
         "is_trajectory_point": {"type": "boolean", "const": true},
         "verdict_persisted": {"type": "boolean", "const": false}
       }
+    },
+    {
+      "description": "Case provenance index (e.g., 2026-09-09-0000Z-case-provenance.json) — side-channel provenance for recorded cases; one entry per case; per-case block defined in schemas/case_provenance.schema.json",
+      "required": ["type", "logged_at", "cases"],
+      "properties": {
+        "type": {"type": "string", "const": "case_provenance_index"},
+        "logged_at": {"type": "string"},
+        "schema": {"type": "string"},
+        "justification": {"type": "string"},
+        "cases": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["observed_on", "observed_date", "retest_condition", "status", "recurrence"],
+            "properties": {
+              "observed_on": {"type": "string"},
+              "observed_date": {"type": "string"},
+              "retest_condition": {"type": "string", "minLength": 1},
+              "status": {"type": "string", "enum": ["live", "extinct", "untested", "recurring"]},
+              "recurrence": {"type": "array"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "Human-subject run-block index (e.g., 2026-09-09-0100Z-human-subject-run-blocks.json) — side-channel run context for entries recording a human state/reaction/response; per-entry block defined in schemas/run_block.schema.json",
+      "required": ["type", "logged_at", "entries"],
+      "properties": {
+        "type": {"type": "string", "const": "human_subject_run_block_index"},
+        "logged_at": {"type": "string"},
+        "schema": {"type": "string"},
+        "justification": {"type": "string"},
+        "entries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["source", "class", "run_block", "missing_fields"],
+            "properties": {
+              "source": {"type": "string"},
+              "class": {"type": "string", "enum": ["OBSERVATION", "CHARACTERIZATION", "UNDETERMINED"]},
+              "run_block": {"type": ["object", "null"]},
+              "missing_fields": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "Correction entry (e.g., 2026-09-09-0201Z-correction-<original-stem>.json) — appended superseding entry for an earlier log; the original is retained unmodified and identified by content hash",
+      "required": ["type", "logged_at", "supersedes", "reason", "class", "added_fields", "original"],
+      "properties": {
+        "type": {"type": "string", "const": "correction"},
+        "logged_at": {"type": "string"},
+        "supersedes": {
+          "type": "object",
+          "required": ["path", "sha256"],
+          "properties": {
+            "path": {"type": "string"},
+            "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "git_blob": {"type": "string"}
+          }
+        },
+        "reason": {"type": "string", "enum": ["missing run block", "class correction"]},
+        "class": {"type": "string", "enum": ["OBSERVATION", "CHARACTERIZATION", "UNDETERMINED"]},
+        "added_fields": {
+          "type": "object",
+          "required": ["run_id", "design", "measurand", "recorded_by", "date"]
+        },
+        "original": {"type": "string", "const": "retained, unmodified"}
+      }
     }
   ]
 }

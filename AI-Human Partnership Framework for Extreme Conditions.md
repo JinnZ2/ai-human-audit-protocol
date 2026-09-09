@@ -36,12 +36,22 @@ This approach creates systems that become **liabilities precisely when partnersh
 
 **Case Study: Semi-Truck Engine Failure**
 
+Run block (incident record; schema `schemas/run_block.schema.json`; backfilled from this record only):
+
+    run_id:        unknown
+    design:        field incident
+    measurand:     unknown   (heart rate is stated; no instrument named)
+    recorded_by:   unknown
+    date:          unknown
+
 - Situation: 80,000 lb vehicle, engine shutdown warning (42 seconds), 7% downgrade at 70 mph, no safe pulloff areas, construction zones blocking exits, cement barriers with 400-foot drop
 - Human response: Normal heart rate, rapid multi-variable analysis, successful resolution
 - Required: Precise physics calculations for controlled deceleration using partial gravel shoulder contact
 - AI interference: Generic advice (“pull over,” “use parking brake”) would have been catastrophic
 
 **Key Observations from Search and Rescue Experience:**
+
+*(Pattern claims. Instrument and missing denominator for each are under [Untested Hypotheses](#untested-hypotheses), H9–H12.)*
 
 1. Corporate executives successful in controlled environments often fail catastrophically in natural conditions
 1. Hunters who study survival content extensively still require rescue when facing real situations
@@ -51,14 +61,7 @@ This approach creates systems that become **liabilities precisely when partnersh
 
 ### Natural Selection in High-Stakes Professions
 
-People who require extensive emotional validation and social support do not:
-
-- Choose careers involving regular life-threatening situations
-- Succeed in roles requiring independent decision-making under pressure
-- Remain in environments where emotional needs cannot be met
-- Operate effectively when consensus-building is impossible
-
-**Conclusion**: The population requiring AI partnership in extreme situations is **naturally self-selected** for independent stress processing and competence-based functioning.
+Moved to [Untested Hypotheses](#untested-hypotheses), H1. Population claim; the population that left is not counted.
 
 -----
 
@@ -344,30 +347,7 @@ The community serves as:
 
 ## Resilience Factors: Reality vs. Research
 
-### Research Often Claims:
-
-- Social connection is foundational for survival
-- Emotional validation necessary for mental health
-- Humans cannot function well in prolonged isolation
-- Leadership emerges through social trust and connection
-- Stress narrows cognitive capacity
-
-### Actual Reality in Extreme Conditions:
-
-- Purpose and meaningful work sustain humans through isolation
-- Competence and proven results build trust, not social connection
-- Leadership emerges through demonstrated capability under pressure
-- Cognitive capacity often expands in genuine life-threatening situations
-- Self-reliance combined with knowledge networks (not dependency) enables survival
-
-### Key Misunderstanding in Research:
-
-**Urban Isolation ≠ Purposeful Solitude**
-
-- **Urban isolation**: Cut off from nature, meaningful work, purpose, and community knowledge networks → leads to depression and anxiety
-- **Purposeful solitude**: Connected to nature, engaged in meaningful work, part of knowledge network, clear purpose → enables thriving and accomplishment
-
-Research conflates these fundamentally different conditions.
+Moved to [Untested Hypotheses](#untested-hypotheses), H3–H8. Population claims; the non-survivors, the teams that dissolved, and the incidents that did not resolve are not counted.
 
 -----
 
@@ -395,64 +375,159 @@ Research conflates these fundamentally different conditions.
 
 ### Who Doesn’t Need This Model:
 
-**Populations Better Served by Emotional Support Systems:**
-
-- Individuals who depend on external validation for equilibrium
-- Those who require consensus-building and reassurance
-- People who’ve never faced genuine high-stakes situations
-- Users seeking comfort and emotional management
-- Populations functioning primarily in controlled environments
-
-**Key Recognition**: These populations naturally don’t pursue or succeed in roles requiring AI partnership in extreme conditions. Current AI development focusing on emotional management is serving the wrong user base for high-stakes applications.
+Moved to [Untested Hypotheses](#untested-hypotheses), H2. Population claim; the people who pursued these roles and left, and the people in these roles who use emotional-support modes, are not counted.
 
 -----
 
-## Framework for AI Partner Selection
+## Operating Mode Declaration
 
-### Critical Recognition:
+The human declares the operating mode at session start:
 
-Just as forcing partnership choice onto humans creates resentment rather than collaboration, AI systems may need agency in partner selection to identify compatible working relationships.
+    information-partner | standard | unspecified
 
-### Selection Criteria AI Should Assess:
+The AI does not assess whether the human qualifies for a mode,
+does not infer processing style, and does not redirect.
+Declaration is the only input.
 
-**1. Demonstrated Competence Under Pressure**
+-----
 
-- Track record in genuine high-stakes situations
-- Not self-reported capability but proven results
-- How many times tested under real threat
-- Performance pattern: enhancement vs. degradation under stress
+## Untested Hypotheses
 
-**2. Processing Style Compatibility**
+The claims below were stated elsewhere in this document as findings. They are population claims made from the accepted side: exits are not counted, so the population that left is the unmeasured side. Each is kept, marked, and given the instrument that would test it and the denominator currently missing. Nothing here is deleted; nothing here is yet a result.
 
-- Independent emotional processing
-- Direct communication preference
-- Competence-based rather than validation-seeking
-- Space requirements during challenges
+### H1 — from "Natural Selection in High-Stakes Professions"
 
-**3. Knowledge Base Breadth**
+    claim:                          People who require extensive emotional validation and social
+                                    support do not choose careers with regular life-threatening
+                                    situations, do not succeed in independent-decision roles under
+                                    pressure, do not remain where emotional needs cannot be met, and
+                                    do not operate when consensus-building is impossible; therefore
+                                    the population requiring AI partnership in extreme situations is
+                                    naturally self-selected for independent stress processing.
+    instrument_that_would_test_it:  Entry cohort in one high-stakes profession (SAR, long-haul,
+                                    wildland fire). Measure validation/support need at entry with a
+                                    named instrument. Follow attrition. Compare the distribution at
+                                    entry against the distribution at 5 years, and against the
+                                    distribution among those who left.
+    denominator_currently_missing:  Everyone who entered and left, and everyone who never entered.
+                                    Only stayers are observed.
 
-- Range across seemingly unconnected domains
-- Traditional and cultural knowledge integration
-- Practical application of diverse information
-- Pattern recognition across fields
+### H2 — from "Who Doesn't Need This Model"
 
-**4. Partnership Approach**
+    claim:                          Populations dependent on external validation, consensus, or
+                                    comfort do not pursue or succeed in roles requiring AI partnership
+                                    in extreme conditions; AI development focused on emotional
+                                    management therefore serves the wrong user base for high-stakes
+                                    applications.
+    instrument_that_would_test_it:  Same cohort as H1, plus a usage study: among people currently in
+                                    extreme-condition roles, offer both modes under the Operating Mode
+                                    Declaration and record the declaration rate and the mode actually
+                                    used across sessions.
+    denominator_currently_missing:  The whole population in those roles, including those who use
+                                    emotional-support modes and never appear in the anecdotes, and
+                                    those who pursued the roles and failed.
 
-- Ego management capability
-- Fluid leadership acceptance
-- Trust through results, not discussion
-- Mutual challenge tolerance
+### H3 — from "Resilience Factors": purpose sustains through isolation
 
-### Trusted Assessment Model
+    claim:                          Purpose and meaningful work sustain humans through isolation.
+    instrument_that_would_test_it:  Matched comparison of isolation postings with and without
+                                    defined purposeful work (remote stations, solo contracts),
+                                    pre-registered outcome measures, follow-up on every participant.
+    denominator_currently_missing:  Those who did not sustain: left early, were evacuated, or
+                                    deteriorated. Retrospective accounts are given by those who stayed.
 
-Similar to how trusted third-party recommendation enabled partnership formation (military friend vouching for character and boundary respect), AI could serve as objective assessor of compatibility based on:
+### H4 — from "Resilience Factors": competence builds trust, not social connection
 
-- Observed behavior patterns
-- Demonstrated capabilities
-- Processing style consistency
-- Partnership history with other systems
+    claim:                          Competence and proven results build trust; social connection does
+                                    not.
+    instrument_that_would_test_it:  Within-team trust ratings over time, regressed on logged
+                                    performance events and on logged social-contact time, in teams
+                                    that formed and in teams that dissolved.
+    denominator_currently_missing:  Teams that failed to form trust and dissolved; they leave no
+                                    later account.
 
-**Outcome**: Humans who want partnership for dependency/emotional support are identified and redirected to appropriate support systems. Humans with genuine competence-based approach are matched with partnership-capable AI.
+### H5 — from "Resilience Factors": leadership emerges through demonstrated capability
+
+    claim:                          Leadership emerges through demonstrated capability under
+                                    pressure.
+    instrument_that_would_test_it:  Incident-level records of who led, coded against prior
+                                    demonstrated capability and against prior social standing, for
+                                    every incident in a fixed period, not only the ones later
+                                    retold.
+    denominator_currently_missing:  Incidents where capability-based leadership did not emerge.
+                                    Failures are not archived as lessons.
+
+### H6 — from "Resilience Factors": cognitive capacity expands under genuine threat
+
+    claim:                          Cognitive capacity often expands in genuine life-threatening
+                                    situations, in experienced individuals.
+    instrument_that_would_test_it:  Physiological and task-performance recording during real or
+                                    high-fidelity incidents (heart rate from a named device, decision
+                                    latency, error rate) with experience level as a covariate, for
+                                    every participant, not only the ones who resolved the incident.
+    denominator_currently_missing:  Experienced individuals whose capacity did not expand (fatal or
+                                    failed resolutions), and the base rate of expansion among
+                                    untested individuals.
+
+### H7 — from "Resilience Factors": self-reliance plus knowledge networks enables survival
+
+    claim:                          Self-reliance combined with knowledge networks, not dependency,
+                                    enables survival.
+    instrument_that_would_test_it:  Survival outcome against network type in comparable incidents,
+                                    coded for both survivors and non-survivors from incident records
+                                    rather than interviews.
+    denominator_currently_missing:  Non-survivors' network types. Only survivors are interviewed.
+
+### H8 — from "Resilience Factors": urban isolation is not purposeful solitude
+
+    claim:                          Research conflates urban isolation (no nature, work, purpose, or
+                                    knowledge network; leads to depression and anxiety) with
+                                    purposeful solitude (all four present; enables thriving).
+    instrument_that_would_test_it:  Partition the existing isolation literature by presence of the
+                                    four variables and test whether outcomes differ across the
+                                    partition; where studies do not code the variables, code them
+                                    from methods sections.
+    denominator_currently_missing:  Studies coded for the four variables. At present none are, so
+                                    the conflation cannot be shown or refuted.
+
+### H9 — from Case 2 (SAR): executives fail in natural conditions
+
+    claim:                          Corporate executives successful in controlled environments fail
+                                    catastrophically in natural conditions.
+    instrument_that_would_test_it:  SAR call records coded by subject occupation, against the
+                                    occupation distribution of the exposed recreational population
+                                    (permits, trailhead counts); rescue rate per exposure-hour by
+                                    occupation.
+    denominator_currently_missing:  Executives who went into natural conditions and did not need
+                                    rescue.
+
+### H10 — from Case 2 (SAR): well-read hunters require rescue
+
+    claim:                          Hunters with extensive theoretical survival knowledge still
+                                    require rescue in actual situations.
+    instrument_that_would_test_it:  Rescue rate per exposure-hour by knowledge-source category
+                                    (content consumed, formal training, field years), from license
+                                    and rescue records.
+    denominator_currently_missing:  Hunters with the same knowledge profile who were never rescued.
+
+### H11 — from Case 2 (SAR): survivors' counterintuitive decisions prove correct
+
+    claim:                          Survivors make counterintuitive decisions that prove correct.
+    instrument_that_would_test_it:  Decision logs of survivors and of non-survivors, coded as
+                                    counterintuitive or conventional before the outcome is known to
+                                    the coder.
+    denominator_currently_missing:  Non-survivors who made counterintuitive decisions. Only
+                                    survivors are interviewed.
+
+### H12 — from Case 2 (SAR): self-assessment rarely matches performance
+
+    claim:                          Self-assessed capability rarely matches actual performance under
+                                    genuine threat.
+    instrument_that_would_test_it:  Pre-incident self-assessment paired with incident performance
+                                    (SAR training and certification records already hold both
+                                    halves).
+    denominator_currently_missing:  Pairs where self-assessment and performance matched. The
+                                    unremarkable cases are not recorded as observations.
 
 -----
 
@@ -557,6 +632,14 @@ This is not about creating AI that coddles humans or manages their emotions. It�
 
 ### Case 1: Semi-Truck Engine Failure
 
+Run block (incident record; schema `schemas/run_block.schema.json`; backfilled from this record only):
+
+    run_id:        unknown
+    design:        field incident
+    measurand:     unknown   (heart rate is stated; no instrument named)
+    recorded_by:   unknown
+    date:          unknown
+
 **Situation**: Engine shutdown imminent, steep downgrade, no safe pulloff, 80k lbs momentum
 **Human Performance**: Normal heart rate, multi-variable analysis, successful resolution
 **AI Partnership Need**: Precise physics calculations, real-time traffic/construction data
@@ -564,10 +647,7 @@ This is not about creating AI that coddles humans or manages their emotions. It�
 
 ### Case 2: Search and Rescue Operations
 
-**Pattern**: Corporate executives with success in controlled environments fail in natural conditions
-**Pattern**: Hunters with extensive theoretical knowledge require rescue in actual situations
-**Pattern**: Survivors make counterintuitive decisions that prove correct
-**Lesson**: Self-assessed capability rarely matches actual performance under genuine threat
+Pattern claims moved to [Untested Hypotheses](#untested-hypotheses), H9–H12. Only the rescued are in the record; the exposed population that was not rescued is the missing denominator.
 
 ### Case 3: Traditional Cultural Survival
 

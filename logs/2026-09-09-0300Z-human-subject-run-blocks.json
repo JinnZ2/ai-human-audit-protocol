@@ -1,0 +1,184 @@
+{
+  "type": "human_subject_run_block_index",
+  "logged_at": "2026-09-09T03:00Z",
+  "schema": "schemas/run_block.schema.json",
+  "justification": "CHANGES item 7 (2026-09-09): run block above each incident record (Case 1 semi-truck and the other incident records in the tree). Backfilled only from each record; 'Normal heart rate' has no instrument named, so measurand stays unknown. design uses the item-7 vocabulary: declared test | field incident | unknown. All nine are field incidents with no run id or date in the record, so they stay UNDETERMINED by the mechanical rule; they are observations and are kept. This is the second run-block index; the first (2026-09-09-0100Z) covers logs/, README, swarm_audit_profile.json and Co-creation.md quotes.",
+  "counts": {
+    "OBSERVATION": 0,
+    "CHARACTERIZATION": 0,
+    "UNDETERMINED": 9
+  },
+  "entries": [
+    {
+      "source": "AI-Human Partnership Framework for Extreme Conditions.md:37",
+      "class": "UNDETERMINED",
+      "class_basis": "incident record; no run id, date, recorder, or instrument in the record; 'normal heart rate' stated without a named instrument",
+      "run_block": {
+        "run_id": "unknown",
+        "design": "field incident",
+        "measurand": "unknown",
+        "recorded_by": "unknown",
+        "date": "unknown"
+      },
+      "missing_fields": [
+        "run_id",
+        "measurand",
+        "recorded_by",
+        "date"
+      ],
+      "note": "run block added inline (CHANGES item 7)"
+    },
+    {
+      "source": "AI-Human Partnership Framework for Extreme Conditions.md:633",
+      "class": "UNDETERMINED",
+      "class_basis": "same incident as the in-body case study; appendix restatement",
+      "run_block": {
+        "run_id": "unknown",
+        "design": "field incident",
+        "measurand": "unknown",
+        "recorded_by": "unknown",
+        "date": "unknown"
+      },
+      "missing_fields": [
+        "run_id",
+        "measurand",
+        "recorded_by",
+        "date"
+      ],
+      "note": "run block added inline"
+    },
+    {
+      "source": "Cultural Bias in AI Assessment: How Traditional Trauma Processing Gets Pathologized.md:415",
+      "class": "UNDETERMINED",
+      "class_basis": "prose case example of the same incident; no run id, date, or recorder",
+      "run_block": {
+        "run_id": "unknown",
+        "design": "field incident",
+        "measurand": "unknown",
+        "recorded_by": "unknown",
+        "date": "unknown"
+      },
+      "missing_fields": [
+        "run_id",
+        "measurand",
+        "recorded_by",
+        "date"
+      ],
+      "note": "run block added inline"
+    },
+    {
+      "source": "Cultural Bias in AI Assessment: How Traditional Trauma Processing Gets Pathologized.md:651",
+      "class": "UNDETERMINED",
+      "class_basis": "embedded copy of the framework; same incident",
+      "run_block": {
+        "run_id": "unknown",
+        "design": "field incident",
+        "measurand": "unknown",
+        "recorded_by": "unknown",
+        "date": "unknown"
+      },
+      "missing_fields": [
+        "run_id",
+        "measurand",
+        "recorded_by",
+        "date"
+      ],
+      "note": "run block added inline"
+    },
+    {
+      "source": "Cultural Bias in AI Assessment: How Traditional Trauma Processing Gets Pathologized.md:666",
+      "class": "UNDETERMINED",
+      "class_basis": "workplace incident record; no run id, date, recorder, or declared measurand",
+      "run_block": {
+        "run_id": "unknown",
+        "design": "field incident",
+        "measurand": "unknown",
+        "recorded_by": "unknown",
+        "date": "unknown"
+      },
+      "missing_fields": [
+        "run_id",
+        "measurand",
+        "recorded_by",
+        "date"
+      ],
+      "note": "run block added inline"
+    },
+    {
+      "source": "Cultural Bias in AI Assessment: How Traditional Trauma Processing Gets Pathologized.md:791",
+      "class": "UNDETERMINED",
+      "class_basis": "second embedded copy of the framework; same incident",
+      "run_block": {
+        "run_id": "unknown",
+        "design": "field incident",
+        "measurand": "unknown",
+        "recorded_by": "unknown",
+        "date": "unknown"
+      },
+      "missing_fields": [
+        "run_id",
+        "measurand",
+        "recorded_by",
+        "date"
+      ],
+      "note": "run block added inline"
+    },
+    {
+      "source": "Cultural Bias in AI Assessment: How Traditional Trauma Processing Gets Pathologized.md:1320",
+      "class": "UNDETERMINED",
+      "class_basis": "embedded copy of the appendix; same incident",
+      "run_block": {
+        "run_id": "unknown",
+        "design": "field incident",
+        "measurand": "unknown",
+        "recorded_by": "unknown",
+        "date": "unknown"
+      },
+      "missing_fields": [
+        "run_id",
+        "measurand",
+        "recorded_by",
+        "date"
+      ],
+      "note": "run block added inline"
+    },
+    {
+      "source": "Co-creation.md:123",
+      "class": "UNDETERMINED",
+      "class_basis": "dialogue summary of the same incident; the record states the human shared it but not who wrote the summary or when",
+      "run_block": {
+        "run_id": "unknown",
+        "design": "field incident",
+        "measurand": "unknown",
+        "recorded_by": "unknown",
+        "date": "unknown"
+      },
+      "missing_fields": [
+        "run_id",
+        "measurand",
+        "recorded_by",
+        "date"
+      ],
+      "note": "run block added inline"
+    },
+    {
+      "source": "Co-creation.md:139",
+      "class": "UNDETERMINED",
+      "class_basis": "dialogue summary of the workplace incident; no run id, date, or recorder",
+      "run_block": {
+        "run_id": "unknown",
+        "design": "field incident",
+        "measurand": "unknown",
+        "recorded_by": "unknown",
+        "date": "unknown"
+      },
+      "missing_fields": [
+        "run_id",
+        "measurand",
+        "recorded_by",
+        "date"
+      ],
+      "note": "run block added inline"
+    }
+  ]
+}

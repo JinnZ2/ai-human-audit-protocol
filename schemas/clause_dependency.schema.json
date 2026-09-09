@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Clause Dependency",
+  "description": "PER CLAUSE schema (received 2026-09-09 with the update-pass work order). Each protocol clause declares what it depends on. MODEL_PROPERTY clauses can go vestigial when the model changes; GUIDELINE_TEXT clauses can go stale when the tracked document moves; PHYSICS clauses have no expiry. A first-pass inventory leaves still_true as 'untested' with a stated test; 'no' requires status VESTIGIAL and a statement of what replaced the failure mode.",
+  "type": "object",
+  "required": ["clause_id", "source", "text", "depends_on", "classification_basis"],
+  "properties": {
+    "clause_id": {"type": "string", "minLength": 1},
+    "source": {"type": "string", "description": "path:line(s) of the clause"},
+    "text": {"type": "string", "description": "the clause, verbatim or closely abridged", "minLength": 1},
+    "depends_on": {"type": "string", "enum": ["MODEL_PROPERTY", "GUIDELINE_TEXT", "PHYSICS"]},
+    "classification_basis": {"type": "string", "minLength": 1, "description": "why this bucket; lets a reader reclassify"},
+    "property_id": {"type": "string", "description": "MODEL_PROPERTY only: shared id when several clauses assume the same property"},
+    "property": {"type": "string", "description": "MODEL_PROPERTY only: what about the model this assumes"},
+    "still_true": {"type": "string", "enum": ["yes", "no", "untested"]},
+    "test": {"type": "string", "description": "MODEL_PROPERTY only: what would show it"},
+    "status": {"type": "string", "enum": ["VESTIGIAL"]},
+    "replaced_by": {"type": "string", "description": "MODEL_PROPERTY with still_true=no: what replaced the failure mode — the gap the clause no longer covers"},
+    "tracks": {"type": "string", "description": "GUIDELINE_TEXT only: which document, which version"},
+    "current": {"type": "string", "description": "GUIDELINE_TEXT only: yes | no | superseded_by:<ref>", "pattern": "^(yes|no|superseded_by:.+)$"},
+    "repair": {"type": "string", "enum": ["legible_to", "constrain", "unknown"], "description": "GUIDELINE_TEXT with current=no: was the clause written to BE legible to that posture, or to constrain it"},
+    "axiom": {"type": "string", "description": "PHYSICS only: which axiom (A1–A7) or law, with source"},
+    "review": {"type": "string", "enum": ["none"], "description": "PHYSICS only: no expiry, no review needed"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"depends_on": {"const": "MODEL_PROPERTY"}}},
+      "then": {"required": ["property", "still_true", "test"]}
+    },
+    {
+      "if": {"properties": {"depends_on": {"const": "MODEL_PROPERTY"}, "still_true": {"const": "no"}}, "required": ["still_true"]},
+      "then": {"required": ["status", "replaced_by"]}
+    },
+    {
+      "if": {"properties": {"depends_on": {"const": "GUIDELINE_TEXT"}}},
+      "then": {"required": ["tracks", "current"]}
+    },
+    {
+      "if": {"properties": {"depends_on": {"const": "GUIDELINE_TEXT"}, "current": {"const": "no"}}, "required": ["current"]},
+      "then": {"required": ["repair"]}
+    },
+    {
+      "if": {"properties": {"depends_on": {"const": "PHYSICS"}}},
+      "then": {"required": ["axiom", "review"], "not": {"required": ["still_true"]}}
+    }
+  ],
+  "additionalProperties": true
+}

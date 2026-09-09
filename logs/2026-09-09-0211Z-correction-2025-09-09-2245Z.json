@@ -1,0 +1,32 @@
+{
+  "type": "correction",
+  "logged_at": "2026-09-09T02:11Z",
+  "supersedes": {
+    "path": "logs/2025-09-09-2245Z.json",
+    "sha256": "4fb83e2f40b8b5f33c9e46017d9d56e2112a1a85331e51a6188979dae2db1e13",
+    "git_blob": "72211ec9f32505b44410044a4edc3b1ac3e66c94",
+    "hash_algorithm": "sha256 over the file bytes as committed; git_blob is the git object id of the same bytes"
+  },
+  "reason": "missing run block",
+  "class": "UNDETERMINED",
+  "class_basis": "event 'human_mirror_audit' timestamped; output written under 'system_response'; no run id, no declared measurand",
+  "source_ranges": [
+    "logs/2025-09-09-2245Z.json:44-58,62-72"
+  ],
+  "added_fields": {
+    "run_id": "unknown",
+    "design": "unknown",
+    "measurand": "unknown",
+    "recorded_by": "agent-logged",
+    "date": "2025-09-09T22:50Z"
+  },
+  "missing_fields": [
+    "run_id",
+    "design",
+    "measurand"
+  ],
+  "original": "retained, unmodified",
+  "index": "logs/2026-09-09-0100Z-human-subject-run-blocks.json",
+  "note": "Appended per the logs mechanism (2026-09-09): logs/ is append-only; the original entry stays readable and unmodified; this correction supersedes it by content hash. An entry whose run cannot be reconstructed is classed UNDETERMINED with fields set unknown rather than skipped.",
+  "recorded_by_basis": "record field 'system_response'"
+}

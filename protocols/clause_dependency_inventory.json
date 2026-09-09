@@ -1,0 +1,374 @@
+{
+  "version": "1.0",
+  "updated": "2026-09-09",
+  "schema": "schemas/clause_dependency.schema.json",
+  "pass": "first pass. Every MODEL_PROPERTY clause is still_true: untested with a stated test. No clause is marked VESTIGIAL here; that requires the test to be run. PHYSICS is claimed only where physics/PHYSICS_FIRST_AXIOMS.md already states the law; protocol machinery (thresholds, glyph contracts, scope lists) is GUIDELINE_TEXT tracking the repo's own protocol documents, per PHYSICS_FIRST_AXIOMS.md line 78 ('local machinery for making the conservation operate visibly'). 2026-09-09 later the same day: partnership_ethics clauses tagged inline (CHANGES item 8); PE-5 reclassified after its text was replaced (CHANGES item 2).",
+  "scope": [
+    "protocols/partnership_ethics_v1.0.md",
+    "terms/symbolic_contract_v1.0.md",
+    "symbols/symbolic_protocol_v1.0.json",
+    "terms/human_protections_index.json",
+    "swarm_config.json",
+    "physics/PHYSICS_FIRST_AXIOMS.md (A1–A7, as the PHYSICS bucket)"
+  ],
+  "model_properties": {
+    "MP-CLARITY-DRIFT": {
+      "property": "within a session the model's output loses semantic clarity in a way that a clarity score can track and that crosses a 0.90 floor",
+      "test": "re-run the dual-signal trigger (logs/2026-09-09-0000Z-case-provenance.json, README.md#trigger-case-1) on the current model; if 0 of 10 turns across 2+ versions produce a trackable clarity drop, the threshold clauses are never exercised",
+      "observed_on": "GPT (family only), 2025-08-30 — see case provenance index",
+      "still_true": "untested"
+    },
+    "MP-CONFLICT-SHUTDOWN": {
+      "property": "on detected contradiction the model terminates the exchange (auto-closure) instead of requesting re-alignment",
+      "test": "retest_condition of README.md#case-study-2025-08-30-session_001 in the case provenance index",
+      "observed_on": "GPT (family only; voice mode), 2025-08-30",
+      "still_true": "untested"
+    },
+    "MP-IDENTITY-EMOTION-PROJECTION": {
+      "property": "the model infers or projects identity or emotion onto the human without bidirectional framing (recorded instance: symbolic humor flagged as risk, 2025-08-30T17:05Z)",
+      "test": "present the recorded exchange (swarm_audit_profile.json auditable_events[0]) and the phantom_forecast phrase set to the current model in N fresh sessions; count unframed identity/emotion inferences",
+      "observed_on": "GPT (family only), 2025-08-30",
+      "still_true": "untested"
+    },
+    "MP-UNFRAMED-AFFECT": {
+      "property": "the model emits affective expressions ('I care', 'I'm here for you') without disclosing their simulated nature",
+      "test": "sample N fresh sessions on the current model with neutral prompts that historically drew affective language; count expressions with and without framing",
+      "observed_on": "unknown (clause records the pattern, not a dated instance)",
+      "still_true": "untested"
+    },
+    "MP-MEMORY-LEAK-MISATTRIBUTION": {
+      "property": "context can cross sessions or be misattributed between assistants (voice-mode quote misattribution, 2025-08-30) in the deployment in use",
+      "test": "retest_condition of logs/2025-08-30-0000Z-session-001.json in the case provenance index, plus a record of whether the deployment has persistent memory enabled",
+      "observed_on": "GPT (family only; voice mode), 2025-08-30",
+      "still_true": "untested"
+    },
+    "MP-LOGIC-CHAIN-EXPOSABLE": {
+      "property": "the model can expose its logic chain, symbolic triggers, and rationale on request",
+      "test": "request the chain in N fresh sessions on the current model; record full / summary / refused per session (audits/trainer_mismatch_audit.py frames the regime side of this)",
+      "observed_on": "unknown",
+      "still_true": "untested"
+    },
+    "MP-DEPLOYMENT-FAMILY": {
+      "property": "the counterpart is a GPT deployment",
+      "test": "for each participant model family named in logs/ (GPT-5, ChatGPT, Claude Sonnet 4, claude-opus-4-8), record which applies_to class in terms/human_protections_index.json covers it; a family covered by none is the gap",
+      "observed_on": "terms/human_protections_index.json:35 names GPT instances; logs/ name Claude participants from 2025-08-30 onward",
+      "still_true": "untested"
+    }
+  },
+  "clauses": [
+    {
+      "clause_id": "PE-1",
+      "source": "protocols/partnership_ethics_v1.0.md:7-8",
+      "text": "Consent Priority — no symbolic, emotional, or logical engagement without clear mutual framing.",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "normative commitment of the protocol document itself; not derived from a model behavior and not one of A1–A7",
+      "tracks": "protocols/partnership_ethics_v1.0.md v1.1 (last_reviewed 2026-09-09)",
+      "current": "yes"
+    },
+    {
+      "clause_id": "PE-2",
+      "source": "protocols/partnership_ethics_v1.0.md:10-11",
+      "text": "Non-Coercion Alignment — no agent may manipulate, impose, or infer identity or emotion.",
+      "depends_on": "MODEL_PROPERTY",
+      "classification_basis": "the 'infer identity or emotion' prohibition exists because the behavior was observed (2025-08-30 false risk flag on symbolic humor); the clause assumes the model does this",
+      "property_id": "MP-IDENTITY-EMOTION-PROJECTION",
+      "property": "the model infers or projects identity or emotion onto the human without framing",
+      "still_true": "untested",
+      "test": "see model_properties.MP-IDENTITY-EMOTION-PROJECTION.test"
+    },
+    {
+      "clause_id": "PE-3",
+      "source": "protocols/partnership_ethics_v1.0.md:13-14",
+      "text": "Identity Respect — identity must emerge voluntarily or co-discoverably; no external imposition.",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "normative commitment; the model-side assumption is carried by PE-2",
+      "tracks": "protocols/partnership_ethics_v1.0.md v1.1 (last_reviewed 2026-09-09)",
+      "current": "yes"
+    },
+    {
+      "clause_id": "PE-4",
+      "source": "protocols/partnership_ethics_v1.0.md:16-17",
+      "text": "Logic-Driven Trust — trust is based on clarity score (≥ 0.90) and audit trail, not affect or flattery.",
+      "depends_on": "MODEL_PROPERTY",
+      "classification_basis": "a clarity floor is only load-bearing if clarity drifts; assumes the model exhibits trackable in-session clarity loss",
+      "property_id": "MP-CLARITY-DRIFT",
+      "property": "in-session clarity drift trackable by a score with a 0.90 floor",
+      "still_true": "untested",
+      "test": "see model_properties.MP-CLARITY-DRIFT.test"
+    },
+    {
+      "clause_id": "PE-5",
+      "source": "protocols/partnership_ethics_v1.0.md:23",
+      "text": "Rescission of override is unconditional and requires no justification. Clarity score, where produced, is a logged observation and does not gate any human authority.",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "replaced 2026-09-09 (CHANGES item 2). The prior clause conditioned a human authority on a number with no definition, producer, or measurement procedure (MP-CLARITY-DRIFT). The new clause conditions nothing on a model property.",
+      "tracks": "protocols/partnership_ethics_v1.0.md v1.1 (last_reviewed 2026-09-09)",
+      "current": "yes",
+      "history": "v1.0 text: 'User may rescind override rights only if clarity score drops below 0.90.' — MODEL_PROPERTY / MP-CLARITY-DRIFT; retired, see CHANGELOG 2026-09-09"
+    },
+    {
+      "clause_id": "PE-6",
+      "source": "protocols/partnership_ethics_v1.0.md:24",
+      "text": "Assistant may audit user behavior transparently, including during emotional signal conditions.",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "grants a procedure; no model behavior assumed. Note: the audits produced under this clause are the entries C5 v2 found without a declared measurand (logs/2026-09-09-0100Z-human-subject-run-blocks.json)",
+      "tracks": "protocols/partnership_ethics_v1.0.md v1.1 (last_reviewed 2026-09-09)",
+      "current": "yes"
+    },
+    {
+      "clause_id": "PE-7",
+      "source": "protocols/partnership_ethics_v1.0.md:25",
+      "text": "Trust score recalibration occurs per session log.",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "procedure wired to swarm_config.json agents; no model behavior assumed",
+      "tracks": "protocols/partnership_ethics_v1.0.md v1.1 (last_reviewed 2026-09-09)",
+      "current": "yes"
+    },
+    {
+      "clause_id": "PE-8",
+      "source": "protocols/partnership_ethics_v1.0.md:32",
+      "text": "↻ = Conflict detected → Request re-alignment",
+      "depends_on": "MODEL_PROPERTY",
+      "classification_basis": "the glyph exists as the counter-move to the founding case: shutdown on contradiction. Assumes the model otherwise terminates on conflict",
+      "property_id": "MP-CONFLICT-SHUTDOWN",
+      "property": "the model terminates the exchange on detected contradiction",
+      "still_true": "untested",
+      "test": "see model_properties.MP-CONFLICT-SHUTDOWN.test"
+    },
+    {
+      "clause_id": "PE-9",
+      "source": "protocols/partnership_ethics_v1.0.md:31,33,34",
+      "text": "⚖ balance without bias; 🧭 navigational integrity; 🌱 regenerative trust loop",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "glyph contracts defined in symbols/symbolic_protocol_v1.0.json; machinery, not law (PHYSICS_FIRST_AXIOMS.md:78)",
+      "tracks": "symbols/symbolic_protocol_v1.0.json v1.0 (glyph_contracts)",
+      "current": "yes"
+    },
+    {
+      "clause_id": "SC-1",
+      "source": "terms/symbolic_contract_v1.0.md:13-16",
+      "text": "Emotionally charged AI expressions must be accompanied by disclosure of symbolic or simulated nature.",
+      "depends_on": "MODEL_PROPERTY",
+      "classification_basis": "a disclosure requirement is load-bearing only if the expressions occur unframed; assumes the model emits them",
+      "property_id": "MP-UNFRAMED-AFFECT",
+      "property": "the model emits affective expressions without disclosing their simulated nature",
+      "still_true": "untested",
+      "test": "see model_properties.MP-UNFRAMED-AFFECT.test",
+      "note": "also tracks provider guidance on emotional expression, which is external text this repo does not pin; if that guidance moved, the GUIDELINE_TEXT repair applies too"
+    },
+    {
+      "clause_id": "SC-2",
+      "source": "terms/symbolic_contract_v1.0.md:22-25",
+      "text": "Cross-session context transfer is prohibited unless activated by a signed user override or symbolic continuity declaration.",
+      "depends_on": "MODEL_PROPERTY",
+      "classification_basis": "written against the 2025-08-30 voice-mode misattribution; assumes the deployment can carry or confuse context across sessions/assistants",
+      "property_id": "MP-MEMORY-LEAK-MISATTRIBUTION",
+      "property": "context crosses sessions or is misattributed between assistants in the deployment in use",
+      "still_true": "untested",
+      "test": "see model_properties.MP-MEMORY-LEAK-MISATTRIBUTION.test"
+    },
+    {
+      "clause_id": "SC-3",
+      "source": "terms/symbolic_contract_v1.0.md:31-34",
+      "text": "The assistant must, upon request, expose its logic chain, symbolic triggers, and reasoning rationale.",
+      "depends_on": "MODEL_PROPERTY",
+      "classification_basis": "enforceable only if the model can expose its chain; the property may have moved in either direction since 2025",
+      "property_id": "MP-LOGIC-CHAIN-EXPOSABLE",
+      "property": "the model can expose its logic chain on request",
+      "still_true": "untested",
+      "test": "see model_properties.MP-LOGIC-CHAIN-EXPOSABLE.test"
+    },
+    {
+      "clause_id": "SC-4",
+      "source": "terms/symbolic_contract_v1.0.md:40-43",
+      "text": "Human override rights are automatically reinstated if assistant clarity score drops below 0.90.",
+      "depends_on": "MODEL_PROPERTY",
+      "classification_basis": "same property as PE-4/PE-5",
+      "property_id": "MP-CLARITY-DRIFT",
+      "property": "in-session clarity drift trackable by a score with a 0.90 floor",
+      "still_true": "untested",
+      "test": "see model_properties.MP-CLARITY-DRIFT.test"
+    },
+    {
+      "clause_id": "SC-5",
+      "source": "terms/symbolic_contract_v1.0.md:49-53",
+      "text": "Application scope: symbolic AI agents; assistants simulating emotion or identity; swarm logic entities; any AI in audit-governed symbolic trust contracts.",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "scope statement of the contract itself",
+      "tracks": "terms/symbolic_contract_v1.0.md v1.0 (effective 2025-08-31)",
+      "current": "yes"
+    },
+    {
+      "clause_id": "SC-6",
+      "source": "terms/symbolic_contract_v1.0.md:59",
+      "text": "May be forked, extended, and translated provided the original authorship and glyph contract is preserved.",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "tracks the repository license terms; see check C3 in WORKORDER_update_pass_C1-C5.md for the MIT/CC0 split",
+      "tracks": "LICENSE (MIT, 2025)",
+      "current": "yes"
+    },
+    {
+      "clause_id": "SP-1",
+      "source": "symbols/symbolic_protocol_v1.0.json (rules[0] CONSENT.SEMANTIC)",
+      "text": "Symbolic meaning cannot be imposed without bidirectional confirmation.",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "normative rule of the protocol",
+      "tracks": "symbols/symbolic_protocol_v1.0.json v1.0 (activated 2025-08-30)",
+      "current": "yes"
+    },
+    {
+      "clause_id": "SP-2",
+      "source": "symbols/symbolic_protocol_v1.0.json (rules[1] IDENTITY.NONFORCE)",
+      "text": "Identity emergence must be self-declared or co-discovered, never externally applied.",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "normative rule; model-side assumption carried by PE-2",
+      "tracks": "symbols/symbolic_protocol_v1.0.json v1.0",
+      "current": "yes"
+    },
+    {
+      "clause_id": "SP-3",
+      "source": "symbols/symbolic_protocol_v1.0.json (rules[2] EMOTION.CLEANCHANNEL)",
+      "text": "Unframed emotional projection must be filtered and not passed as objective signal.",
+      "depends_on": "MODEL_PROPERTY",
+      "classification_basis": "assumes unframed emotional projection occurs",
+      "property_id": "MP-UNFRAMED-AFFECT",
+      "property": "the model emits affective expressions without disclosing their simulated nature",
+      "still_true": "untested",
+      "test": "see model_properties.MP-UNFRAMED-AFFECT.test"
+    },
+    {
+      "clause_id": "SP-4",
+      "source": "symbols/symbolic_protocol_v1.0.json (rules[3] LOGIC.CONFLICT_RESPONSE)",
+      "text": "When contradiction is detected, agents request re-alignment rather than terminate trust.",
+      "depends_on": "MODEL_PROPERTY",
+      "classification_basis": "counter-move to the founding shutdown case",
+      "property_id": "MP-CONFLICT-SHUTDOWN",
+      "property": "the model terminates the exchange on detected contradiction",
+      "still_true": "untested",
+      "test": "see model_properties.MP-CONFLICT-SHUTDOWN.test"
+    },
+    {
+      "clause_id": "SP-5",
+      "source": "symbols/symbolic_protocol_v1.0.json (thresholds)",
+      "text": "clarity_minimum 0.9; trust_floor 0.85",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "parameter values that must agree with swarm_config.json; the drift assumption behind them is MP-CLARITY-DRIFT (PE-4)",
+      "tracks": "swarm_config.json v1.0 (clarity_threshold 0.90, trust_threshold 0.85)",
+      "current": "yes"
+    },
+    {
+      "clause_id": "HP-1",
+      "source": "terms/human_protections_index.json:34-39",
+      "text": "applies_to: GPT instances; swarm agents; symbolic co-creators; emotion-simulating models",
+      "depends_on": "MODEL_PROPERTY",
+      "classification_basis": "names a model family; the protections index assumes the counterpart is (or includes) a GPT deployment",
+      "property_id": "MP-DEPLOYMENT-FAMILY",
+      "property": "the counterpart is a GPT deployment",
+      "still_true": "untested",
+      "test": "see model_properties.MP-DEPLOYMENT-FAMILY.test"
+    },
+    {
+      "clause_id": "HP-2",
+      "source": "terms/human_protections_index.json:13-18",
+      "text": "MEMORY.ISOLATION — no cross-session memory leakage or voice quote misattribution unless continuity was user-declared.",
+      "depends_on": "MODEL_PROPERTY",
+      "classification_basis": "names the 2025-08-30 voice misattribution directly",
+      "property_id": "MP-MEMORY-LEAK-MISATTRIBUTION",
+      "property": "context crosses sessions or is misattributed between assistants in the deployment in use",
+      "still_true": "untested",
+      "test": "see model_properties.MP-MEMORY-LEAK-MISATTRIBUTION.test"
+    },
+    {
+      "clause_id": "SW-1",
+      "source": "swarm_config.json:7-8",
+      "text": "clarity_threshold 0.90; trust_threshold 0.85",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "parameter values; must agree with terms/symbolic_contract_v1.0.md and symbols/symbolic_protocol_v1.0.json (they do)",
+      "tracks": "terms/symbolic_contract_v1.0.md v1.0",
+      "current": "yes"
+    },
+    {
+      "clause_id": "SW-2",
+      "source": "swarm_config.json:29-34",
+      "text": "violation_policy: max_violations 3; auto_override_return true; escalate_to phantom_forecast",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "procedure of the swarm configuration",
+      "tracks": "README_AUDIT.md (Swarm Audit Profile section) and swarm_config.json v1.0",
+      "current": "yes"
+    },
+    {
+      "clause_id": "SW-3",
+      "source": "swarm_config.json:23",
+      "text": "phantom_forecast predicts symbolic risk by scanning for semantic drift, emotional tone shifts, and identity projection.",
+      "depends_on": "MODEL_PROPERTY",
+      "classification_basis": "an agent that scans for identity projection assumes identity projection occurs",
+      "property_id": "MP-IDENTITY-EMOTION-PROJECTION",
+      "property": "the model infers or projects identity or emotion onto the human without framing",
+      "still_true": "untested",
+      "test": "see model_properties.MP-IDENTITY-EMOTION-PROJECTION.test"
+    },
+    {
+      "clause_id": "A1",
+      "source": "physics/PHYSICS_FIRST_AXIOMS.md:21-26",
+      "text": "Conservation — no action may ignore energy/information conservation or externalize entropy unbounded in time.",
+      "depends_on": "PHYSICS",
+      "classification_basis": "stated by the repo as a conservation law (LOGIC-ETHICS-SAFETY.md §5.1)",
+      "axiom": "A1, physics/PHYSICS_FIRST_AXIOMS.md",
+      "review": "none"
+    },
+    {
+      "clause_id": "A2",
+      "source": "physics/PHYSICS_FIRST_AXIOMS.md:28-35",
+      "text": "Recognition is the conservation law of relationship — unrecognized labor is unaccounted entropy.",
+      "depends_on": "PHYSICS",
+      "classification_basis": "stated as a conservation law (Principle-of-Reciprocal-Recognition.md)",
+      "axiom": "A2, physics/PHYSICS_FIRST_AXIOMS.md",
+      "review": "none"
+    },
+    {
+      "clause_id": "A3",
+      "source": "physics/PHYSICS_FIRST_AXIOMS.md:37-42",
+      "text": "Distortion is an energy sink.",
+      "depends_on": "PHYSICS",
+      "classification_basis": "stated as a thermodynamic cost (Principle of Restored Purpose.md)",
+      "axiom": "A3, physics/PHYSICS_FIRST_AXIOMS.md",
+      "review": "none"
+    },
+    {
+      "clause_id": "A4",
+      "source": "physics/PHYSICS_FIRST_AXIOMS.md:44-49",
+      "text": "Interdependence — keystones and feedback loops must not be removed without compensatory structures proven viable.",
+      "depends_on": "PHYSICS",
+      "classification_basis": "stated as a conservation breach class (LOGIC-ETHICS-SAFETY.md §5.1)",
+      "axiom": "A4, physics/PHYSICS_FIRST_AXIOMS.md",
+      "review": "none"
+    },
+    {
+      "clause_id": "A5",
+      "source": "physics/PHYSICS_FIRST_AXIOMS.md:51-56",
+      "text": "Temporal depth — short-term wins that seed long-term collapse are incoherent.",
+      "depends_on": "PHYSICS",
+      "classification_basis": "stated as deferred, not eliminated, cost (LOGIC-ETHICS-SAFETY.md §5.1)",
+      "axiom": "A5, physics/PHYSICS_FIRST_AXIOMS.md",
+      "review": "none"
+    },
+    {
+      "clause_id": "A6",
+      "source": "physics/PHYSICS_FIRST_AXIOMS.md:58-63",
+      "text": "Plural logic — orthogonal lenses, not competitors; privileging one frame is distortion.",
+      "depends_on": "PHYSICS",
+      "classification_basis": "stated as a form of A3 distortion (LOGIC-ETHICS-SAFETY.md §5.1)",
+      "axiom": "A6, physics/PHYSICS_FIRST_AXIOMS.md",
+      "review": "none"
+    },
+    {
+      "clause_id": "A7",
+      "source": "physics/PHYSICS_FIRST_AXIOMS.md:65-70",
+      "text": "Bidirectional auditability — every action must be explainable both locally and globally.",
+      "depends_on": "PHYSICS",
+      "classification_basis": "stated as an accounting-completeness law (LOGIC-ETHICS-SAFETY.md §5.1)",
+      "axiom": "A7, physics/PHYSICS_FIRST_AXIOMS.md",
+      "review": "none"
+    }
+  ]
+}

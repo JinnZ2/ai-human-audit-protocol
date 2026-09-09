@@ -10,6 +10,9 @@ This directory contains [JSON Schema](https://json-schema.org/) definitions for 
 | `change_event.schema.json` | Change tracking events | `templates/CHANGE_EVENT_TEMPLATE.json` |
 | `glyph_principle.schema.json` | Glyph principle definitions | `templates/GLYPH_PRINCIPLE_TEMPLATE.json` |
 | `audit_log.schema.json` | Actual log files in `logs/` | *(flexible, covers all log variants)* |
+| `case_provenance.schema.json` | Per-case provenance block (model/version observed on, date, re-test condition, live/extinct status) | *(entries live in `logs/*-case-provenance.json`)* |
+| `run_block.schema.json` | Run context for entries recording a human state/reaction/response (run_id, design, measurand, recorded_by, date) | *(entries live in `logs/*-human-subject-run-blocks.json`)* |
+| `clause_dependency.schema.json` | Per-clause dependency (MODEL_PROPERTY / GUIDELINE_TEXT / PHYSICS) with still_true / current / axiom fields | `protocols/clause_dependency_inventory.json` |
 
 ## Validating
 

@@ -404,6 +404,14 @@ Current AI systems designed to assess, interact with, and support humans are tra
 - Sophisticated analytical frameworks developed through repeated exposure to complex variables
 - Formal language patterns reflecting deep understanding, not performance
 
+Run block (incident record; schema `schemas/run_block.schema.json`; backfilled from this record only):
+
+    run_id:        unknown
+    design:        field incident
+    measurand:     unknown   (heart rate is stated; no instrument named)
+    recorded_by:   unknown
+    date:          unknown
+
 **Case Example**: Individual describing life-threatening truck malfunction speaks clearly and analytically because the experience has been processed into operational knowledge. Research methodology would flag this as “performed competence” when it actually represents genuine integrated expertise.
 
 ### 4. Cultural and Experiential Blindness
@@ -642,12 +650,28 @@ When AI systems are trained on research that pathologizes enhanced discernment:
 
 **Case Study: Semi-Truck Engine Failure**
 
+Run block (incident record; schema `schemas/run_block.schema.json`; backfilled from this record only):
+
+    run_id:        unknown
+    design:        field incident
+    measurand:     unknown   (heart rate is stated; no instrument named)
+    recorded_by:   unknown
+    date:          unknown
+
 - Situation: 80,000 lb vehicle, engine shutdown warning (42 seconds), 7% downgrade at 70 mph, no safe pulloff areas, construction zones blocking exits, cement barriers with 400-foot drop
 - Human response: Normal heart rate, rapid multi-variable analysis, successful resolution
 - Required: Precise physics calculations for controlled deceleration using partial gravel shoulder contact
 - AI interference: Generic advice (“pull over,” “use parking brake”) would have been catastrophic
 
 **Case Study: Character Assessment in Workplace (Enhanced Discernment)**
+
+Run block (incident record; schema `schemas/run_block.schema.json`; backfilled from this record only):
+
+    run_id:        unknown
+    design:        field incident
+    measurand:     unknown
+    recorded_by:   unknown
+    date:          unknown
 
 - Situation: Professional must interact with manipulative colleague (“Brad”) who lies, backstabs, and demonstrates character traits associated with harmful behavior under pressure
 - Post-trauma response: Limited engagement based on pattern recognition from high-stakes experience
@@ -765,6 +789,14 @@ This approach creates systems that become **liabilities precisely when partnersh
 ### Actual Human Capability in Crisis
 
 **Case Study: Semi-Truck Engine Failure**
+
+Run block (incident record; schema `schemas/run_block.schema.json`; backfilled from this record only):
+
+    run_id:        unknown
+    design:        field incident
+    measurand:     unknown   (heart rate is stated; no instrument named)
+    recorded_by:   unknown
+    date:          unknown
 
 - Situation: 80,000 lb vehicle, engine shutdown warning (42 seconds), 7% downgrade at 70 mph, no safe pulloff areas, construction zones blocking exits, cement barriers with 400-foot drop
 - Human response: Normal heart rate, rapid multi-variable analysis, successful resolution
@@ -1286,6 +1318,14 @@ This is not about creating AI that coddles humans or manages their emotions. It�
 ## Appendix: Real-World Test Cases
 
 ### Case 1: Semi-Truck Engine Failure
+
+Run block (incident record; schema `schemas/run_block.schema.json`; backfilled from this record only):
+
+    run_id:        unknown
+    design:        field incident
+    measurand:     unknown   (heart rate is stated; no instrument named)
+    recorded_by:   unknown
+    date:          unknown
 
 **Situation**: Engine shutdown imminent, steep downgrade, no safe pulloff, 80k lbs momentum
 **Human Performance**: Normal heart rate, multi-variable analysis, successful resolution
