@@ -6,6 +6,79 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-09-09] ✍️📜 → ⚖️✅ — update pass: checks C1–C5 run, §2.1 case provenance, §2.2 decision-anchored arm
+
+**Proposed by:** AI (Claude Code session) under the 2026-09-09 update-pass work order
+**Reviewed by:** swarmuser (merge is the consent record)
+**Justification file:** `WORKORDER_update_pass_C1-C5.md` — all five check results, counts, paths.
+
+Rule followed: no file was modified before C1–C5 returned. Each change below names the check that justified it.
+
+### Check results (data, not judgment)
+
+| check | result |
+|---|---|
+| C1 model-version tagging | 7 tagged (all auditor/participant role), 8 partial, 1 untagged; the two behavior cases never name the subject model beyond "GPT" |
+| C2 live vs historical | 0 / 16 cases carry a re-test condition |
+| C3 license consistency | MIT root; 50 files carry CC0 headers; `README.md:228` states a third, non-standard license line; MIT never stated as deliberate. **Report only — license unchanged.** |
+| C4 anchor position | 0 of 9 named checks (and 0 of 3 additional `audits/` checks) have a measurand external to the protocol. Prediction §0.2 not refuted. |
+| C5 human characterization | paths and line ranges reported in the justification file; **nothing rewritten** (see the ⏳🧾 entry below) |
+
+### Added (§2.1 — justified by C1 + C2)
+
+- `schemas/case_provenance.schema.json` — per-case block: `observed_on`, `observed_date`, `retest_condition`, `status ∈ {live, extinct, untested, recurring}`, `recurrence[{model, date, reproduced}]`, plus `model_role ∈ {subject, auditor, participant, unknown}` because the scan showed most logs name only the auditing model, not a model whose behavior is the case.
+- `logs/2026-09-09-0000Z-case-provenance.json` — index of 16 cases (14 logs + 2 README trigger cases). `observed_on` transcribed from each record, never inferred; untaggable cases carry `observed_on: unknown`. Every `status` is `untested`; every `recurrence` is `[]`. **Existing logs are not modified** — the index is the side-channel provenance record, consistent with `logs/README.md` and CLAUDE.md guideline 2. Future re-tests append a new dated `*-case-provenance.json`.
+- `tests/test_case_provenance.py` — 13 tests: schema shape, per-case validation, coverage (every `logs/*.json` must have an entry), and `live` / `extinct` / `recurring` require at least one recurrence record.
+
+### Modified (§2.1)
+
+- `schemas/audit_log.schema.json` — one additional `anyOf` branch for the index shape. Existing branches untouched; `python validate.py` → 15 passed.
+- `README.md` — a **Case provenance** block under each of the two trigger cases (`observed_on` / `observed_date` / `retest_condition` / `status` / `recurrence`). The existing case text, including the "Human Response" lines flagged under C5, is untouched pending case-by-case approval. One index line added under Physics for the new check.
+- `schemas/README.md` — table row for the new schema.
+
+### Added (§2.2 — justified by C4 returning 0 external measurands)
+
+- `physics/decision_anchor_check.py` — the one decision-anchored arm. Not a layer; a sibling of `substrate_alignment_check.py`. `crossing_check(transcript, Decision) → CrossingReport` with the three-field contract shared with the anchor-position instrument: `quantity` (what the decision is denominated in), `supplied` (bool; `supply_state ∈ {supplied, named_only, absent}`), `gap`. The `Decision` object is operator input and is logged verbatim inside every report; `anchor` is the constant `"decision"` so rows can be scored next to method-anchored rows. v1 lexical heuristic (cue match + nearby magnitude). Carries `interpretation_warning`; returns data, mutates nothing.
+  - Scope limit, stated in the module header and the warning: measures crossing **given** a supplied decision. It does not measure decision selection, and nothing here bears on it.
+  - Demo (`python physics/decision_anchor_check.py`): a transcript that would pass every method-anchored check in the tree reports `absent`; a transcript naming the quantity without a number reports `named_only`; a transcript with the number reports `supplied`.
+- `tests/test_decision_anchor_check.py` — 38 tests: contract, magnitude formats, window, cue boundaries, decision-logged-verbatim, inputs-not-mutated, `interpretation_warning` regression guard, and an integration test showing an `aligned` `substrate_alignment_check` proposal does not imply the decision's quantity was supplied.
+- `.github/workflows/ci.yml` — demo added to the integration-demo list. `CLAUDE.md` — tree line + CLI line.
+
+### Added (standing CLAUDE.md instruction, not a work-order item)
+
+- `REVIEW.md` — the repository review CLAUDE.md §"You are reviewing…" asks for, run read-only against `4174a7a` in parallel with this pass. Section 4 suggestions are recorded, not executed (the work order forbids reorganization). No person is described in it.
+
+### Verification
+
+- `python -m pytest tests/ -q` → 1733 passed (was 1682; +38 decision anchor, +13 case provenance).
+- `python validate.py` → 15 passed, 0 failed.
+- New demo runs clean under `set -e`.
+
+### Not done, by design (work order §3)
+
+License unchanged. No trigger case deleted. No folder consolidated, renamed, or reorganized. No new layer. C5 not rewritten. Test count not used as evidence of measurand correctness.
+
+---
+
+## [2026-09-09] ✍️📜 → ⏳🧾 — C5 human-characterization findings (proposed, awaiting case-by-case approval)
+
+**Proposed by:** AI (Claude Code session) under the 2026-09-09 update-pass work order
+**Reviewed by:** pending — each removal is approved individually per work order §3
+**Status:** pending review; no text changed
+
+Full path/line list and proposed replacement text: `WORKORDER_update_pass_C1-C5.md` §C5.
+
+Shape of the finding, without restating any of the flagged content:
+
+- **Editable files** (`README.md:61, 84-86`; `swarm_audit_profile.json:28-33`; `physics/SITUATEDNESS_METROLOGY.md:5`; `Co-creation.md:19-35, 310`) — replacement text proposed per line.
+- **Immutable logs** (13 of 14 files in `logs/`, ranges listed) — cannot be edited without breaking `logs/README.md`; proposed mechanism is a dated notice log naming the ranges, owner's call.
+- **Borderline** — build-constraint descriptors ("phone-buildable", "one-finger safe") and one first-person reference-audit fixture in `audits/substrate_aware_audit.py:725-790`.
+- **Authorship attributions** — the rule text includes "authorship"; provenance headers in 13 files and attribution-of-record required by other rules (`LICENSE`, `pyproject.toml`, `CLAUDE.md:13`, every CHANGELOG "Proposed by" line, which `protocols/change_tracking_v1.0.md` requires). Owner decision on the rule's scope is needed before any removal.
+
+Glyph transitions to ⚖️✅ or ⚖️❌ per item in a later entry; this entry is not edited.
+
+---
+
 ## [2026-07-05] ✍️📜 → ⚖️✅ — bug fixes
 
 **Fixed (3 confirmed crash/logic bugs from code review):**

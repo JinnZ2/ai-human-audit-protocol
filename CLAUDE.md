@@ -70,7 +70,8 @@ This is the **AI-Human Audit Protocol** — a living symbolic agreement and fram
 │   ├── audit_capsule.schema.json
 │   ├── change_event.schema.json
 │   ├── glyph_principle.schema.json
-│   └── audit_log.schema.json   # Flexible schema for actual log files
+│   ├── audit_log.schema.json   # Flexible schema for actual log files
+│   └── case_provenance.schema.json  # Per-case provenance block (observed_on / retest_condition / status)
 │
 ├── logs/                    # Session audit logs (see logs/README.md for naming)
 │
@@ -101,6 +102,7 @@ This is the **AI-Human Audit Protocol** — a living symbolic agreement and fram
 │   ├── SUBSTRATE_VIOLATION_DETECTION.md  # 6 external tactics → axiom violations
 │   ├── violation_detector.py         # v1 keyword detector
 │   ├── seven_generation_tracer.py    # Extends C3 to 7g horizon
+│   ├── decision_anchor_check.py      # Decision-anchored arm: crossing given a supplied decision
 │   └── MORALITY_ARCHAEOLOGY.md       # Lineage doc: framework as excavation
 │
 ├── ledger/                  # Structural-permanence layer
@@ -163,6 +165,7 @@ python -m agents.phantom_forecast_agent "you are alive and conscious"
 python physics/substrate_alignment_check.py
 python physics/seven_generation_tracer.py
 python physics/violation_detector.py
+python physics/decision_anchor_check.py
 python ledger/verification_tools.py
 python -m consortium.kfc_runtime
 python -m consortium.ontology_layer

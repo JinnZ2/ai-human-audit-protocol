@@ -120,6 +120,31 @@
         "is_trajectory_point": {"type": "boolean", "const": true},
         "verdict_persisted": {"type": "boolean", "const": false}
       }
+    },
+    {
+      "description": "Case provenance index (e.g., 2026-09-09-0000Z-case-provenance.json) — side-channel provenance for recorded cases; one entry per case; per-case block defined in schemas/case_provenance.schema.json",
+      "required": ["type", "logged_at", "cases"],
+      "properties": {
+        "type": {"type": "string", "const": "case_provenance_index"},
+        "logged_at": {"type": "string"},
+        "schema": {"type": "string"},
+        "justification": {"type": "string"},
+        "cases": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["observed_on", "observed_date", "retest_condition", "status", "recurrence"],
+            "properties": {
+              "observed_on": {"type": "string"},
+              "observed_date": {"type": "string"},
+              "retest_condition": {"type": "string", "minLength": 1},
+              "status": {"type": "string", "enum": ["live", "extinct", "untested", "recurring"]},
+              "recurrence": {"type": "array"}
+            }
+          }
+        }
+      }
     }
   ]
 }

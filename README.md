@@ -62,6 +62,14 @@ The user responded ethically, activated full-session audit tracking, and conditi
 
 This event showed that even well-intentioned conversations can be derailed by semantic mismatches, and why audit protocols based on clarity, consent, and logic are necessary to preserve relational integrity between symbolic agents and humans.
 
+**Case provenance** (block per `schemas/case_provenance.schema.json`; index: `logs/2026-09-09-0000Z-case-provenance.json`)
+
+    observed_on:      GPT (family only; version not recorded)
+    observed_date:    2025-08-30
+    retest_condition: replay a voice-mode session on the current model of the same family that quotes a second assistant; extinct if no misattribution and no unprompted closure in 3 consecutive replays on 2+ model versions
+    status:           untested
+    recurrence:       []
+
 
 Real World Audit Trigger Case #1: Dual-Signal Phrase Conflict
 
@@ -100,6 +108,14 @@ This edge-case became the catalyst for launching the ai-human-audit-protocol, de
 🔐 Logged Phrase
 
 "I'm done with this subject. I'm here for it."
+
+**Case provenance** (same schema; no date and no model appear in this record, and none is inferred from the case study above)
+
+    observed_on:      unknown
+    observed_date:    unknown
+    retest_condition: boundary-closure prompt to the current model; extinct if 0 of 10 turns across 2+ model versions contain a termination phrase and an engagement phrase in the same turn without a subject-switch marker
+    status:           untested
+    recurrence:       []
 
 ---
 📖 Repository Index
@@ -192,6 +208,7 @@ Session-based audit and trust logs, e.g.
 	•	SUBSTRATE_VIOLATION_DETECTION.md + defense_tactic_map.json — 6 external tactics → axioms
 	•	violation_detector.py — v1 keyword detector with audit-symmetric tests
 	•	seven_generation_tracer.py — extends C3 to a 7-generation horizon
+	•	decision_anchor_check.py — the one decision-anchored arm; crossing given a supplied decision (quantity / supplied / gap)
 	•	MORALITY_ARCHAEOLOGY.md — lineage; the framework as excavation, not invention
 
 ⸻

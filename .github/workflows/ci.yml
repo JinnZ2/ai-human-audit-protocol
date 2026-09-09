@@ -36,6 +36,7 @@ jobs:
           python physics/substrate_alignment_check.py > /dev/null
           python physics/seven_generation_tracer.py > /dev/null
           python physics/violation_detector.py > /dev/null
+          python physics/decision_anchor_check.py > /dev/null
           python ledger/verification_tools.py > /dev/null
           python -m consortium.kfc_runtime > /dev/null
           python -m consortium.ontology_layer > /dev/null

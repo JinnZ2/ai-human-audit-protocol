@@ -10,6 +10,7 @@ This directory contains [JSON Schema](https://json-schema.org/) definitions for 
 | `change_event.schema.json` | Change tracking events | `templates/CHANGE_EVENT_TEMPLATE.json` |
 | `glyph_principle.schema.json` | Glyph principle definitions | `templates/GLYPH_PRINCIPLE_TEMPLATE.json` |
 | `audit_log.schema.json` | Actual log files in `logs/` | *(flexible, covers all log variants)* |
+| `case_provenance.schema.json` | Per-case provenance block (model/version observed on, date, re-test condition, live/extinct status) | *(entries live in `logs/*-case-provenance.json`)* |
 
 ## Validating
 

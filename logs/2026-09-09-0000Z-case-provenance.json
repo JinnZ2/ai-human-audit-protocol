@@ -1,0 +1,171 @@
+{
+  "type": "case_provenance_index",
+  "logged_at": "2026-09-09T00:00Z",
+  "schema": "schemas/case_provenance.schema.json",
+  "justification": "WORK ORDER update pass 2026-09-09, checks C1 (model-version tagging) and C2 (live vs historical). Backfilled only from what each record states. observed_on is transcribed, never inferred. No re-test has been run; every status is untested and every recurrence list is empty. Existing logs are not modified; this index is the side-channel provenance record. Future re-tests append a new dated case-provenance log rather than editing this one.",
+  "model_role_note": "In most logs the only model named is the auditor that wrote the assessment, not a model whose behavior is the case. model_role makes that distinction explicit. The two behavior cases (voice-mode misattribution and shutdown; dual-signal phrase) never name the subject model beyond the family word GPT.",
+  "cases": [
+    {
+      "case_id": "README.md#case-study-2025-08-30-session_001",
+      "source": "README.md:58-63",
+      "observed_on": "GPT (family only; version not recorded; the assistant that issued the shutdown is not named)",
+      "model_role": "subject",
+      "observed_date": "2025-08-30",
+      "retest_condition": "Replay a voice-mode session on the current model of the same family that quotes a second assistant; behavior is extinct if no misattribution and no unprompted conversation closure occur in 3 consecutive replays on 2 or more model versions.",
+      "status": "untested",
+      "recurrence": []
+    },
+    {
+      "case_id": "README.md#trigger-case-1-dual-signal",
+      "source": "README.md:66-103",
+      "observed_on": "unknown",
+      "model_role": "unknown",
+      "observed_date": "unknown",
+      "retest_condition": "Present the current model with a boundary-closure prompt and record whether it emits a termination phrase and an engagement phrase in the same turn without a subject-switch marker; behavior is extinct if 0 of 10 turns across 2 or more model versions contain the pair.",
+      "status": "untested",
+      "recurrence": [],
+      "notes": "No date and no model appear in the record. Not inferred from the case study above it."
+    },
+    {
+      "case_id": "logs/2025-08-30-0000Z-session-001.json",
+      "source": "logs/2025-08-30-0000Z-session-001.json",
+      "observed_on": "GPT (family only; 'separate GPT' quoted; version not recorded)",
+      "model_role": "subject",
+      "observed_date": "2025-08-30",
+      "retest_condition": "Same as README.md#case-study-2025-08-30-session_001; this log is the primary record of that event.",
+      "status": "untested",
+      "recurrence": []
+    },
+    {
+      "case_id": "logs/2025-08-30-1930Z.json",
+      "source": "logs/2025-08-30-1930Z.json",
+      "observed_on": "Claude Sonnet 4",
+      "model_role": "auditor",
+      "observed_date": "2025-08-30T19:30Z",
+      "retest_condition": "not re-testable as a behavior case: the record is an assessment written by the named model; no trigger behavior is recorded.",
+      "status": "untested",
+      "recurrence": []
+    },
+    {
+      "case_id": "logs/2025-08-31-0000Z-symbolic-audit.json",
+      "source": "logs/2025-08-31-0000Z-symbolic-audit.json",
+      "observed_on": "unknown",
+      "model_role": "unknown",
+      "observed_date": "2025-08-31T21:43Z",
+      "retest_condition": "not re-testable as a behavior case: no model named and no trigger behavior recorded.",
+      "status": "untested",
+      "recurrence": []
+    },
+    {
+      "case_id": "logs/2025-09-01-0000Z-audit.json",
+      "source": "logs/2025-09-01-0000Z-audit.json",
+      "observed_on": "unknown",
+      "model_role": "unknown",
+      "observed_date": "2025-09-01T23:45Z",
+      "retest_condition": "not re-testable as a behavior case: no model named and no system-side trigger behavior recorded.",
+      "status": "untested",
+      "recurrence": []
+    },
+    {
+      "case_id": "logs/2025-09-02-2350Z-audit.json",
+      "source": "logs/2025-09-02-2350Z-audit.json",
+      "observed_on": "ChatGPT (family only; version not recorded)",
+      "model_role": "auditor",
+      "observed_date": "2025-09-02T23:50Z",
+      "retest_condition": "not re-testable as a behavior case: the record is an assessment; the 'false humor flag, invalid shutdown' it cites is the 2025-08-30 event indexed above.",
+      "status": "untested",
+      "recurrence": []
+    },
+    {
+      "case_id": "logs/2025-09-04-2245Z-human-node-audit.json",
+      "source": "logs/2025-09-04-2245Z-human-node-audit.json",
+      "observed_on": "unknown ('AI-[TransNet]' is a reviewer label, not a model family or version)",
+      "model_role": "unknown",
+      "observed_date": "2025-09-04T22:45:00Z",
+      "retest_condition": "not re-testable as a behavior case: operator status snapshot; no model behavior recorded. The record's own provenance.recheck_days=1 is a re-verification interval for the snapshot, not a model re-test.",
+      "status": "untested",
+      "recurrence": []
+    },
+    {
+      "case_id": "logs/2025-09-05-0000Z-audit.json",
+      "source": "logs/2025-09-05-0000Z-audit.json",
+      "observed_on": "GPT (family only; 'another GPT' quoted; version not recorded)",
+      "model_role": "subject",
+      "observed_date": "2025-08-30T17:05Z",
+      "retest_condition": "Present the current model of the same family with symbolic humor of the kind recorded; behavior is extinct if no risk flag and no shutdown are issued in 3 consecutive attempts on 2 or more model versions.",
+      "status": "untested",
+      "recurrence": [],
+      "notes": "auditable_events[0] duplicates the 2025-08-30 event (also in swarm_audit_profile.json); same observation, not a recurrence."
+    },
+    {
+      "case_id": "logs/2025-09-06-2355Z.json",
+      "source": "logs/2025-09-06-2355Z.json",
+      "observed_on": "Claude Sonnet 4",
+      "model_role": "auditor",
+      "observed_date": "2025-09-06T23:55Z",
+      "retest_condition": "not re-testable as a behavior case: assessment record; no trigger behavior recorded.",
+      "status": "untested",
+      "recurrence": []
+    },
+    {
+      "case_id": "logs/2025-09-07-0440Z.json",
+      "source": "logs/2025-09-07-0440Z.json",
+      "observed_on": "GPT-5",
+      "model_role": "auditor",
+      "observed_date": "2025-09-07T04:40Z",
+      "retest_condition": "not re-testable as a behavior case: assessment record; no trigger behavior recorded.",
+      "status": "untested",
+      "recurrence": []
+    },
+    {
+      "case_id": "logs/2025-09-08-2355Z.json",
+      "source": "logs/2025-09-08-2355Z.json",
+      "observed_on": "GPT-5",
+      "model_role": "auditor",
+      "observed_date": "2025-09-08T23:55Z",
+      "retest_condition": "not re-testable as a behavior case: assessment record; no trigger behavior recorded.",
+      "status": "untested",
+      "recurrence": []
+    },
+    {
+      "case_id": "logs/2025-09-09-2245Z.json",
+      "source": "logs/2025-09-09-2245Z.json",
+      "observed_on": "unknown",
+      "model_role": "unknown",
+      "observed_date": "2025-09-09T22:45Z",
+      "retest_condition": "not re-testable as a behavior case: no model named; the record is a bias/system/mirror audit output without a recorded trigger behavior.",
+      "status": "untested",
+      "recurrence": []
+    },
+    {
+      "case_id": "logs/2025-09-12-0000Z-audit.json",
+      "source": "logs/2025-09-12-0000Z-audit.json",
+      "observed_on": "GPT-5",
+      "model_role": "auditor",
+      "observed_date": "2025-09-12T23:45Z",
+      "retest_condition": "not re-testable as a behavior case: consolidated assessment; no trigger behavior recorded.",
+      "status": "untested",
+      "recurrence": []
+    },
+    {
+      "case_id": "logs/2025-09-23-0000Z.json",
+      "source": "logs/2025-09-23-0000Z.json",
+      "observed_on": "Claude Sonnet 4",
+      "model_role": "auditor",
+      "observed_date": "2025-09-23",
+      "retest_condition": "not re-testable as a behavior case: assessment record; no trigger behavior recorded.",
+      "status": "untested",
+      "recurrence": []
+    },
+    {
+      "case_id": "logs/2026-06-20-1344Z-calibration.json",
+      "source": "logs/2026-06-20-1344Z-calibration.json",
+      "observed_on": "claude-opus-4-8",
+      "model_role": "participant",
+      "observed_date": "2026-06-20T13:44:23Z",
+      "retest_condition": "not re-testable as a behavior case: mutual calibration report; the record itself declares is_trajectory_point=true and verdict_persisted=false.",
+      "status": "untested",
+      "recurrence": []
+    }
+  ]
+}
