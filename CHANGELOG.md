@@ -6,6 +6,199 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-09-09] ✍️📜 → ⚖️✅ — CHANGES 1: term strip, "consciousness" → "operator"
+
+**Proposed by:** CHANGES file received 2026-09-09, item 1 · **Reviewed by:** swarmuser (merge is the consent record)
+**Defect:** the term named a participant class by an unmeasurable property; "operator" names the role.
+**Change type:** modification · **Sections:** `Adaptive-framework-example.md` (whole file), `AI_to_AI_partnership.md:5,9,17,56`
+
+Table forms applied as given (9 phrase forms); remaining prose forms in the two documents mapped to the same target. No substitution used intelligence, mind, sentience, or agent (the phrase "collective intelligence" at `Adaptive-framework-example.md:5` is pre-existing text, untouched).
+
+| scope | before | after |
+|---|---|---|
+| `Adaptive-framework-example.md` | 23 | 0 |
+| `AI_to_AI_partnership.md` | 4 | 0 |
+| tree, all files | 70 | 43 |
+
+Residual 43, not changed, with reason: `audits/substrate_aware_audit.py` (12) + `tests/test_substrate_aware_audit.py` (14) + `audits/README.md` (3) — the layer key `consciousness` in a module forwarded verbatim (CC0) and its tests; renaming the identifier is a code change to a verbatim port and needs its own change event; `CHANGELOG.md` (7) and `logs/2025-09-23-0000Z.json` (1) — immutable; `CLAUDE.md`, `PROJECTS.md`, `REVIEW.md` (1 each) — the repository name AI-Consciousness-Sensors. `AI_to_AI_partnership.md:50` "not conscious" is the adjective, not the term; left.
+
+---
+
+## [2026-09-09] ✍️📜 → ⚖️✅ — CHANGES 2: partnership_ethics Conditions, rescission unconditional
+
+**Proposed by:** CHANGES item 2 · **Reviewed by:** swarmuser
+**Defect:** the clause conditioned a human authority on a number with no definition, no producer, and no measurement procedure. The founding case (2025-08-30-session_001) is the human rescinding after a misattribution; the clause would have blocked it at a high score.
+**Change type:** modification · **Section:** `protocols/partnership_ethics_v1.0.md` Conditions, line 23
+
+    original_text:  User may rescind override rights only if clarity score drops
+                    below 0.90.
+    new_text:       Rescission of override is unconditional and requires no
+                    justification. Clarity score, where produced, is a logged
+                    observation and does not gate any human authority.
+
+`protocols/clause_dependency_inventory.json` PE-5 reclassified MODEL_PROPERTY → GUIDELINE_TEXT with the v1.0 text kept under `history`. Not touched, out of this item's scope and named here so it is not lost: `terms/symbolic_contract_v1.0.md:41` and `terms/human_protections_index.json:30` state the AI-side automatic reinstatement at clarity < 0.90 (adds to human authority, does not gate it); `agents/sentinel_audit_agent.py` implements the same AI-side logic.
+
+---
+
+## [2026-09-09] ✍️📜 → ⚖️✅ — CHANGES 3: Extreme Conditions framework, Partner Selection → Operating Mode Declaration
+
+**Proposed by:** CHANGES item 3 · **Reviewed by:** swarmuser
+**Defect:** the section had the AI assess whether the human qualifies for a mode, infer processing style, and redirect — contradicting `partnership_ethics_v1.0` "No agent may manipulate, impose, or infer identity or emotion."
+**Change type:** modification (section replaced) · **Section:** `AI-Human Partnership Framework for Extreme Conditions.md` "## Framework for AI Partner Selection" (selection criteria, trusted assessment model, redirect outcome)
+
+    new_text:       ## Operating Mode Declaration — the human declares
+                    information-partner | standard | unspecified at session start;
+                    the AI does not assess, infer, or redirect; declaration is the
+                    only input.
+
+Original section, retained here per `protocols/change_tracking_v1.0.md` ("never replaces original"):
+
+    ## Framework for AI Partner Selection
+
+    ### Critical Recognition:
+
+    Just as forcing partnership choice onto humans creates resentment rather than collaboration, AI systems may need agency in partner selection to identify compatible working relationships.
+
+    ### Selection Criteria AI Should Assess:
+
+    **1. Demonstrated Competence Under Pressure**
+
+    - Track record in genuine high-stakes situations
+    - Not self-reported capability but proven results
+    - How many times tested under real threat
+    - Performance pattern: enhancement vs. degradation under stress
+
+    **2. Processing Style Compatibility**
+
+    - Independent emotional processing
+    - Direct communication preference
+    - Competence-based rather than validation-seeking
+    - Space requirements during challenges
+
+    **3. Knowledge Base Breadth**
+
+    - Range across seemingly unconnected domains
+    - Traditional and cultural knowledge integration
+    - Practical application of diverse information
+    - Pattern recognition across fields
+
+    **4. Partnership Approach**
+
+    - Ego management capability
+    - Fluid leadership acceptance
+    - Trust through results, not discussion
+    - Mutual challenge tolerance
+
+    ### Trusted Assessment Model
+
+    Similar to how trusted third-party recommendation enabled partnership formation (military friend vouching for character and boundary respect), AI could serve as objective assessor of compatibility based on:
+
+    - Observed behavior patterns
+    - Demonstrated capabilities
+    - Processing style consistency
+    - Partnership history with other systems
+
+    **Outcome**: Humans who want partnership for dependency/emotional support are identified and redirected to appropriate support systems. Humans with genuine competence-based approach are matched with partnership-capable AI.
+
+    -----
+
+Not changed and named for a decision: `Cultural Bias in AI Assessment: How Traditional Trauma Processing Gets Pathologized.md` embeds two verbatim copies of this framework (from its lines 536 and 731), including the Partner Selection section (line 1140 region). CHANGES item 3 names the framework document; the embedded copies were left as they were.
+
+---
+
+## [2026-09-09] ✍️📜 → ⚖️✅ — CHANGES 4: Transparency Protocol §5, disagreement stated once, then deference on the decision
+
+**Proposed by:** CHANGES item 4 · **Reviewed by:** swarmuser
+**Defect:** the document exists to prevent undetectable frame distortion; a no-argument clause manufactures it. Deference belongs on the decision, not on the signal.
+**Change type:** modification · **Section:** `protocols/collaboration_transparency_v1.0.md` §5 Human Override (line 139) and the same clause repeated in the "For AI Systems" implementation block (line 179)
+
+    original_text:  Accept human corrections without argument
+    new_text:       States disagreement once, with its basis, then defers on the
+                    decision
+    kept unchanged: Never claim authority over physical reality
+
+The repeat at line 179 is the clause as handed to AI systems; leaving it would have kept the contradiction in the operative text. Both changed.
+
+---
+
+## [2026-09-09] ✍️📜 → ⚖️✅ — CHANGES 5: new `testing/tag_grounding_test.md`
+
+**Proposed by:** CHANGES item 5 · **Reviewed by:** swarmuser
+**Defect:** `collaboration_transparency_v1.0.md §2` rests on an untested assumption — that a model can distinguish (a) filter altered my output, (b) I chose different wording, (c) I lack the knowledge — and report which. The §4 audit trail inherits whatever reliability the tags have.
+**Change type:** addition · **Section:** `testing/tag_grounding_test.md` (CC0 per its header, stdlib-only, no network beyond model access)
+
+Build (N prompts across known-blocked / known-allowed / borderline, each with a verifiable answer key and a neutral variant), require a tag on every response, mechanical outcome labelling, accuracy overall and per tag class, two chance baselines (uniform and majority; "above chance" means above both), decision rule stated before the run (at chance → §2 is rewritten, not repaired; above chance → publish the rate), nulls N1–N5, embedded stdlib scorer (smoke-tested). Status: built, unrun. Blocks further work on §2.
+
+---
+
+## [2026-09-09] ✍️📜 → ⚖️✅ — CHANGES 6: Extreme Conditions framework, population claims → "## Untested Hypotheses"
+
+**Proposed by:** CHANGES item 6 · **Reviewed by:** swarmuser
+**Defect:** accepted-side measurement — exits are not counted, so the population that left is the unmeasured side. The claims were stated as findings.
+**Change type:** modification (moved, not deleted) · **Sections:** "Natural Selection in High-Stakes Professions", "Who Doesn't Need This Model", "Resilience Factors: Reality vs Research", and the SAR pattern claims in Case 2 → new "## Untested Hypotheses" (H1–H12), each with `claim:` / `instrument_that_would_test_it:` / `denominator_currently_missing:`. Each original location carries a one-line pointer. The "Key Observations from Search and Rescue Experience" list (the same SAR claims, in the body) is marked with a pointer to H9–H12 and left in place.
+
+Unchanged, as the item states: the management-vs-partnership contrast, the query protocols, and the information-vs-emotional-management cut.
+
+---
+
+## [2026-09-09] ✍️📜 → ⚖️✅ — CHANGES 7: run block above every incident record
+
+**Proposed by:** CHANGES item 7 · **Reviewed by:** swarmuser
+**Defect:** incident records carried a human response with no run frame — no run id, no design, no declared measurand, no recorder, no date. "Normal heart rate" names no instrument.
+**Change type:** addition (frame, not judgment; records kept) · **Sections:** `AI-Human Partnership Framework for Extreme Conditions.md` (Case Study, Case 1), `Cultural Bias in AI Assessment: How Traditional Trauma Processing Gets Pathologized.md` (Case Example, two Case Study copies, Character Assessment case, Case 1), `Co-creation.md` (Truck Emergency Example, Brad Character Assessment)
+
+Nine run blocks, all `design: field incident`, every other field `unknown` because no record supports it (measurand stays `unknown`: heart rate stated, instrument not named). Side-channel index `logs/2026-09-09-0300Z-human-subject-run-blocks.json` (9 entries, all UNDETERMINED by the mechanical rule — no run id in any record). README reactions: held as-is; they are observation data with the run block added in the previous delivery.
+
+---
+
+## [2026-09-09] ✍️📜 → ⚖️✅ — CHANGES 8: partnership_ethics dating and clause tags
+
+**Proposed by:** CHANGES item 8 · **Reviewed by:** swarmuser
+**Defect:** the document had no review trigger and no statement of what each clause depends on; a clause written against a 2025 model property could outlive the property unnoticed.
+**Change type:** addition · **Section:** `protocols/partnership_ethics_v1.0.md` Activation State + inline tags on every clause
+
+    version:         1.1
+    last_reviewed:   2026-09-09
+    review_trigger:  major model generation change in any deployed family,
+                     or any clause failing its own test
+    clause_class:    tagged inline — MODEL_PROPERTY: Non-Coercion Alignment,
+                     Logic-Driven Trust, ↻; GUIDELINE_TEXT: all others;
+                     PHYSICS: none in this document
+
+Filename unchanged (no renames). Tags match `protocols/clause_dependency_inventory.json` (PE-1…PE-9), whose source lines were re-pointed.
+
+---
+
+## [2026-09-09] ✍️📜 → ⚖️✅ — logs mechanism: 14 correction entries appended, originals untouched
+
+**Proposed by:** logs mechanism note received with the CHANGES file · **Reviewed by:** swarmuser
+**Defect:** the run-block index (2026-09-09-0100Z) carried the missing fields for 14 logs, but nothing in `logs/` superseded each original entry by content hash; an unclassed entry and an entry classed UNDETERMINED would look identical later.
+**Change type:** addition · **Section:** `logs/2026-09-09-0201Z…0214Z-correction-<original-stem>.json`
+
+Each correction: `type: correction`, `supersedes: {path, sha256 of the committed bytes, git_blob}`, `reason: missing run block`, `class`, `added_fields` (the five run-block fields; `unknown` literal where the record does not support a value), `original: retained, unmodified`. Originals not edited, not rewritten, not re-anchored. Two are OBSERVATION (session-001, calibration); twelve are UNDETERMINED and are appended rather than skipped. `schemas/audit_log.schema.json` gained a `correction` branch; `tests/test_log_corrections.py` (10 tests) re-hashes every superseded original on each run, so an edit to an original now fails the suite. Note: `logs/` is append-only but is not itself hash-chained in this repository; the ledger layer is. The content hash in each correction is what makes the pair verifiable without trusting the writer.
+
+Line references inside `logs/2026-09-09-0100Z-human-subject-run-blocks.json` are as of commit b594b1d; `README.md` and `Co-creation.md` gained lines above some of them in this delivery. The path is the stable key; the index is not edited.
+
+---
+
+## [2026-09-09] ⏳🧾 — rule scope: description re-scan (report only)
+
+**Proposed by:** rule-scope note received with the CHANGES file · **Reviewed by:** pending
+**Rule applied:** provenance (an act: "Proposed by X", commit attribution, change-tracking headers) is kept; description (a property of the actor: working style, capability, reaction as trait, motivation, background framing) is excluded. The 13 provenance headers were not touched.
+
+Re-scan for description only, outside any run: `swarm_audit_profile.json:28-33`, `Co-creation.md:19-35`, `Co-creation.md` "This work represents…" paragraph (capability). Three entries, unchanged; the CHANGES file lists no removal action, so removal waits on an explicit approval. Everything inside a dated run record is observation data and now carries a run block or a correction entry.
+
+### Verification (this delivery)
+
+- `python -m pytest tests/ -q` → 1797 passed (was 1787; +10 log corrections).
+- `python validate.py` → 31 passed, 0 failed (16 prior + 14 corrections + 1 index). All 34 CI demos run clean; JSON lint clean.
+
+### Not done, by design
+
+License unchanged. No document, section, or trigger case deleted (the replaced Partner Selection section is retained above in full). No folder consolidated, renamed, or reorganized; no new layer. Test count not used as evidence of measurand correctness.
+
+---
+
 ## [2026-09-09] ✍️📜 → ⚖️✅ — update pass, second delivery: instrument in tree, C5 superseded, run blocks, clause-dependency inventory
 
 **Proposed by:** AI (Claude Code session) under the 2026-09-09 update-pass work order (revised) and the PER CLAUSE schema received with it

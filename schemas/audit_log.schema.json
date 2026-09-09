@@ -169,6 +169,30 @@
           }
         }
       }
+    },
+    {
+      "description": "Correction entry (e.g., 2026-09-09-0201Z-correction-<original-stem>.json) — appended superseding entry for an earlier log; the original is retained unmodified and identified by content hash",
+      "required": ["type", "logged_at", "supersedes", "reason", "class", "added_fields", "original"],
+      "properties": {
+        "type": {"type": "string", "const": "correction"},
+        "logged_at": {"type": "string"},
+        "supersedes": {
+          "type": "object",
+          "required": ["path", "sha256"],
+          "properties": {
+            "path": {"type": "string"},
+            "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "git_blob": {"type": "string"}
+          }
+        },
+        "reason": {"type": "string", "enum": ["missing run block", "class correction"]},
+        "class": {"type": "string", "enum": ["OBSERVATION", "CHARACTERIZATION", "UNDETERMINED"]},
+        "added_fields": {
+          "type": "object",
+          "required": ["run_id", "design", "measurand", "recorded_by", "date"]
+        },
+        "original": {"type": "string", "const": "retained, unmodified"}
+      }
     }
   ]
 }

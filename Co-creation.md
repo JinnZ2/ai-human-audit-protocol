@@ -122,6 +122,14 @@ This document describes the collaborative process that produced three comprehens
 
 ### The Truck Emergency Example
 
+Run block (incident record; schema `schemas/run_block.schema.json`; backfilled from this record only):
+
+    run_id:        unknown
+    design:        field incident
+    measurand:     unknown   (the record says "split-second calculations"; no instrument named)
+    recorded_by:   unknown
+    date:          unknown
+
 **Human**: Shared real-life experience of engine failure at 70mph on steep grade requiring split-second calculations
 
 **AI**: Recognized this demonstrated peak performance under genuine pressure, contrary to research assumptions about stress impairing cognition
@@ -129,6 +137,14 @@ This document describes the collaborative process that produced three comprehens
 **Insight**: Research methodology can’t distinguish between panic in untested individuals and enhanced function in experienced professionals
 
 ### The Brad Character Assessment
+
+Run block (incident record; schema `schemas/run_block.schema.json`; backfilled from this record only):
+
+    run_id:        unknown
+    design:        field incident
+    measurand:     unknown
+    recorded_by:   unknown
+    date:          unknown
 
 **Human**: Explained how recognizing manipulative patterns represents wisdom from extreme experience, not social dysfunction
 

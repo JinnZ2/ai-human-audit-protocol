@@ -1,0 +1,31 @@
+{
+  "type": "correction",
+  "logged_at": "2026-09-09T02:06Z",
+  "supersedes": {
+    "path": "logs/2025-09-04-2245Z-human-node-audit.json",
+    "sha256": "5445f892351a89eccb1cb8840b09580b920868c48b9defcf1b3f1c6dc5ae595f",
+    "git_blob": "8cd3cb9bee7f72daf2fbfcd164593264f78fd924",
+    "hash_algorithm": "sha256 over the file bytes as committed; git_blob is the git object id of the same bytes"
+  },
+  "reason": "missing run block",
+  "class": "UNDETERMINED",
+  "class_basis": "log id present and self-authored (provenance.author is the human node); state recorded as context for decisions, not as a measurement of anything declared",
+  "source_ranges": [
+    "logs/2025-09-04-2245Z-human-node-audit.json:15-20,41,66"
+  ],
+  "added_fields": {
+    "run_id": "LOG-2025-09-04-2245Z",
+    "design": "unknown",
+    "measurand": "unknown",
+    "recorded_by": "self-logged",
+    "date": "2025-09-04T22:45:00Z"
+  },
+  "missing_fields": [
+    "design",
+    "measurand"
+  ],
+  "original": "retained, unmodified",
+  "index": "logs/2026-09-09-0100Z-human-subject-run-blocks.json",
+  "note": "Appended per the logs mechanism (2026-09-09): logs/ is append-only; the original entry stays readable and unmodified; this correction supersedes it by content hash. An entry whose run cannot be reconstructed is classed UNDETERMINED with fields set unknown rather than skipped.",
+  "recorded_by_basis": "record field provenance.author = Human-[JinnZ2]; provenance.reviewer is an AI label (review, not recording)"
+}

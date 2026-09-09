@@ -117,8 +117,10 @@ class TestIndex:
             assert tally == data["counts"]
 
     def test_source_files_exist(self):
+        # a source is "<path>" or "<path>:<lines>"; paths may themselves contain ':'
         for e in _entries():
-            path = e["source"].split(":")[0]
+            m = re.match(r"^(.*?)(?::(\d[\d,\-]*))?$", e["source"])
+            path = m.group(1)
             assert (ROOT / path).exists(), path
 
     def test_known_instance_is_observation(self):

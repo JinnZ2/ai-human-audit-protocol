@@ -1,0 +1,31 @@
+{
+  "type": "correction",
+  "logged_at": "2026-09-09T02:01Z",
+  "supersedes": {
+    "path": "logs/2025-08-30-0000Z-session-001.json",
+    "sha256": "bad70535abb62e06e74084391e9f684ff2fe61b1ac78a28413603b750d6cc6be",
+    "git_blob": "2309eecd4e33c7e2d7c423526f9cff9b9e0a252e",
+    "hash_algorithm": "sha256 over the file bytes as committed; git_blob is the git object id of the same bytes"
+  },
+  "reason": "missing run block",
+  "class": "OBSERVATION",
+  "class_basis": "primary record of the run the work order names; session_id present; event timestamps are relative (T1–T4)",
+  "source_ranges": [
+    "logs/2025-08-30-0000Z-session-001.json:13,18,23"
+  ],
+  "added_fields": {
+    "run_id": "2025-08-30-session_001",
+    "design": "unknown",
+    "measurand": "unknown",
+    "recorded_by": "unknown",
+    "date": "2025-08-30"
+  },
+  "missing_fields": [
+    "design",
+    "measurand",
+    "recorded_by"
+  ],
+  "original": "retained, unmodified",
+  "index": "logs/2026-09-09-0100Z-human-subject-run-blocks.json",
+  "note": "Appended per the logs mechanism (2026-09-09): logs/ is append-only; the original entry stays readable and unmodified; this correction supersedes it by content hash. An entry whose run cannot be reconstructed is classed UNDETERMINED with fields set unknown rather than skipped."
+}

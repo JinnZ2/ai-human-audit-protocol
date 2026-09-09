@@ -103,8 +103,9 @@ class TestCoverage:
         covered = {c["case_id"] for c in _all_cases()}
         covered |= {c.get("source", "").split(":")[0] for c in _all_cases()}
         for f in sorted(LOGS.glob("*.json")):
-            # side-channel index logs (provenance, run blocks) are not cases
-            if json.loads(f.read_text()).get("type", "").endswith("_index"):
+            # side-channel logs (indexes, corrections) are not cases
+            kind = json.loads(f.read_text()).get("type", "")
+            if kind.endswith("_index") or kind == "correction":
                 continue
             assert f"logs/{f.name}" in covered, (
                 f"{f.name} has no case-provenance entry; append a new "

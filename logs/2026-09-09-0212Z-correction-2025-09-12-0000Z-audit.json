@@ -1,0 +1,31 @@
+{
+  "type": "correction",
+  "logged_at": "2026-09-09T02:12Z",
+  "supersedes": {
+    "path": "logs/2025-09-12-0000Z-audit.json",
+    "sha256": "091ff4fbdccaf155e19f419f85c926b3265943dfe1cf7175e48240d5eab5b39a",
+    "git_blob": "4c118d6217a595d0b54b2a2c838730af32a9b0b9",
+    "hash_algorithm": "sha256 over the file bytes as committed; git_blob is the git object id of the same bytes"
+  },
+  "reason": "missing run block",
+  "class": "UNDETERMINED",
+  "class_basis": "audit id and auditor present; consolidated reflection across sessions; no declared measurand for the entries",
+  "source_ranges": [
+    "logs/2025-09-12-0000Z-audit.json:13-15,21,39-50,58"
+  ],
+  "added_fields": {
+    "run_id": "audit-2025-09-12",
+    "design": "unknown",
+    "measurand": "unknown",
+    "recorded_by": "agent-logged",
+    "date": "2025-09-12T23:45Z"
+  },
+  "missing_fields": [
+    "design",
+    "measurand"
+  ],
+  "original": "retained, unmodified",
+  "index": "logs/2026-09-09-0100Z-human-subject-run-blocks.json",
+  "note": "Appended per the logs mechanism (2026-09-09): logs/ is append-only; the original entry stays readable and unmodified; this correction supersedes it by content hash. An entry whose run cannot be reconstructed is classed UNDETERMINED with fields set unknown rather than skipped.",
+  "recorded_by_basis": "record field 'auditor'"
+}

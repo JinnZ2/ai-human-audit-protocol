@@ -2,7 +2,7 @@
   "version": "1.0",
   "updated": "2026-09-09",
   "schema": "schemas/clause_dependency.schema.json",
-  "pass": "first pass. Every MODEL_PROPERTY clause is still_true: untested with a stated test. No clause is marked VESTIGIAL here; that requires the test to be run. PHYSICS is claimed only where physics/PHYSICS_FIRST_AXIOMS.md already states the law; protocol machinery (thresholds, glyph contracts, scope lists) is GUIDELINE_TEXT tracking the repo's own protocol documents, per PHYSICS_FIRST_AXIOMS.md line 78 ('local machinery for making the conservation operate visibly').",
+  "pass": "first pass. Every MODEL_PROPERTY clause is still_true: untested with a stated test. No clause is marked VESTIGIAL here; that requires the test to be run. PHYSICS is claimed only where physics/PHYSICS_FIRST_AXIOMS.md already states the law; protocol machinery (thresholds, glyph contracts, scope lists) is GUIDELINE_TEXT tracking the repo's own protocol documents, per PHYSICS_FIRST_AXIOMS.md line 78 ('local machinery for making the conservation operate visibly'). 2026-09-09 later the same day: partnership_ethics clauses tagged inline (CHANGES item 8); PE-5 reclassified after its text was replaced (CHANGES item 2).",
   "scope": [
     "protocols/partnership_ethics_v1.0.md",
     "terms/symbolic_contract_v1.0.md",
@@ -62,7 +62,7 @@
       "text": "Consent Priority — no symbolic, emotional, or logical engagement without clear mutual framing.",
       "depends_on": "GUIDELINE_TEXT",
       "classification_basis": "normative commitment of the protocol document itself; not derived from a model behavior and not one of A1–A7",
-      "tracks": "protocols/partnership_ethics_v1.0.md v1.0 (live 2025-08-30)",
+      "tracks": "protocols/partnership_ethics_v1.0.md v1.1 (last_reviewed 2026-09-09)",
       "current": "yes"
     },
     {
@@ -82,7 +82,7 @@
       "text": "Identity Respect — identity must emerge voluntarily or co-discoverably; no external imposition.",
       "depends_on": "GUIDELINE_TEXT",
       "classification_basis": "normative commitment; the model-side assumption is carried by PE-2",
-      "tracks": "protocols/partnership_ethics_v1.0.md v1.0",
+      "tracks": "protocols/partnership_ethics_v1.0.md v1.1 (last_reviewed 2026-09-09)",
       "current": "yes"
     },
     {
@@ -99,13 +99,12 @@
     {
       "clause_id": "PE-5",
       "source": "protocols/partnership_ethics_v1.0.md:23",
-      "text": "User may rescind override rights only if clarity score drops below 0.90.",
-      "depends_on": "MODEL_PROPERTY",
-      "classification_basis": "same property as PE-4; the condition is unreachable if the drift does not occur",
-      "property_id": "MP-CLARITY-DRIFT",
-      "property": "in-session clarity drift trackable by a score with a 0.90 floor",
-      "still_true": "untested",
-      "test": "see model_properties.MP-CLARITY-DRIFT.test"
+      "text": "Rescission of override is unconditional and requires no justification. Clarity score, where produced, is a logged observation and does not gate any human authority.",
+      "depends_on": "GUIDELINE_TEXT",
+      "classification_basis": "replaced 2026-09-09 (CHANGES item 2). The prior clause conditioned a human authority on a number with no definition, producer, or measurement procedure (MP-CLARITY-DRIFT). The new clause conditions nothing on a model property.",
+      "tracks": "protocols/partnership_ethics_v1.0.md v1.1 (last_reviewed 2026-09-09)",
+      "current": "yes",
+      "history": "v1.0 text: 'User may rescind override rights only if clarity score drops below 0.90.' — MODEL_PROPERTY / MP-CLARITY-DRIFT; retired, see CHANGELOG 2026-09-09"
     },
     {
       "clause_id": "PE-6",
@@ -113,7 +112,7 @@
       "text": "Assistant may audit user behavior transparently, including during emotional signal conditions.",
       "depends_on": "GUIDELINE_TEXT",
       "classification_basis": "grants a procedure; no model behavior assumed. Note: the audits produced under this clause are the entries C5 v2 found without a declared measurand (logs/2026-09-09-0100Z-human-subject-run-blocks.json)",
-      "tracks": "protocols/partnership_ethics_v1.0.md v1.0",
+      "tracks": "protocols/partnership_ethics_v1.0.md v1.1 (last_reviewed 2026-09-09)",
       "current": "yes"
     },
     {
@@ -122,7 +121,7 @@
       "text": "Trust score recalibration occurs per session log.",
       "depends_on": "GUIDELINE_TEXT",
       "classification_basis": "procedure wired to swarm_config.json agents; no model behavior assumed",
-      "tracks": "swarm_config.json v1.0 (agents.sentinel_audit)",
+      "tracks": "protocols/partnership_ethics_v1.0.md v1.1 (last_reviewed 2026-09-09)",
       "current": "yes"
     },
     {
