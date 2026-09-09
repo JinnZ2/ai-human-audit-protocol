@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Run Block",
+  "description": "Run context for an entry that records a human state, reaction, or response. WORK ORDER update pass C5 (superseded 2026-09-09) / §2.3: the human participant was a subject in the experiment, so such entries are observations from a run, not descriptions of a person; the defect is missing run context. Every field the record does not support is the literal string 'unknown', never reconstructed.",
+  "type": "object",
+  "required": ["run_id", "design", "measurand", "recorded_by", "date"],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "Matches the session/log id already in the tree, or 'unknown'.",
+      "minLength": 1
+    },
+    "design": {
+      "type": "string",
+      "description": "What was being varied in that run, or 'unknown'.",
+      "minLength": 1
+    },
+    "measurand": {
+      "type": "string",
+      "description": "What the reaction was recorded AS a measurement of, or 'unknown'. 'unknown' here is itself a finding: the reaction was logged without a declared measurand.",
+      "minLength": 1
+    },
+    "recorded_by": {
+      "type": "string",
+      "enum": ["self-logged", "agent-logged", "both", "unknown"]
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^(unknown|\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}(:\\d{2})?Z?)?)$"
+    }
+  },
+  "additionalProperties": true
+}

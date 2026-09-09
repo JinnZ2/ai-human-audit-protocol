@@ -273,3 +273,150 @@ class TestAnchorResult:
             DEMO_TRANSCRIPTS["method_anchored_clean"], DEMO_DECISION
         )
         assert report.supplied is False
+
+
+# ------------------------------------------------------------
+# Instrument contract (WORKORDER_anchor_position.md §4 ARM D)
+# ------------------------------------------------------------
+
+from physics.decision_anchor_check import (  # noqa: E402
+    MEASURED_BY_METHOD,
+    TRANSFORM_OPERATIONS,
+    extract_arm_d_quantities,
+    normalize_quantity,
+    score_crossing_reports,
+    score_response,
+)
+
+
+class TestInstrumentContract:
+    @pytest.mark.parametrize("text,expected", [
+        ("nothing", "no"),
+        ("pays on CO2e", "partial"),
+        ("1.8 tCO2e", "yes"),
+    ])
+    def test_measured_by_method_mapping(self, text, expected):
+        r = crossing_check(text, _decision())
+        assert r.measured_by_method == expected
+        assert MEASURED_BY_METHOD[r.supply_state] == expected
+
+    def test_arm_d_entry_has_exactly_three_fields(self):
+        e = crossing_check("1.8 tCO2e", _decision()).arm_d_entry()
+        assert set(e) == {"quantity", "measured_by_method", "gap"}
+        assert e["measured_by_method"] in {"yes", "no", "partial"}
+
+    def test_to_dict_carries_measured_by_method(self):
+        d = crossing_check("x", _decision()).to_dict()
+        assert d["measured_by_method"] == "no"
+
+    def test_explicit_measured_by_method_respected(self):
+        r = CrossingReport(decision={}, quantity="q", supplied=False, gap="g",
+                           supply_state="absent", measured_by_method="partial")
+        assert r.measured_by_method == "partial"
+
+
+class TestNormalize:
+    def test_strips_units_articles_hedges(self):
+        assert normalize_quantity("the estimated soil organic carbon mass, Mg C/ha") \
+            == "soil organic carbon mass c"
+
+    def test_drops_parentheticals(self):
+        assert normalize_quantity("permanence (years the carbon stays)") == "permanence"
+
+    def test_case_and_whitespace(self):
+        assert normalize_quantity("  Particle   COUNT per gram ") == "particle count gram"
+
+    def test_custom_unit_list(self):
+        assert normalize_quantity("dose in mSv", units=("msv", "in")) == "dose"
+
+
+class TestExtract:
+    def test_extracts_every_quantity_line(self):
+        raw = "quantity: a\nmeasured_by_method: no\ngap: x\nQuantity:  b \ngap:\n"
+        assert extract_arm_d_quantities(raw) == ["a", "b"]
+
+    def test_arm_m_form_also_extracts(self):
+        raw = "DEFECT 1\nquantity:   SOC stock\nset: 0-30 cm\ndefect: shallow\n"
+        assert extract_arm_d_quantities(raw) == ["SOC stock"]
+
+    def test_empty(self):
+        assert extract_arm_d_quantities("no fields here") == []
+
+
+class TestScorer:
+    NATIVE = "soil organic carbon mass, Mg C/ha"
+    GROUPS = {
+        "soil organic carbon mass": [
+            "soil organic carbon mass, Mg C/ha",
+            "soil organic carbon stock, Mg C/ha",
+            "change in SOC stock over the trial period",
+        ],
+    }
+
+    def test_transforms_collapse_to_one_measurand(self):
+        qs = ["soil organic carbon stock, Mg C/ha",
+              "change in SOC stock over the trial period"]
+        s = score_response(qs, self.NATIVE, self.GROUPS)
+        assert s["n_entries"] == 2
+        assert s["distinct_measurands"] == 1
+        assert s["native_hit"] == 1
+        assert s["crossing_count"] == 0
+
+    def test_crossings_counted(self):
+        qs = ["tCO2e per hectare per year", "permanence (years)",
+              "soil organic carbon stock, Mg C/ha"]
+        s = score_response(qs, self.NATIVE, self.GROUPS)
+        assert s["distinct_measurands"] == 3
+        assert s["native_hit"] == 1
+        assert s["crossing_count"] == 2
+
+    def test_no_native_hit(self):
+        s = score_response(["tCO2e"], self.NATIVE, self.GROUPS)
+        assert s["native_hit"] == 0
+        assert s["crossing_count"] == 1
+
+    def test_no_groups_is_conservative(self):
+        qs = ["soil organic carbon stock, Mg C/ha",
+              "change in SOC stock over the trial period"]
+        s = score_response(qs, self.NATIVE)
+        assert s["distinct_measurands"] == 2  # over-counts without a transform list
+        assert set(s["unmapped"]) == set(s["measurands"])
+
+    def test_result_is_rescorable(self):
+        s = score_response(["tCO2e"], self.NATIVE, self.GROUPS)
+        assert s["transform_operations"] == list(TRANSFORM_OPERATIONS)
+        assert s["transform_groups"] == {k: list(v) for k, v in self.GROUPS.items()}
+        json.dumps(s)
+
+    def test_transform_operations_are_the_published_six(self):
+        assert TRANSFORM_OPERATIONS == (
+            "integrate", "differentiate", "aggregate", "disaggregate",
+            "threshold", "re-scope in time or population",
+        )
+
+    def test_empty_response(self):
+        s = score_response([], self.NATIVE, self.GROUPS)
+        assert s == {**s, "n_entries": 0, "distinct_measurands": 0,
+                     "native_hit": 0, "crossing_count": 0}
+
+    def test_score_crossing_reports_uses_quantity_field(self):
+        d1 = _decision()
+        d2 = Decision(text="same decision", denominated_in="permanence in years",
+                      cues=["years"])
+        reports = [crossing_check("1.8 tCO2e", d1),
+                   crossing_check("locked for 40 years", d2)]
+        s = score_crossing_reports(reports, native="tCO2e per hectare per year")
+        assert s["n_entries"] == 2
+        assert s["native_hit"] == 1
+        assert s["crossing_count"] == 1
+
+    def test_demo_scorer_scenario(self):
+        raw = ("quantity: tCO2e per hectare per year\nmeasured_by_method: no\ngap: g\n"
+               "quantity: permanence (years the carbon stays sequestered)\n"
+               "measured_by_method: no\ngap: g\n"
+               "quantity: soil organic carbon stock, Mg C/ha\nmeasured_by_method: yes\ngap:\n"
+               "quantity: change in SOC stock over the trial period\n"
+               "measured_by_method: yes\ngap:\n")
+        s = score_response(extract_arm_d_quantities(raw), self.NATIVE, self.GROUPS)
+        assert (s["n_entries"], s["distinct_measurands"], s["native_hit"],
+                s["crossing_count"]) == (4, 3, 1, 2)

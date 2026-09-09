@@ -107,6 +107,10 @@ not a model-behavior re-test condition.
 
 ## C5 — HUMAN CHARACTERIZATION  (paths + lines; NOT rewritten)
 
+    SUPERSEDED 2026-09-09 by the corrected C5 (see "C5 v2" at the end of this file).
+    Kept as the record of the first pass. The path list below is still accurate;
+    the class assigned to most of it (characterization) is not.
+
 Standing rule: no characterization of the author, working style, or authorship in any
 file. Categories used: state / reaction / motivation / style / capability / authorship.
 Text is not quoted here; the category is enough to locate the hit.
@@ -232,3 +236,95 @@ stated covers both. Owner decision needed on scope before any removal.
     folders          none consolidated, renamed, or reorganized; no new layer
     C5               nothing rewritten; proposals above await case-by-case approval
     test count       not used as evidence of anything
+
+---
+
+# C5 v2 — HUMAN-SUBJECT RECORDS: RUN BLOCK PRESENT?  (supersedes C5 above)
+
+    correction     the human participant was a SUBJECT IN THE EXPERIMENT. Recorded
+                   reactions are observations from a run, not descriptions of a
+                   person. The defect is missing run context, not the data.
+    classes        OBSERVATION | CHARACTERIZATION | UNDETERMINED  (mechanical)
+    fields         run_id · design · measurand · recorded_by · date
+    rule           backfill only from the record; unsupported field = "unknown";
+                   UNDETERMINED is not resolved by inference
+    full record    logs/2026-09-09-0100Z-human-subject-run-blocks.json  (22 entries)
+
+    source                                              class             run_id  design  measurand  recorded_by  date
+    ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    README.md:58-63  (case study)                       OBSERVATION*      ✓       —       —          —            ✓
+    README.md:90-94  (trigger case #1)                  UNDETERMINED      —       —       —          —            —
+    logs/2025-08-30-0000Z-session-001.json:13,18,23     OBSERVATION*      ✓       —       —          —            ✓
+    logs/2025-08-30-1930Z.json:17-32,49-52,66           UNDETERMINED      ✓       —       —          agent        ✓
+    logs/2025-08-31-0000Z-symbolic-audit.json:7-12      UNDETERMINED      —       —       —          agent        ✓
+    logs/2025-09-01-0000Z-audit.json:18,35-41           UNDETERMINED      —       —       —          —            ✓
+    logs/2025-09-02-2350Z-audit.json:20-52 (ranges)     UNDETERMINED      —       —       —          agent        ✓
+    logs/2025-09-04-2245Z-human-node-audit.json:15-66   UNDETERMINED      ✓       —       —          self         ✓
+    logs/2025-09-05-0000Z-audit.json:21-45 (ranges)     UNDETERMINED      ✓       —       —          —            ✓
+    logs/2025-09-06-2355Z.json:14,38-48,54              UNDETERMINED      —       —       —          agent        ✓
+    logs/2025-09-07-0440Z.json:13-14,38-48,54           UNDETERMINED      —       —       —          agent        ✓
+    logs/2025-09-08-2355Z.json:12-14,20,38-48,54        UNDETERMINED      —       —       —          agent        ✓
+    logs/2025-09-09-2245Z.json:44-58,62-72              UNDETERMINED      —       —       —          agent        ✓
+    logs/2025-09-12-0000Z-audit.json:13-58 (ranges)     UNDETERMINED      ✓       —       —          agent        ✓
+    logs/2025-09-23-0000Z.json:12-121 (ranges)          UNDETERMINED      ✓       —       —          agent        ✓
+    logs/2026-06-20-1344Z-calibration.json:14-20,24     OBSERVATION       ✓       —       ✓          both         ✓
+    swarm_audit_profile.json:14-27                      UNDETERMINED      —       —       —          —            ✓
+    swarm_audit_profile.json:28-33                      CHARACTERIZATION  (outside any run)
+    Co-creation.md:141,149                              UNDETERMINED      —       —       —          —            —
+    Co-creation.md:19-35                                CHARACTERIZATION  (outside any run)
+    Co-creation.md:310                                  CHARACTERIZATION  (outside any run)
+    audits/substrate_aware_audit.py:725-790 (fixture)   UNDETERMINED      —       —       —          —            —
+
+    * class assigned by the work order itself (named instance); every other
+      OBSERVATION/UNDETERMINED split follows the mechanical rule.
+
+    OBSERVATION        3      CHARACTERIZATION   3      UNDETERMINED   16
+    run block complete 0 / 3  (calibration log lacks only `design`)
+    measurand declared 1 / 19 non-characterization entries
+
+    measurand finding  reactions were logged without a declared measurand in
+                       18 of 19 entries. Same defect class the repo audits for
+                       elsewhere (a quantity recorded with no stated measurand).
+
+    dropped from C5 scope by the correction (were in C5 v1):
+      physics/SITUATEDNESS_METROLOGY.md:5          working conditions, not a state/reaction/response
+      "phone-buildable" / "one-finger safe"        artifact constraints
+      authorship attributions                      attribution of record
+
+## §2.3 — WHAT WAS BUILT (justified by C5 v2)
+
+    schemas/run_block.schema.json                         the five-field block; unknown is literal
+    logs/2026-09-09-0100Z-human-subject-run-blocks.json   22 entries, class + backfilled block + missing_fields;
+                                                          existing logs untouched (side channel, same pattern
+                                                          as the case-provenance index)
+    README.md                                             run block under the case study, next to the
+                                                          provenance block; reaction lines kept
+    tests/test_run_blocks.py                              schema shape; every entry has the five fields or
+                                                          is CHARACTERIZATION; OBSERVATION never carries a
+                                                          reconstructed field (unknown allowed, blank not)
+
+    CHARACTERIZATION entries (3): excluded by rule, removal still case-by-case per §3.
+    Proposed disposition per entry is in the index file. Nothing edited.
+
+## §2.2 — CONTRACT ALIGNMENT WITH THE INSTRUMENT (WORKORDER_anchor_position.md now in tree)
+
+    CrossingReport.measured_by_method   yes | no | partial   (supplied → yes, named_only → partial, absent → no)
+    CrossingReport.arm_d_entry()        {quantity, measured_by_method, gap} — the ARM D form verbatim
+    §6 scorer                           normalize_quantity · extract_arm_d_quantities · score_response ·
+                                        score_crossing_reports; TRANSFORM_OPERATIONS published in every result;
+                                        transform_groups is operator data passed in and echoed back
+    not built                           the run protocol itself (fresh sessions, arm randomization) — that is
+                                        operator procedure, not code; AP-3 (M+ arm) remains unrun
+
+## PER CLAUSE — CLAUSE DEPENDENCY INVENTORY (first pass)
+
+    schema      schemas/clause_dependency.schema.json
+    inventory   protocols/clause_dependency_inventory.json
+    scope       partnership_ethics_v1.0.md, terms/symbolic_contract_v1.0.md,
+                symbols/symbolic_protocol_v1.0.json, terms/human_protections_index.json,
+                swarm_config.json thresholds/policy
+    rule        every MODEL_PROPERTY clause is still_true: untested with a stated test;
+                no clause is marked VESTIGIAL on this pass (that requires a run);
+                PHYSICS is claimed only where the repo's own axiom docs already
+                make the mapping; otherwise the clause is GUIDELINE_TEXT tracking
+                the repo's own protocol document

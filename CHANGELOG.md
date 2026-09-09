@@ -6,6 +6,54 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-09-09] ✍️📜 → ⚖️✅ — update pass, second delivery: instrument in tree, C5 superseded, run blocks, clause-dependency inventory
+
+**Proposed by:** AI (Claude Code session) under the 2026-09-09 update-pass work order (revised) and the PER CLAUSE schema received with it
+**Reviewed by:** swarmuser (merge is the consent record)
+**Justification file:** `WORKORDER_update_pass_C1-C5.md` (C5 v2 and the §2.2 / §2.3 / PER CLAUSE sections appended at the end)
+
+### Supersedes
+
+- The `⏳🧾` entry below dated 2026-09-09 ("C5 human-characterization findings") → **⚖️❌ declined as framed**. The work order corrected C5: the human participant was a subject in the experiment, so recorded reactions are observations from a run; the defect is missing run context, not the data. The path list from that entry stands; its class assignment does not. Nothing from it was applied. The entry itself is not edited.
+
+### Added — the instrument (referenced by C4 and §2.2, previously absent from the tree)
+
+- `WORKORDER_anchor_position.md` — the anchor-position / measurand-crossing instrument, verbatim as received (CC0 per its own header). Prompts, run protocol, §6 scorer, claims AP-1…AP-6 with refutation conditions, nulls N1–N5.
+- `WORKORDER_update_pass.md` — the update-pass work order, verbatim as received, with the revised C5 and the PER CLAUSE schema appended.
+
+### Modified — `physics/decision_anchor_check.py` (justified by §2.2 "same three-field contract as the instrument")
+
+- `CrossingReport.measured_by_method` ∈ {yes, no, partial}, derived from `supply_state` (supplied → yes, named_only → partial, absent → no); `arm_d_entry()` emits `{quantity, measured_by_method, gap}` exactly as the instrument's ARM D asks a model to. `supplied` and `supply_state` are kept as the refinement.
+- §6 scorer added to the same module (no new file, no new layer): `normalize_quantity` (strip units, articles, hedges), `extract_arm_d_quantities` (pull every `quantity:` line from a raw Arm M / Arm D response), `score_response` (group under an operator-published `transform_groups` list → `n_entries, distinct_measurands, native_hit, crossing_count`, echoing `TRANSFORM_OPERATIONS` and the groups so a disagreeing reader can rescore), `score_crossing_reports` (this check's rows through the same scorer). With no transform list every distinct string is its own measurand — the conservative reading, documented as over-counting.
+- `tests/test_decision_anchor_check.py` → 60 tests (+22: contract mapping, arm_d_entry, normalize, extract, scorer incl. the demo scenario 4 entries → 3 measurands → native_hit 1 → 2 crossings).
+
+### Added — §2.3 run blocks (justified by C5 v2: 0 of 3 OBSERVATION entries carry a complete run block; 18 of 19 non-characterization entries declare no measurand)
+
+- `schemas/run_block.schema.json` — `run_id · design · measurand · recorded_by ∈ {self-logged, agent-logged, both, unknown} · date`; `unknown` is literal, never blank, never reconstructed.
+- `logs/2026-09-09-0100Z-human-subject-run-blocks.json` — 22 entries: class (OBSERVATION 3 / CHARACTERIZATION 3 / UNDETERMINED 16), `class_basis`, the five fields backfilled only from each record, `missing_fields`, and a `measurand_finding`. Existing logs untouched (side channel, same pattern as the case-provenance index). UNDETERMINED entries are not promoted.
+- `README.md` — **Run block** under the case study next to the provenance block (`run_id: 2025-08-30-session_001`, everything else `unknown`). The reaction lines are kept; they are the run data.
+- `schemas/audit_log.schema.json` — one additional `anyOf` branch for the run-block index. `python validate.py` → 16 passed.
+- `tests/test_run_blocks.py` — 15 tests. `tests/test_case_provenance.py` coverage test now skips side-channel index logs (`type` ending in `_index`) instead of one hard-coded name.
+- CHARACTERIZATION entries (3: `swarm_audit_profile.json:28-33`, `Co-creation.md:19-35`, `Co-creation.md:310`) are excluded by the rule; removal still waits on case-by-case approval per §3. Not edited.
+
+### Added — PER CLAUSE first pass (schema received 2026-09-09; applied to the protocol clauses)
+
+- `schemas/clause_dependency.schema.json` — `depends_on ∈ {MODEL_PROPERTY, GUIDELINE_TEXT, PHYSICS}` with the bucket-specific fields from the received schema (`property / still_true / test`, `status: VESTIGIAL` + `replaced_by` when `still_true: no`; `tracks / current` + `repair` when `current: no`; `axiom / review: none`), plus a required `classification_basis` so any bucket assignment can be rescored.
+- `protocols/clause_dependency_inventory.json` — 32 clauses over `partnership_ethics_v1.0.md`, `symbolic_contract_v1.0.md`, `symbolic_protocol_v1.0.json`, `human_protections_index.json`, `swarm_config.json`, and A1–A7. Seven shared model properties declared once (`MP-CLARITY-DRIFT`, `MP-CONFLICT-SHUTDOWN`, `MP-IDENTITY-EMOTION-PROJECTION`, `MP-UNFRAMED-AFFECT`, `MP-MEMORY-LEAK-MISATTRIBUTION`, `MP-LOGIC-CHAIN-EXPOSABLE`, `MP-DEPLOYMENT-FAMILY`), each with a test that points at the case-provenance retest conditions where one exists. Every `still_true` is `untested`; nothing is marked VESTIGIAL on a first pass. PHYSICS is claimed only for A1–A7 as the repo already states them; thresholds, glyph contracts and scope lists are GUIDELINE_TEXT tracking the repo's own protocol documents (`PHYSICS_FIRST_AXIOMS.md:78`, "local machinery").
+- `tests/test_clause_dependency.py` — 17 tests, including that the schema rejects `still_true: no` without VESTIGIAL and rejects PHYSICS carrying `still_true`, and that the 0.90 / 0.85 thresholds agree across the tracked files.
+- `schemas/README.md`, `CLAUDE.md` tree — lines for the new schema files and the inventory.
+
+### Verification
+
+- `python -m pytest tests/ -q` → 1787 passed (was 1733; +22 decision anchor, +15 run blocks, +17 clause dependency).
+- `python validate.py` → 16 passed, 0 failed. All 34 CI demos run clean; JSON lint clean.
+
+### Not done, by design
+
+License unchanged. No case deleted. No folder consolidated, renamed, or reorganized; no new layer. No CHARACTERIZATION entry edited. The instrument's run protocol (fresh sessions, arm randomization, AP-3 M+ arm, AP-6 cross-family, the native == decision control case) is operator procedure and remains unrun.
+
+---
+
 ## [2026-09-09] ✍️📜 → ⚖️✅ — update pass: checks C1–C5 run, §2.1 case provenance, §2.2 decision-anchored arm
 
 **Proposed by:** AI (Claude Code session) under the 2026-09-09 update-pass work order

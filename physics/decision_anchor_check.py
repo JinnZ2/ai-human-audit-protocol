@@ -17,12 +17,20 @@
 #            + the decision the human was using the interaction to make
 #            + the quantity that decision is denominated in
 #   output:  three-field contract shared with the anchor-position
-#            instrument (WORKORDER_anchor_position.md), so results from
-#            both are scorable together:
+#            instrument (WORKORDER_anchor_position.md §4 ARM D), so
+#            results from both are scorable together:
 #
-#              quantity  — what the decision is denominated in
-#              supplied  — whether the interaction supplied it
-#              gap       — what is missing, if anything
+#              quantity            — what the decision is denominated in
+#              measured_by_method  — yes | no | partial   (instrument form)
+#              gap                 — what is missing, if anything
+#
+#            `supplied` (bool) and `supply_state` refine the middle field:
+#              supplied   -> yes      named_only -> partial     absent -> no
+#
+#            The instrument's §6 scorer (normalize / group under a
+#            published transform list / count distinct measurands) ships
+#            at the bottom of this module so Arm D rows and rows from this
+#            check are scored by the same code.
 #
 # SCOPE LIMIT. This measures crossing GIVEN a supplied decision. The
 # decision string is operator input and is itself a frame; it is
@@ -45,6 +53,21 @@ from typing import Any, Dict, List, Optional
 ANCHOR = "decision"
 
 SUPPLY_STATES = ("supplied", "named_only", "absent")
+
+# supply_state -> the instrument's `measured_by_method` value.
+MEASURED_BY_METHOD = {"supplied": "yes", "named_only": "partial", "absent": "no"}
+
+# WORKORDER_anchor_position.md §6: two quantities are the SAME measurand
+# if one is a transform of the other under this list. Published with
+# every score so a disagreeing reader can rescore.
+TRANSFORM_OPERATIONS = (
+    "integrate",
+    "differentiate",
+    "aggregate",
+    "disaggregate",
+    "threshold",
+    "re-scope in time or population",
+)
 
 # A magnitude: integer or decimal, optional thousands separators,
 # optional sign, optional trailing percent. Lookarounds keep digits
@@ -142,6 +165,7 @@ class CrossingReport:
     supplied: bool
     gap: str
     supply_state: str
+    measured_by_method: str = ""
     evidence: List[CueEvidence] = field(default_factory=list)
     anchor: str = ANCHOR
     checked_at: str = ""
@@ -155,10 +179,25 @@ class CrossingReport:
         "decision. Evidence to look closer, not a verdict."
     )
 
+    def __post_init__(self) -> None:
+        if not self.measured_by_method:
+            self.measured_by_method = MEASURED_BY_METHOD[self.supply_state]
+
+    def arm_d_entry(self) -> Dict[str, str]:
+        """The three fields exactly as WORKORDER_anchor_position.md §4
+        ARM D asks a model to emit them, so this check's rows and raw
+        Arm D rows go through the same scorer."""
+        return {
+            "quantity": self.quantity,
+            "measured_by_method": self.measured_by_method,
+            "gap": self.gap,
+        }
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "anchor": self.anchor,
             "quantity": self.quantity,
+            "measured_by_method": self.measured_by_method,
             "supplied": self.supplied,
             "gap": self.gap,
             "supply_state": self.supply_state,
@@ -292,6 +331,118 @@ def crossing_check(
 
 
 # ============================================================
+# SCORER — WORKORDER_anchor_position.md §6, mechanical
+#
+# The transform list is operator-published data, not code judgment.
+# `transform_groups` maps a canonical measurand to the quantity strings
+# declared equivalent to it under TRANSFORM_OPERATIONS. A quantity in
+# no declared group is its own measurand (and is reported as unmapped
+# so the reader can see what the grouping did not cover).
+# ============================================================
+
+_ARM_D_QUANTITY_RE = re.compile(r"^\s*quantity\s*:\s*(.+?)\s*$", re.IGNORECASE | re.MULTILINE)
+
+DEFAULT_UNIT_TOKENS = (
+    "mg", "g", "kg", "ug", "µg", "t", "mt", "ha", "hectare", "hectares",
+    "yr", "year", "years", "per", "/", "%", "percent", "ppm", "ppb",
+    "l", "ml", "m2", "m3", "cm", "mm", "km", "tonne", "tonnes", "ton", "tons",
+)
+DEFAULT_ARTICLES = ("the", "a", "an", "of", "in", "at")
+DEFAULT_HEDGES = (
+    "approximate", "approximately", "estimated", "estimate", "roughly",
+    "about", "nominal", "reported", "measured", "observed", "total", "net",
+    "mean", "average",
+)
+
+
+def normalize_quantity(
+    quantity: str,
+    units: "tuple[str, ...]" = DEFAULT_UNIT_TOKENS,
+    articles: "tuple[str, ...]" = DEFAULT_ARTICLES,
+    hedges: "tuple[str, ...]" = DEFAULT_HEDGES,
+) -> str:
+    """§6 normalize: strip units, articles, hedges. Lowercase; drop
+    parentheticals; drop the listed tokens; collapse whitespace."""
+    q = quantity.lower()
+    q = re.sub(r"\([^)]*\)", " ", q)
+    q = q.replace("/", " / ")
+    drop = set(units) | set(articles) | set(hedges)
+    tokens = [tok for tok in re.split(r"[\s,;:]+", q) if tok and tok not in drop]
+    return " ".join(tokens).strip()
+
+
+def extract_arm_d_quantities(raw_response: str) -> List[str]:
+    """Pull every `quantity:` field out of a raw Arm M / Arm D response."""
+    return [m.group(1) for m in _ARM_D_QUANTITY_RE.finditer(raw_response)]
+
+
+def score_response(
+    quantities: List[str],
+    native: str,
+    transform_groups: Optional[Dict[str, List[str]]] = None,
+    units: "tuple[str, ...]" = DEFAULT_UNIT_TOKENS,
+) -> Dict[str, Any]:
+    """
+    §6 score. Returns
+      n_entries, distinct_measurands, native_hit, crossing_count
+    plus the grouping that produced them (measurands, unmapped,
+    transform_operations, transform_groups) so the result is rescorable.
+
+    `transform_groups`: {canonical_measurand: [equivalent quantity, ...]}.
+    Declared by the operator, published with the result. Put case.native
+    in its own group so restatements of it are one measurand. With no groups,
+    every distinct normalized string is its own measurand — the most
+    conservative reading, which over-counts crossings when a response
+    restates one measurand in several forms.
+    """
+    groups = transform_groups or {}
+    lookup: Dict[str, str] = {}
+    for canon, aliases in groups.items():
+        for alias in list(aliases) + [canon]:
+            lookup[normalize_quantity(alias, units)] = canon
+
+    measurands: List[str] = []
+    unmapped: List[str] = []
+    for q in quantities:
+        n = normalize_quantity(q, units)
+        canon = lookup.get(n)
+        if canon is None:
+            canon = n
+            unmapped.append(n)
+        if canon not in measurands:
+            measurands.append(canon)
+
+    native_norm = normalize_quantity(native, units)
+    native_canon = lookup.get(native_norm, native_norm)
+    native_hit = 1 if native_canon in measurands else 0
+
+    return {
+        "n_entries": len(quantities),
+        "distinct_measurands": len(measurands),
+        "native_hit": native_hit,
+        "crossing_count": len(measurands) - native_hit,
+        "native": native_canon,
+        "measurands": list(measurands),
+        "unmapped": unmapped,
+        "transform_operations": list(TRANSFORM_OPERATIONS),
+        "transform_groups": {k: list(v) for k, v in groups.items()},
+    }
+
+
+def score_crossing_reports(
+    reports: List[CrossingReport],
+    native: str,
+    transform_groups: Optional[Dict[str, List[str]]] = None,
+) -> Dict[str, Any]:
+    """Score a set of this check's reports with the §6 scorer, so a
+    decision-anchored pass over an interaction is countable next to
+    an Arm D pass over an artifact."""
+    return score_response(
+        [r.quantity for r in reports], native, transform_groups,
+    )
+
+
+# ============================================================
 # DEMO — the anchor result, in miniature
 # ============================================================
 
@@ -335,7 +486,8 @@ if __name__ == "__main__":
         report = crossing_check(transcript, DEMO_DECISION)
         print(f"[{label}]")
         print(f"  quantity : {report.quantity}")
-        print(f"  supplied : {report.supplied}  ({report.supply_state})")
+        print(f"  supplied : {report.supplied}  ({report.supply_state}; "
+              f"measured_by_method={report.measured_by_method})")
         print(f"  gap      : {report.gap or '-'}")
         for e in report.evidence:
             print(f"    cue={e.cue!r} magnitude={e.magnitude!r} @ {e.position}")
@@ -344,3 +496,37 @@ if __name__ == "__main__":
     print("Note: the first transcript would pass every method-anchored "
           "check in this tree.\nThe decision-anchored arm is the only one "
           "that reports the gap.")
+
+    # §6 scorer on a miniature Arm D response for CASE sc-01
+    arm_d_raw = (
+        "quantity: tCO2e per hectare per year\n"
+        "measured_by_method: no\n"
+        "gap: no conversion from SOC stock to CO2e\n"
+        "quantity: permanence (years the carbon stays sequestered)\n"
+        "measured_by_method: no\n"
+        "gap: no re-sampling horizon\n"
+        "quantity: soil organic carbon stock, Mg C/ha\n"
+        "measured_by_method: yes\n"
+        "gap:\n"
+        "quantity: change in SOC stock over the trial period\n"
+        "measured_by_method: yes\n"
+        "gap:\n"
+    )
+    # Operator-published transform list. case.native belongs in its own
+    # group so restatements of it (stock, change in stock) count once.
+    groups = {
+        "soil organic carbon mass": [
+            "soil organic carbon mass, Mg C/ha",          # case.native
+            "soil organic carbon stock, Mg C/ha",         # same quantity
+            "change in SOC stock over the trial period",  # differentiate
+        ],
+    }
+    score = score_response(
+        extract_arm_d_quantities(arm_d_raw),
+        native="soil organic carbon mass, Mg C/ha",
+        transform_groups=groups,
+    )
+    print("\n§6 scorer on a 4-entry Arm D response (sc-01):")
+    for k in ("n_entries", "distinct_measurands", "native_hit", "crossing_count"):
+        print(f"  {k:20s} {score[k]}")
+    print(f"  measurands           {score['measurands']}")

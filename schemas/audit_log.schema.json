@@ -145,6 +145,30 @@
           }
         }
       }
+    },
+    {
+      "description": "Human-subject run-block index (e.g., 2026-09-09-0100Z-human-subject-run-blocks.json) — side-channel run context for entries recording a human state/reaction/response; per-entry block defined in schemas/run_block.schema.json",
+      "required": ["type", "logged_at", "entries"],
+      "properties": {
+        "type": {"type": "string", "const": "human_subject_run_block_index"},
+        "logged_at": {"type": "string"},
+        "schema": {"type": "string"},
+        "justification": {"type": "string"},
+        "entries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["source", "class", "run_block", "missing_fields"],
+            "properties": {
+              "source": {"type": "string"},
+              "class": {"type": "string", "enum": ["OBSERVATION", "CHARACTERIZATION", "UNDETERMINED"]},
+              "run_block": {"type": ["object", "null"]},
+              "missing_fields": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        }
+      }
     }
   ]
 }

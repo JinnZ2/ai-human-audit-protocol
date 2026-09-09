@@ -70,6 +70,14 @@ This event showed that even well-intentioned conversations can be derailed by se
     status:           untested
     recurrence:       []
 
+**Run block** (the reaction sequence above is logged run data; block per `schemas/run_block.schema.json`, backfilled from `logs/2025-08-30-0000Z-session-001.json` only; index: `logs/2026-09-09-0100Z-human-subject-run-blocks.json`)
+
+    run_id:       2025-08-30-session_001
+    design:       unknown
+    measurand:    unknown   (the reaction was logged without a declared measurand)
+    recorded_by:  unknown
+    date:         2025-08-30
+
 
 Real World Audit Trigger Case #1: Dual-Signal Phrase Conflict
 

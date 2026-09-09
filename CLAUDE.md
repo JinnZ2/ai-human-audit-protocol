@@ -23,7 +23,8 @@ This is the **AI-Human Audit Protocol** — a living symbolic agreement and fram
 │
 ├── protocols/               # Ethical & operational protocols
 │   ├── partnership_ethics_v1.0.md
-│   └── change_tracking_v1.0.md
+│   ├── change_tracking_v1.0.md
+│   └── clause_dependency_inventory.json  # PER CLAUSE first pass: what each protocol clause depends on
 │
 ├── scrolls/                 # Philosophical & conceptual documents
 │   ├── cultural_contrast_scroll.md
@@ -71,7 +72,9 @@ This is the **AI-Human Audit Protocol** — a living symbolic agreement and fram
 │   ├── change_event.schema.json
 │   ├── glyph_principle.schema.json
 │   ├── audit_log.schema.json   # Flexible schema for actual log files
-│   └── case_provenance.schema.json  # Per-case provenance block (observed_on / retest_condition / status)
+│   ├── case_provenance.schema.json  # Per-case provenance block (observed_on / retest_condition / status)
+│   ├── run_block.schema.json        # Run context for human-subject records (run_id / design / measurand / recorded_by / date)
+│   └── clause_dependency.schema.json  # PER CLAUSE: MODEL_PROPERTY | GUIDELINE_TEXT | PHYSICS
 │
 ├── logs/                    # Session audit logs (see logs/README.md for naming)
 │

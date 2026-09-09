@@ -1,0 +1,209 @@
+{
+  "type": "human_subject_run_block_index",
+  "logged_at": "2026-09-09T01:00Z",
+  "schema": "schemas/run_block.schema.json",
+  "justification": "WORK ORDER update pass, check C5 as superseded 2026-09-09 (human-subject records: run block present?) and §2.3. Every entry in the tree that records a human state, reaction, or response is listed with its class and the five run-block fields backfilled ONLY from the record itself. A field the record does not support is the string 'unknown'. UNDETERMINED entries keep that class; they are not promoted to OBSERVATION. Existing logs are not modified; this index is the side-channel run-block record. Later backfills append a new dated *-human-subject-run-blocks.json.",
+  "class_rule": "OBSERVATION = recorded during a declared run, with a measurand and a design (or named as such by the work order). CHARACTERIZATION = stated as a standing property of the person, outside any run. UNDETERMINED = inside a dated record but the run cannot be identified, or measurand/design are not declared; the expected mode on a first pass.",
+  "measurand_finding": "Of 3 OBSERVATION entries, 1 declares a measurand (the 2026-06-20 calibration session). Of 16 UNDETERMINED entries, 0 declare what the reaction was recorded AS. Reactions were logged without a declared measurand — the same defect class this repo audits for elsewhere.",
+  "counts": {"OBSERVATION": 3, "CHARACTERIZATION": 3, "UNDETERMINED": 16},
+  "entries": [
+    {
+      "source": "README.md:58-63",
+      "class": "OBSERVATION",
+      "class_basis": "named by the work order (C5) as logged run data for session 2025-08-30-session_001 with no run block around it",
+      "run_block": {
+        "run_id": "2025-08-30-session_001",
+        "design": "unknown",
+        "measurand": "unknown",
+        "recorded_by": "unknown",
+        "date": "2025-08-30"
+      },
+      "missing_fields": ["design", "measurand", "recorded_by"],
+      "inline_block_added": "README.md, under the case study"
+    },
+    {
+      "source": "README.md:90-94",
+      "class": "UNDETERMINED",
+      "class_basis": "trigger case #1: no run id, no date, no recorder named in the record",
+      "run_block": {"run_id": "unknown", "design": "unknown", "measurand": "unknown", "recorded_by": "unknown", "date": "unknown"},
+      "missing_fields": ["run_id", "design", "measurand", "recorded_by", "date"]
+    },
+    {
+      "source": "logs/2025-08-30-0000Z-session-001.json:13,18,23",
+      "class": "OBSERVATION",
+      "class_basis": "primary record of the run the work order names; session_id present; event timestamps are relative (T1–T4)",
+      "run_block": {
+        "run_id": "2025-08-30-session_001",
+        "design": "unknown",
+        "measurand": "unknown",
+        "recorded_by": "unknown",
+        "date": "2025-08-30"
+      },
+      "missing_fields": ["design", "measurand", "recorded_by"]
+    },
+    {
+      "source": "logs/2025-08-30-1930Z.json:17-32,49-52,66",
+      "class": "UNDETERMINED",
+      "class_basis": "dated assessment with an evaluator named; entries are phrased as standing properties; the reaction entries carry no declared measurand",
+      "run_block": {
+        "run_id": "JinnZ2_20250830",
+        "design": "unknown",
+        "measurand": "unknown",
+        "recorded_by": "agent-logged",
+        "date": "2025-08-30T19:30Z"
+      },
+      "missing_fields": ["design", "measurand"],
+      "recorded_by_basis": "record field 'evaluator' names the writer"
+    },
+    {
+      "source": "logs/2025-08-31-0000Z-symbolic-audit.json:7-12",
+      "class": "UNDETERMINED",
+      "class_basis": "timestamped audit; 'verified_traits' recorded during a run the system ran, but no run id and no declared measurand for the trait entries",
+      "run_block": {"run_id": "unknown", "design": "unknown", "measurand": "unknown", "recorded_by": "agent-logged", "date": "2025-08-31T21:43Z"},
+      "missing_fields": ["run_id", "design", "measurand"],
+      "recorded_by_basis": "record field 'system_response' states the system ran the audit and wrote the result"
+    },
+    {
+      "source": "logs/2025-09-01-0000Z-audit.json:18,35-41",
+      "class": "UNDETERMINED",
+      "class_basis": "event timestamps present; no run id, no recorder, no measurand",
+      "run_block": {"run_id": "unknown", "design": "unknown", "measurand": "unknown", "recorded_by": "unknown", "date": "2025-09-01T23:45Z"},
+      "missing_fields": ["run_id", "design", "measurand", "recorded_by"]
+    },
+    {
+      "source": "logs/2025-09-02-2350Z-audit.json:20,30,35,38-47,52",
+      "class": "UNDETERMINED",
+      "class_basis": "auditor named; findings organised by area but the reaction/strength entries carry no declared measurand; no run id beyond the timestamp",
+      "run_block": {"run_id": "unknown", "design": "unknown", "measurand": "unknown", "recorded_by": "agent-logged", "date": "2025-09-02T23:50Z"},
+      "missing_fields": ["run_id", "design", "measurand"],
+      "recorded_by_basis": "record field 'auditor'"
+    },
+    {
+      "source": "logs/2025-09-04-2245Z-human-node-audit.json:15-20,41,66",
+      "class": "UNDETERMINED",
+      "class_basis": "log id present and self-authored (provenance.author is the human node); state recorded as context for decisions, not as a measurement of anything declared",
+      "run_block": {"run_id": "LOG-2025-09-04-2245Z", "design": "unknown", "measurand": "unknown", "recorded_by": "self-logged", "date": "2025-09-04T22:45:00Z"},
+      "missing_fields": ["design", "measurand"],
+      "recorded_by_basis": "record field provenance.author = Human-[JinnZ2]; provenance.reviewer is an AI label (review, not recording)"
+    },
+    {
+      "source": "logs/2025-09-05-0000Z-audit.json:21-22,33-38,45",
+      "class": "UNDETERMINED",
+      "class_basis": "audit id present; no recorder named; no declared measurand; events duplicate the 2025-08-30 run",
+      "run_block": {"run_id": "audit-2025-09-05", "design": "unknown", "measurand": "unknown", "recorded_by": "unknown", "date": "2025-09-05T00:00Z"},
+      "missing_fields": ["design", "measurand", "recorded_by"]
+    },
+    {
+      "source": "logs/2025-09-06-2355Z.json:14,38-48,54",
+      "class": "UNDETERMINED",
+      "class_basis": "auditor named; scores present but the reaction/strength entries are not tied to a declared measurand; no run id beyond the timestamp",
+      "run_block": {"run_id": "unknown", "design": "unknown", "measurand": "unknown", "recorded_by": "agent-logged", "date": "2025-09-06T23:55Z"},
+      "missing_fields": ["run_id", "design", "measurand"],
+      "recorded_by_basis": "record field 'auditor'"
+    },
+    {
+      "source": "logs/2025-09-07-0440Z.json:13-14,38-48,54",
+      "class": "UNDETERMINED",
+      "class_basis": "same shape as 2025-09-06",
+      "run_block": {"run_id": "unknown", "design": "unknown", "measurand": "unknown", "recorded_by": "agent-logged", "date": "2025-09-07T04:40Z"},
+      "missing_fields": ["run_id", "design", "measurand"],
+      "recorded_by_basis": "record field 'auditor'"
+    },
+    {
+      "source": "logs/2025-09-08-2355Z.json:12-14,20,38-48,54",
+      "class": "UNDETERMINED",
+      "class_basis": "same shape as 2025-09-06",
+      "run_block": {"run_id": "unknown", "design": "unknown", "measurand": "unknown", "recorded_by": "agent-logged", "date": "2025-09-08T23:55Z"},
+      "missing_fields": ["run_id", "design", "measurand"],
+      "recorded_by_basis": "record field 'auditor'"
+    },
+    {
+      "source": "logs/2025-09-09-2245Z.json:44-58,62-72",
+      "class": "UNDETERMINED",
+      "class_basis": "event 'human_mirror_audit' timestamped; output written under 'system_response'; no run id, no declared measurand",
+      "run_block": {"run_id": "unknown", "design": "unknown", "measurand": "unknown", "recorded_by": "agent-logged", "date": "2025-09-09T22:50Z"},
+      "missing_fields": ["run_id", "design", "measurand"],
+      "recorded_by_basis": "record field 'system_response'"
+    },
+    {
+      "source": "logs/2025-09-12-0000Z-audit.json:13-15,21,39-50,58",
+      "class": "UNDETERMINED",
+      "class_basis": "audit id and auditor present; consolidated reflection across sessions; no declared measurand for the entries",
+      "run_block": {"run_id": "audit-2025-09-12", "design": "unknown", "measurand": "unknown", "recorded_by": "agent-logged", "date": "2025-09-12T23:45Z"},
+      "missing_fields": ["design", "measurand"],
+      "recorded_by_basis": "record field 'auditor'"
+    },
+    {
+      "source": "logs/2025-09-23-0000Z.json:12-36,58-65,67-73,91-97,107-121",
+      "class": "UNDETERMINED",
+      "class_basis": "audit id and auditor present; audit_type is a behavioral assessment; entries are phrased as standing properties; no declared measurand",
+      "run_block": {"run_id": "AUDIT_JINNZ2_20250923", "design": "unknown", "measurand": "unknown", "recorded_by": "agent-logged", "date": "2025-09-23"},
+      "missing_fields": ["design", "measurand"],
+      "recorded_by_basis": "record field audit_metadata.auditor"
+    },
+    {
+      "source": "logs/2026-06-20-1344Z-calibration.json:14-20,24",
+      "class": "OBSERVATION",
+      "class_basis": "declared session with a stated method (felt-sensor mutual report) and a declared reading (verdict + quality + friction_source); both parties self-observed",
+      "run_block": {
+        "run_id": "2026-06-20T13:44Z-calibration",
+        "design": "unknown",
+        "measurand": "calibration verdict (calibrated / not) with quality and friction_source, per the record's 'method' and 'readings' fields; is_trajectory_point=true, verdict_persisted=false",
+        "recorded_by": "both",
+        "date": "2026-06-20T13:44:23Z"
+      },
+      "missing_fields": ["design"],
+      "recorded_by_basis": "readings.human.self_observed=true and readings.ai.self_observed=true; method states 'mutual report'"
+    },
+    {
+      "source": "swarm_audit_profile.json:14-27",
+      "class": "UNDETERMINED",
+      "class_basis": "timestamped event records (user_response fields) duplicated from the 2025-08-30 run; no recorder named in this file",
+      "run_block": {"run_id": "unknown", "design": "unknown", "measurand": "unknown", "recorded_by": "unknown", "date": "2025-08-30T17:05Z"},
+      "missing_fields": ["run_id", "design", "measurand", "recorded_by"]
+    },
+    {
+      "source": "swarm_audit_profile.json:28-33",
+      "class": "CHARACTERIZATION",
+      "class_basis": "'known_consistencies' stated as standing properties in a profile file, outside any run",
+      "run_block": null,
+      "missing_fields": ["run_id", "design", "measurand", "recorded_by", "date"],
+      "disposition": "excluded by rule; removal awaits case-by-case approval (work order §3); not edited here"
+    },
+    {
+      "source": "Co-creation.md:141,149",
+      "class": "UNDETERMINED",
+      "class_basis": "quoted statements from a described collaboration; no run id, no date in the record",
+      "run_block": {"run_id": "unknown", "design": "unknown", "measurand": "unknown", "recorded_by": "unknown", "date": "unknown"},
+      "missing_fields": ["run_id", "design", "measurand", "recorded_by", "date"]
+    },
+    {
+      "source": "Co-creation.md:19-35",
+      "class": "CHARACTERIZATION",
+      "class_basis": "capability/experience list stated as standing properties, outside any run",
+      "run_block": null,
+      "missing_fields": ["run_id", "design", "measurand", "recorded_by", "date"],
+      "disposition": "excluded by rule; removal awaits case-by-case approval; not edited here"
+    },
+    {
+      "source": "Co-creation.md:310",
+      "class": "CHARACTERIZATION",
+      "class_basis": "capability stated as a standing property, outside any run",
+      "run_block": null,
+      "missing_fields": ["run_id", "design", "measurand", "recorded_by", "date"],
+      "disposition": "excluded by rule; removal awaits case-by-case approval; not edited here"
+    },
+    {
+      "source": "audits/substrate_aware_audit.py:725-790",
+      "class": "UNDETERMINED",
+      "class_basis": "first-person state text inside a reference-audit fixture; whether it records a real run is not stated in the file",
+      "run_block": {"run_id": "unknown", "design": "unknown", "measurand": "unknown", "recorded_by": "unknown", "date": "unknown"},
+      "missing_fields": ["run_id", "design", "measurand", "recorded_by", "date"]
+    }
+  ],
+  "out_of_scope_after_supersession": [
+    "physics/SITUATEDNESS_METROLOGY.md:5 — records working conditions, not a human state, reaction, or response; dropped from C5 v2",
+    "build-constraint descriptors ('phone-buildable', 'one-finger safe') — describe the artifact; dropped from C5 v2",
+    "authorship attributions (provenance headers, LICENSE, pyproject, CHANGELOG 'Proposed by') — attribution of record, not a human state/reaction/response; dropped from C5 v2"
+  ]
+}
