@@ -328,3 +328,31 @@ stated covers both. Owner decision needed on scope before any removal.
                 PHYSICS is claimed only where the repo's own axiom docs already
                 make the mapping; otherwise the clause is GUIDELINE_TEXT tracking
                 the repo's own protocol document
+
+---
+
+# FINDINGS FOR A LATER PASS  (recorded 2026-09-09; not acted on)
+
+## F1 — duplicated framework document, independent edit history
+
+    canonical    AI-Human Partnership Framework for Extreme Conditions.md
+    copy A       Cultural Bias in AI Assessment: How Traditional Trauma Processing
+                 Gets Pathologized.md, from its "# AI-Human Partnership Framework for
+                 Extreme Conditions" heading (first occurrence) — a VARIANT: adds an
+                 "Enhanced Discernment Problem" section, a workplace case study, a
+                 sixth Key Observation, a fifth Natural-Selection clause; ends before
+                 Partner Selection / Resilience / Appendix
+    copy B       same document, second occurrence — verbatim copy of the canonical
+                 text as of before 2026-09-09 (Partner Selection section byte-identical)
+
+    state        three copies of one document. CHANGES items 3 and 6 were applied to
+                 all three on 2026-09-09; each edit point in a copy carries
+                 superseded_from / change_ref / date. Item 7 run blocks applied to all.
+    divergence   copy A already diverged before this pass (the discernment additions).
+                 Any future edit to one copy without the other two re-opens the gap.
+    rule         DO NOT consolidate (work order §3, CHANGES DO NOT). Recorded here for a
+                 later pass to decide: canonical + pointer, or keep three with a
+                 sync check.
+    mechanical   a test that diffs copy B against the canonical and fails on drift
+    option       would make the divergence visible without consolidating anything.
+                 Not built; would need a decision on which text is canonical.

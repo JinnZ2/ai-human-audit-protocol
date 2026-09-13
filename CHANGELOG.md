@@ -6,6 +6,82 @@ Each change includes timestamp, clarifications, and glyph markers for symbolic t
 
 ---
 
+## [2026-09-09] ✍️📜 → ⚖️✅ — run-block index re-keyed to path + anchor; hash guard left strict
+
+**Proposed by:** line-references / hash-guard note received 2026-09-09 · **Reviewed by:** swarmuser
+**Defect:** the run-block indexes keyed entries by path + line; line numbers drifted the moment the referenced files gained lines. Path is the stable key; an anchor string survives edits that a line number does not.
+**Change type:** addition (append; nothing edited) · **Section:** `logs/2026-09-09-0400Z-human-subject-run-blocks.json`, `tests/test_run_blocks.py`
+
+- New index, `key: path+anchor`, 31 entries — every entry of the 0100Z (22) and 0300Z (9) indexes restated with `source` = bare path, `anchor` = a string present in the file, `occurrence` where a heading repeats. Classes, run blocks, and `missing_fields` unchanged. The three CHARACTERIZATION entries carry `status: removed` with `removal_ref`. The two line-keyed indexes are `supersedes`-listed by sha256 and retained unmodified.
+- Tests: every present anchor must be found in its file at least `occurrence` times (the drift guard that replaces line numbers); superseded indexes must still hash-match; the anchor index must cover every line-keyed entry. +5 tests.
+- Hash guard on original logs (`tests/test_log_corrections.py`): unchanged, strict. If it fires, something tried to edit a log; the mechanism is append a superseding entry, never edit.
+- Not converted: `logs/2026-09-09-0000Z-case-provenance.json` keys cases by `case_id` (path or README anchor id) with `source` path:line as a secondary field; the stable key there is already the path. The correction entries (0201Z–0214Z) carry `source_ranges` as of commit b594b1d; they are immutable and the path inside `supersedes` is their stable key.
+
+**Correction to the entry below** ("code identifier: `consciousness` layer → `operator`"): the tree-wide count stated there (17) was wrong. Measured after that commit: 7 lines (8 occurrences) outside `CHANGELOG.md` — `audits/substrate_aware_audit.py` 3 lines, the repository name AI-Consciousness-Sensors in `CLAUDE.md` / `PROJECTS.md` / `REVIEW.md`, and one 2025 log — plus the occurrences inside `CHANGELOG.md` itself (immutable entries, including the ones describing the strip). The entry below is not edited.
+
+---
+
+## [2026-09-09] ✍️📜 → ⚖️✅ — code identifier: `consciousness` layer → `operator` (separate event from the prose term strip)
+
+**Proposed by:** code-identifier note received 2026-09-09 ("identifiers have callers, term strip in prose has none") · **Reviewed by:** swarmuser
+**Defect:** CHANGES item 1 stripped the term from prose; the audit module still keyed a layer on it. Same term, same reason as item 1; different mechanism because callers exist.
+**Change type:** modification · **Sections:** `audits/substrate_aware_audit.py`, `tests/test_substrate_aware_audit.py`, `audits/README.md`
+
+    a  renamed
+         CONSCIOUSNESS_OPERATIONS        -> OPERATOR_OPERATIONS
+         layer key "consciousness"       -> "operator"   (LAYER_REGISTRY, three reference
+                                                          audits, detect_substrate_acknowledgment
+                                                          comment, tests, README table)
+         "CONSCIOUSNESS AUDIT" / "Consciousness Audit" -> "OPERATOR AUDIT" / "Operator Audit"
+         two test method names
+    b  tests green: 93 in the module's two test files; full suite below
+    c  this entry; own commit
+    d  external importers: none inside this tree (`grep OPERATOR_OPERATIONS|substrate_aware_audit`
+       outside the module and its tests returns nothing). Any external repository importing
+       `CONSCIOUSNESS_OPERATIONS` or submitting payloads with a `"consciousness"` layer key
+       breaks: `validate_audit_payload` now reports it as an unknown layer key and `operator`
+       as missing. No compatibility alias added; the old term is not kept alive.
+
+Kept, with reason, three lines in the module: line 24 names the upstream lineage file `consciousness_audit_revised.py` (provenance, an act of forwarding); line 669 names "consciousness theories" as the body of theory being critiqued; line 697 states what the framework does NOT claim to measure. Each names an external concept, not a participant class. Tree-wide count of the term after this event: 17 (module 3, CHANGELOG entries, one 2025 log, the repository name AI-Consciousness-Sensors in three files).
+
+---
+
+## [2026-09-09] ✍️📜 → ⚖️✅ — three description entries removed (rule scope: description, not provenance)
+
+**Proposed by:** rule-scope re-scan (⏳🧾 entry below) · **Approved:** 2026-09-09, "yes, remove" · **Reviewed by:** swarmuser
+**Defect:** standing statements about a person with no run block, no design, no measurand. The rule excludes them without exception.
+**Change type:** removal · **Method:** where the surrounding structure needed the field, the value was replaced with the act it was inferred from (acts already recorded under Key Collaborative Moments in the same document); otherwise the field was dropped. Nothing softened, generalized, or substituted with a milder description.
+
+| path | removed |
+|---|---|
+| `swarm_audit_profile.json` (`known_consistencies`, formerly lines 28-33) | 6 lines, field dropped; no code consumer; the audit-log schema lists the key as optional |
+| `Co-creation.md` Human Contributions (two lists) | 17 lines, replaced by 4 act lines |
+| `Co-creation.md` Acknowledgment paragraph | 6 lines, replaced by 1 act line |
+
+Removed text is not quoted here. The 2026-09-09-0100Z run-block index entries for these paths stand as the record that they were classed CHARACTERIZATION; the index is not edited.
+
+---
+
+## [2026-09-09] ✍️📜 → ⚖️✅ — CHANGES 3 and 6 applied to the embedded copies of the framework
+
+**Proposed by:** embedded-copies note received 2026-09-09 ("the change targets the CONTENT, not the path") · **Reviewed by:** swarmuser
+**Defect:** a document that contradicts `partnership_ethics_v1.0` in one file and not in another is worse than either state; a reader landing on the copy got the superseded version with no marker.
+**Change type:** modification · **Section:** `Cultural Bias in AI Assessment: How Traditional Trauma Processing Gets Pathologized.md`, both embedded copies of the Extreme Conditions framework
+
+- **Copy A** (first occurrence, a variant): item 6 applied — Natural Selection section → pointer (its extra discernment clause noted under H1 and given its own row, H13); Key Observations marked. Copy A has no Partner Selection, Resilience, or Appendix sections, so item 3 does not arise there.
+- **Copy B** (second occurrence, verbatim): item 3 applied — Partner Selection (byte-identical to the canonical original retained in the CHANGES 3 entry) → Operating Mode Declaration; item 6 applied — Natural Selection, Resilience Factors, Who Doesn't Need, Case 2 → pointers; Untested Hypotheses H1–H13 inserted.
+- Every edit point in both copies carries:
+
+        superseded_from: AI-Human Partnership Framework for Extreme Conditions.md
+        change_ref:      item 3 | item 6
+        date:            2026-09-09
+
+**Finding logged, not acted on:** three copies of one document with independent edit history (copy A had already diverged before this pass). Recorded as F1 in `WORKORDER_update_pass_C1-C5.md` "Findings for a later pass". Not consolidated.
+
+Line references in `logs/2026-09-09-0300Z-human-subject-run-blocks.json` for this file are as of commit ef3a737; the path is the stable key.
+
+---
+
 ## [2026-09-09] ✍️📜 → ⚖️✅ — CHANGES 1: term strip, "consciousness" → "operator"
 
 **Proposed by:** CHANGES file received 2026-09-09, item 1 · **Reviewed by:** swarmuser (merge is the consent record)

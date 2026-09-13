@@ -10,6 +10,7 @@ never reconstructed), CHARACTERIZATION entries carry no run block, and
 UNDETERMINED entries are not promoted.
 """
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -150,3 +151,59 @@ class TestReadmeRunBlock:
         readme = (ROOT / "README.md").read_text()
         assert "**Run block**" in readme
         assert "run_id:       2025-08-30-session_001" in readme
+
+
+class TestAnchorKeys:
+    """Indexes keyed path+anchor (2026-09-09-0400Z onward): every present
+    entry's anchor must occur in its file at least `occurrence` times.
+    Line numbers were never going to survive edits; anchors are the
+    drift guard that replaces them."""
+
+    def _anchor_indexes(self):
+        out = []
+        for f in _index_files():
+            d = json.loads(f.read_text())
+            if d.get("key") == "path+anchor":
+                out.append((f, d))
+        return out
+
+    def test_at_least_one_anchor_keyed_index(self):
+        assert self._anchor_indexes()
+
+    def test_every_present_entry_anchor_found(self):
+        for f, d in self._anchor_indexes():
+            for e in d["entries"]:
+                if e.get("status") == "removed":
+                    assert e["anchor"] is None and e.get("removal_ref"), e["source"]
+                    continue
+                assert e.get("status") == "present", e["source"]
+                text = (ROOT / e["source"]).read_text()
+                occ = e.get("occurrence", 1)
+                assert text.count(e["anchor"]) >= occ, (
+                    f"anchor {e['anchor']!r} not found {occ}x in {e['source']}; "
+                    f"the referenced record moved or was edited"
+                )
+
+    def test_source_is_a_bare_path(self):
+        for f, d in self._anchor_indexes():
+            for e in d["entries"]:
+                assert (ROOT / e["source"]).exists(), e["source"]
+
+    def test_supersedes_hashes_still_match(self):
+        """The superseded line-keyed indexes stay unmodified."""
+        for f, d in self._anchor_indexes():
+            for s in d.get("supersedes", []):
+                p = ROOT / s["path"]
+                assert p.exists(), s["path"]
+                assert hashlib.sha256(p.read_bytes()).hexdigest() == s["sha256"], s["path"]
+
+    def test_anchor_index_covers_every_line_keyed_entry(self):
+        anchored = 0
+        for f, d in self._anchor_indexes():
+            anchored += len(d["entries"])
+        line_keyed = 0
+        for f in _index_files():
+            d = json.loads(f.read_text())
+            if d.get("key") != "path+anchor":
+                line_keyed += len(d["entries"])
+        assert anchored >= line_keyed

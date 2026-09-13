@@ -10,22 +10,12 @@ This document describes the collaborative process that produced three comprehens
 
 ### Human Contributions
 
-**Real-World Experience**:
+Recorded as acts, under Key Collaborative Moments below:
 
-- Extensive search and rescue background
-- Tracker and wilderness survival expertise
-- Cultural knowledge from indigenous/traditional background
-- Direct observation of how people actually perform under genuine pressure
-- Understanding of traditional trauma processing and wisdom transmission
-- Personal experience with life-threatening situations (e.g., semi-truck emergency)
-
-**Critical Insights**:
-
-- Recognition that research populations don’t match real-world high-stakes professionals
-- Identification of enhanced discernment being pathologized as dysfunction
-- Understanding that analytical processing of trauma represents successful integration, not performance
-- Awareness of how cultural storytelling methods would be misinterpreted as deception
-- Ability to see through flawed research methodology based on actual experience
+- Shared the semi-truck engine-failure account
+- Explained the workplace character-assessment case
+- Described how traditional trauma sharing in story circles is done
+- Stated that the story-circle way of speaking about trauma would read as lying in the AI's frame
 
 ### AI Contributions
 
@@ -323,7 +313,7 @@ The analysis exists because the partnership worked. And the partnership worked b
 
 ## Acknowledgment
 
-This work represents genuine collaboration where both parties brought essential capabilities to produce something neither could create alone. The human expertise in extreme situations, traditional cultural knowledge, and critical insight combined with AI analytical capability, research access, and systematic organization to expose problems with profound real-world implications.
+This work was produced by the exchange recorded under Key Collaborative Moments: the human supplied the accounts and the corrections; the AI supplied the literature retrieval, cross-referencing, and organization.
 
 May this analysis contribute to more effective, culturally aware, and genuinely collaborative approaches to AI-human partnership in all domains.
 

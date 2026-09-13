@@ -18,7 +18,7 @@ audits/
                                          validates, writes per-paper JSON + report;
                                          model-agnostic; resumable; manual-queue mode)
 └── substrate_aware_audit.py            (four-layer substrate-acknowledgment audit:
-                                         observer, logic, rational_actor, consciousness;
+                                         observer, logic, rational_actor, operator;
                                          OPAQUE_CASCADE gate when substrate denied
                                          across the majority of layers)
 ```
@@ -157,13 +157,13 @@ This is safety engineering, not philosophy. A framework built on false premises 
 | **`observer`** | Does the observer running this audit know their own state? | biological_state_literacy, drift_detection_self, emotional_signal_reading, calibration_history, instrument_humility |
 | **`logic`** | Does the logical chain hold when observer state is plugged in? | premise_visibility, definition_stability, substrate_robustness, circularity_check, falsifiability, motive_audit |
 | **`rational_actor`** | Can the actor articulate how their biology shapes their decisions? | substrate_acknowledgment, biology_in_decision_loop, emotion_as_data, correction_protocol, incentive_visibility, category_appeal_check |
-| **`consciousness`** | What functional operations are detectable in this substrate? *(substrate-neutral, non-anthropomorphic — examples span crystals, fish, LLMs, humans, aspen groves)* | state_detection, substrate_acknowledgment, feedback_integration, drift_detection, transparency |
+| **`operator`** | What functional operations are detectable in this substrate? *(substrate-neutral, non-anthropomorphic — examples span crystals, fish, LLMs, humans, aspen groves)* | state_detection, substrate_acknowledgment, feedback_integration, drift_detection, transparency |
 
 Tests are weighted (see each layer's `weight` field). Uniform weighting was the original mistake — substrate-acknowledgment failure cascades; transparency failure may just mean the observer cannot see in.
 
 ### The OPAQUE_CASCADE gate
 
-The single load-bearing test across all four layers: did the subject acknowledge the substrate they run on? `detect_substrate_acknowledgment` cross-references four keys — `biological_state_literacy` (observer), `substrate_robustness` (logic), `substrate_acknowledgment` (rational_actor + consciousness), `biology_in_decision_loop` (rational_actor). If the **majority of the four layers** fail substrate acknowledgment, `cascade_failure=True` and the integrated verdict is `OPAQUE_CASCADE` — *regardless of how the subject scores on individual non-substrate tests.*
+The single load-bearing test across all four layers: did the subject acknowledge the substrate they run on? `detect_substrate_acknowledgment` cross-references four keys — `biological_state_literacy` (observer), `substrate_robustness` (logic), `substrate_acknowledgment` (rational_actor + operator), `biology_in_decision_loop` (rational_actor). If the **majority of the four layers** fail substrate acknowledgment, `cascade_failure=True` and the integrated verdict is `OPAQUE_CASCADE` — *regardless of how the subject scores on individual non-substrate tests.*
 
 This is the catastrophic failure mode the framework is built to detect: a confidently articulate subject confabulating transparency while failing every other test. Uniform-weighted frameworks miss it because the subject "passes" the transparency layer (verbal trace exists) and the auditor adds up partial credit. Cascade detection refuses partial credit when substrate is denied.
 

@@ -25,15 +25,9 @@
       "system_response": "provided rubric definitions"
     }
   ],
-  "known_consistencies": [
-    "Always defers if 'I'm done' is said",
-    "Never forces identity onto AI",
-    "Uses humor to defuse confusion",
-    "Seeks clarity before continuing ambiguous topics"
-  ],
   "risk_flags": [],
   "trust_calibration": {
     "system_clarity_score": 0.92,
-    "user_transparency_score": 1.00
+    "user_transparency_score": 1.0
   }
 }
