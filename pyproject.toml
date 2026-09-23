@@ -3,7 +3,7 @@ name = "ai-human-audit-protocol"
 version = "1.0.0"
 description = "A living symbolic agreement and framework for ethical AI-human interaction"
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = "CC0-1.0"
 authors = [{name = "JinnZ2"}]
 
 [project.optional-dependencies]
