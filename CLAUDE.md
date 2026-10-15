@@ -10,7 +10,7 @@ This is the **AI-Human Audit Protocol** — a living symbolic agreement and fram
 - Create transparent protocols using symbolic language (glyphs), structured logs, and agent code
 - Enable true partnership rather than hierarchical control
 
-**Owner:** JinnZ2 | **License:** MIT | **Primary user:** "swarmuser"
+**Owner:** JinnZ2 | **License:** CC0 1.0 Universal for owner-authored work; retained upstream materials keep their stated terms (see [LICENSE_HISTORY.md](LICENSE_HISTORY.md)) | **Primary user:** "swarmuser"
 
 ---
 
