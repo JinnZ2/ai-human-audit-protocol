@@ -10,7 +10,7 @@ This is the **AI-Human Audit Protocol** — a living symbolic agreement and fram
 - Create transparent protocols using symbolic language (glyphs), structured logs, and agent code
 - Enable true partnership rather than hierarchical control
 
-**Owner:** JinnZ2 | **License:** MIT | **Primary user:** "swarmuser"
+**Owner:** JinnZ2 | **License:** CC0 1.0 Universal for owner-authored work; retained upstream materials keep their stated terms (see [LICENSE_HISTORY.md](LICENSE_HISTORY.md)) | **Primary user:** "swarmuser"
 
 ---
 
@@ -351,3 +351,18 @@ Output REVIEW.md with these sections, be concise (bullet points, file:line refer
 - Is the .fieldlink.json file consistent with the consumed_by annotations in CLAUDE.md? (Check for missing links.)
 
 Output the full REVIEW.md file.
+
+<!-- clone-refspec-note v1.1 -->
+## Cloning and pushing
+Shallow clones are single-branch by default.
+Before pushing any branch other than the default
+branch, run:
+
+    git config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+    git fetch --depth 1
+
+Or clone with: git clone --depth 1 --no-single-branch <url>
+Without this, the first push of a new branch
+fails the tracking-ref check even when the
+commit landed.
+<!-- /clone-refspec-note v1.1 -->

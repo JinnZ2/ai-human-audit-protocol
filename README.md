@@ -1,3 +1,5 @@
+Read [READ_ME_THIS_WAY.md](READ_ME_THIS_WAY.md) first.
+
 > Before reading or editing anything here, read READ_ME_THIS_WAY.md.
 > Mismatches, dead ends and odd names in this repo are kept on purpose.
 
@@ -255,5 +257,12 @@ Session-based audit and trust logs, e.g.
 
 ## License
 
-Open-use for symbolic alignment research.  
-No human coercion, false identity projection, or emotional manipulation permitted.
+The repository's **owner-authored work** is dedicated to the public domain under
+[CC0 1.0 Universal](LICENSE).
+
+**Retained provenance and exceptions.** Upstream materials keep their stated
+terms; the two documented AI-arena copies remain under their existing CC0 terms.
+See [LICENSE_HISTORY.md](LICENSE_HISTORY.md) for the dated transition, the
+verbatim prior MIT legal text, and retained-material provenance. The project's
+human-protection language describes its ethical framing; it is not an additional
+license condition.
