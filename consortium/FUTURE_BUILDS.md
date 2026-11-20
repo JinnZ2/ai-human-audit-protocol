@@ -94,7 +94,7 @@
 
 9. **`examples/genesis_drift.py`** — applies regime-drift detection to a known case where a narrative was validated in one regime and silently re-applied in another.
 
-10. **`examples/soil_with_hands.py`** — embodied-query template. Kavik's hands-in-soil reading → `EmbodiedReading` → `FrameReading` (via `embodied_sensor` frame) → `MultiGeometryCollaboration`.
+10. **`examples/soil_with_hands.py`** — embodied-query template. JinnZ2's hands-in-soil reading → `EmbodiedReading` → `FrameReading` (via `embodied_sensor` frame) → `MultiGeometryCollaboration`.
 
 11. **Test corpus of 5–10 known regime-shift cases.** Named in `CLAUDE_REQUIREMENTS.md`:
     - warriors / bones (the resilience meaning shift)

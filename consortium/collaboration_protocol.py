@@ -1,6 +1,6 @@
 # ============================================================
 # COLLABORATION PROTOCOL — viewing a problem from different geometries
-# how multiple AIs + Kavik (embodied sensor) + traditional knowledge
+# how multiple AIs + JinnZ2 (embodied sensor) + traditional knowledge
 # read the same problem through different epistemic frames
 # CC0 | JinnZ2/multi-geometry-collaboration
 # ============================================================
@@ -414,7 +414,7 @@ def example_problem_amoc_response() -> MultiGeometryCollaboration:
         where_this_frame_breaks=["non_quantifiable_human_factors", "intentionality"],
     ))
 
-    # EMBODIED SENSOR (Kavik) would say:
+    # EMBODIED SENSOR (JinnZ2) would say:
     collab.add_reading(FrameReading(
         frame=frames[4],
         problem_id=problem.problem_id,

@@ -9,7 +9,7 @@ The collaboration protocol surfaces blind spots **per run** (`MultiGeometryColla
 - **Coating recurrences.** When the same kind of coated agreement keeps appearing — and which probes caught it.
 - **Operator over-querying.** When budgets in `embodied_sensor.OperatorBudget` keep getting hit, which operators bear the load.
 
-The log is the start of Phase 3 — the "alive part" of the original consortium plan: drift detection across consortium output over time, model-specific blind-spot tracking, Kavik-as-sensor scheduling.
+The log is the start of Phase 3 — the "alive part" of the original consortium plan: drift detection across consortium output over time, model-specific blind-spot tracking, JinnZ2-as-sensor scheduling.
 
 ---
 
