@@ -617,7 +617,7 @@ Every `epi` tag (`measured | inferred | assumed | contradicted | missing`) appli
 - Added `consortium/FUTURE_BUILDS.md` — append-only roadmap. Status snapshot, P0–P3 priority-ordered open builds, known gaps, decisions deferred, test corpus seeds.
 
 ### Clarification
-The collaboration protocol is the layer where `relational_cognition/` (prose), KFC (formal mechanics), and the multi-encoding ontology layer meet **actual operators** — AI models, embodied human sensors (Kavik), tradition holders, ecological signals. The seven frames in `build_consortium_frames()` are not disciplines; they are *shapes through which a problem becomes legible*. None is canonical. Disagreement between frames is data, not error.
+The collaboration protocol is the layer where `relational_cognition/` (prose), KFC (formal mechanics), and the multi-encoding ontology layer meet **actual operators** — AI models, embodied human sensors (JinnZ2), tradition holders, ecological signals. The seven frames in `build_consortium_frames()` are not disciplines; they are *shapes through which a problem becomes legible*. None is canonical. Disagreement between frames is data, not error.
 
 The synthesize() output deliberately returns the whole geometry — invariants, blind spots, productive disagreements, action ranking — rather than a single answer. The epistemic warning is part of the return value, not a docstring: "no single frame holds the answer. the geometry is what survives across frames. what survives is load-bearing. what disagrees is data."
 
@@ -2207,7 +2207,7 @@ A flow node's capacity holds when the environment is stripped because it regener
 
 Training corpus = text. Text is the social-loop output of static nodes (they produce text as primary output). Flow nodes produce food, heat, shelter — non-textual, absent from corpus by sampling. An approval-trained model natively trusts the loud static signal and is itself a status-optimized node (audience_signal ≈ 0.80). `score_self_as_reading_model()` makes this explicit and executable.
 
-### Methodology note (Kavik's rule)
+### Methodology note (JinnZ2's rule)
 
 The 6 CASES are field observations. If the scorer disagrees with the field, that is a real signal — examine, do NOT retune. A mismatch is data. The REFUTATION string enforces this: the axis holds only while `flow_fraction` predicts stripped-environment survival across substrates; when it mispredicts a real field case, the axis is the suspect.
 
